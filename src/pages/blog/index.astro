@@ -1,0 +1,639 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.title.localeCompare(b.data.title)
+);
+
+type PostEntry = {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  group: string;
+};
+
+const TOPIC_GROUPS = [
+  {
+    id: 'platform',
+    label: 'CNAPP & CSPM',
+    description: 'Posture management, attack paths, exposure, and prioritization.',
+  },
+  {
+    id: 'aws',
+    label: 'AWS',
+    description: 'IAM, S3, EKS, GuardDuty, and AWS service hardening guides.',
+  },
+  {
+    id: 'azure',
+    label: 'Azure',
+    description: 'Defender, AKS, Key Vault, and Microsoft cloud security.',
+  },
+  {
+    id: 'gcp',
+    label: 'Google Cloud',
+    description: 'GKE, IAM, VPC Service Controls, and GCP posture management.',
+  },
+  {
+    id: 'kubernetes',
+    label: 'Kubernetes',
+    description: 'RBAC, network policies, admission control, and cluster security.',
+  },
+  {
+    id: 'compliance',
+    label: 'Compliance',
+    description: 'SOC 2, PCI, HIPAA, CIS benchmarks, and regulatory frameworks.',
+  },
+  {
+    id: 'identity',
+    label: 'Identity & access',
+    description: 'CIEM, IAM, SSO, privileged access, and federation.',
+  },
+  {
+    id: 'devsecops',
+    label: 'DevSecOps',
+    description: 'IaC scanning, CI/CD security, SBOM, and supply chain.',
+  },
+  {
+    id: 'threat',
+    label: 'Detection & response',
+    description: 'SIEM, threat detection, incident response, and forensics.',
+  },
+  {
+    id: 'guides',
+    label: 'Strategy & guides',
+    description: 'Architecture, governance, zero trust, and program building.',
+  },
+];
+
+function assignGroup(id: string, tags: string[]): string {
+  const t = tags.map((tag) => tag.toLowerCase());
+  const slug = id.toLowerCase();
+
+  if (t.includes('aws') || slug.startsWith('aws-')) return 'aws';
+  if (t.includes('azure') || slug.startsWith('azure-')) return 'azure';
+  if (t.includes('gcp') || t.includes('google cloud') || slug.startsWith('gcp-')) return 'gcp';
+
+  if (
+    t.includes('kubernetes') ||
+    t.includes('container security') ||
+    slug.startsWith('kubernetes-') ||
+    slug.includes('container')
+  ) {
+    return 'kubernetes';
+  }
+
+  if (
+    t.includes('compliance') ||
+    t.includes('audit') ||
+    slug.includes('compliance') ||
+    ['soc 2', 'pci', 'hipaa', 'gdpr', 'nist', 'fedramp', 'iso', 'cmmc', 'dora', 'nis2'].some(
+      (k) => slug.includes(k.replace(/\s+/g, '-')) || t.some((tag) => tag.includes(k))
+    )
+  ) {
+    return 'compliance';
+  }
+
+  if (
+    t.includes('ciem') ||
+    t.includes('iam') ||
+    t.includes('identity') ||
+    t.includes('sso') ||
+    t.includes('pim') ||
+    slug.includes('identity') ||
+    slug.includes('ciem')
+  ) {
+    return 'identity';
+  }
+
+  if (
+    t.includes('devsecops') ||
+    t.includes('iac') ||
+    t.includes('ci/cd') ||
+    slug.includes('terraform') ||
+    slug.includes('checkov') ||
+    slug.includes('github-actions')
+  ) {
+    return 'devsecops';
+  }
+
+  if (
+    t.includes('siem') ||
+    t.includes('threat detection') ||
+    t.includes('incident response') ||
+    t.includes('forensics') ||
+    t.includes('soc') ||
+    slug.includes('guardduty') ||
+    slug.includes('sentinel') ||
+    slug.includes('incident')
+  ) {
+    return 'threat';
+  }
+
+  if (
+    t.includes('cnapp') ||
+    t.includes('cspm') ||
+    t.includes('attack path') ||
+    t.includes('cwpp') ||
+    t.includes('exposure') ||
+    slug.includes('cspm') ||
+    slug.includes('cnapp') ||
+    slug.includes('attack-path')
+  ) {
+    return 'platform';
+  }
+
+  return 'guides';
+}
+
+const postEntries: PostEntry[] = posts.map((post) => ({
+  id: post.id,
+  title: post.data.title,
+  description: post.data.description,
+  tags: post.data.tags,
+  group: assignGroup(post.id, post.data.tags),
+}));
+
+const tagCounts = new Map<string, number>();
+for (const post of postEntries) {
+  for (const tag of post.tags) {
+    tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
+}
+
+const popularTags = [...tagCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 18)
+  .map(([tag, count]) => ({ tag, count }));
+
+const groupedCounts = Object.fromEntries(
+  TOPIC_GROUPS.map((g) => [g.id, postEntries.filter((p) => p.group === g.id).length])
+);
+---
+
+<BaseLayout
+  title="Blog — Cloud security, CSPM, CNAPP, and attack paths"
+  description="Articles on cloud security posture management (CSPM), CNAPP, attack path analysis, vulnerability prioritization, and open-source security graphs."
+>
+  <section class="section blog-index">
+    <div class="container">
+      <header class="blog-index-header">
+        <h1>Blog</h1>
+        <p class="section-lead">
+          Browse by topic, filter by tag, or search by keyword.
+        </p>
+      </header>
+
+      <div class="blog-toolbar">
+        <label class="search-field">
+          <span class="sr-only">Search articles</span>
+          <input
+            id="blog-search"
+            type="search"
+            placeholder="Search titles and descriptions…"
+            autocomplete="off"
+          />
+        </label>
+        <p class="result-count" id="result-count" aria-live="polite">
+          Showing all {postEntries.length} articles
+        </p>
+      </div>
+
+      <div class="topic-nav" role="tablist" aria-label="Filter by topic">
+        <button class="topic-pill active" type="button" data-group="all" role="tab" aria-selected="true">
+          All topics
+          <span class="pill-count">{postEntries.length}</span>
+        </button>
+        {
+          TOPIC_GROUPS.map((group) => (
+            <button
+              class="topic-pill"
+              type="button"
+              data-group={group.id}
+              role="tab"
+              aria-selected="false"
+            >
+              {group.label}
+              <span class="pill-count">{groupedCounts[group.id] ?? 0}</span>
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="tag-filter" aria-label="Filter by tag">
+        <span class="tag-filter-label">Popular tags</span>
+        <div class="tag-pills" id="tag-pills">
+          {
+            popularTags.map(({ tag, count }) => (
+              <button class="tag-pill" type="button" data-tag={tag}>
+                {tag}
+                <span class="pill-count">{count}</span>
+              </button>
+            ))
+          }
+        </div>
+        <button class="clear-filters" type="button" id="clear-filters" hidden>
+          Clear filters
+        </button>
+      </div>
+
+      <div id="blog-sections">
+        {
+          TOPIC_GROUPS.map((group) => {
+            const groupPosts = postEntries.filter((p) => p.group === group.id);
+            if (groupPosts.length === 0) return null;
+            return (
+              <section class="topic-section" data-section={group.id}>
+                <header class="topic-section-header">
+                  <h2>{group.label}</h2>
+                  <p>{group.description}</p>
+                </header>
+                <ul class="blog-list">
+                  {groupPosts.map((post) => (
+                    <li
+                      class="blog-item"
+                      data-group={post.group}
+                      data-tags={post.tags.join('|')}
+                      data-search={`${post.title} ${post.description}`.toLowerCase()}
+                    >
+                      <article class="blog-card">
+                        <h3>
+                          <a href={`/blog/${post.id}/`}>{post.title}</a>
+                        </h3>
+                        <p>{post.description}</p>
+                        {
+                          post.tags.length > 0 && (
+                            <ul class="blog-card-tags">
+                              {post.tags.slice(0, 4).map((tag) => (
+                                <li>
+                                  <button type="button" class="inline-tag" data-tag={tag}>
+                                    {tag}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )
+                        }
+                        <a class="blog-card-link" href={`/blog/${post.id}/`}>
+                          Read article →
+                        </a>
+                      </article>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })
+        }
+      </div>
+
+      <p class="empty-state" id="empty-state" hidden>
+        No articles match your search. Try a different keyword or clear filters.
+      </p>
+    </div>
+  </section>
+
+  <script define:vars={{ total: postEntries.length }}>
+    const searchInput = document.getElementById('blog-search');
+    const resultCount = document.getElementById('result-count');
+    const emptyState = document.getElementById('empty-state');
+    const clearBtn = document.getElementById('clear-filters');
+    const topicPills = document.querySelectorAll('.topic-pill[data-group]');
+    const tagPills = document.querySelectorAll('.tag-pill[data-tag], .inline-tag[data-tag]');
+    const sections = document.querySelectorAll('.topic-section');
+    const items = document.querySelectorAll('.blog-item');
+
+    let activeGroup = 'all';
+    let activeTag = '';
+
+    function setTopicPill(group) {
+      topicPills.forEach((pill) => {
+        const isActive = pill.dataset.group === group;
+        pill.classList.toggle('active', isActive);
+        pill.setAttribute('aria-selected', String(isActive));
+      });
+    }
+
+    function setTagPill(tag) {
+      document.querySelectorAll('.tag-pill[data-tag]').forEach((pill) => {
+        pill.classList.toggle('active', pill.dataset.tag === tag && tag !== '');
+      });
+    }
+
+    function updateClearButton() {
+      const hasFilters =
+        activeGroup !== 'all' || activeTag !== '' || (searchInput?.value.trim() ?? '') !== '';
+      clearBtn.hidden = !hasFilters;
+    }
+
+    function applyFilters() {
+      const query = (searchInput?.value ?? '').trim().toLowerCase();
+      let visible = 0;
+
+      sections.forEach((section) => {
+        let sectionVisible = 0;
+        const sectionGroup = section.dataset.section;
+
+        section.querySelectorAll('.blog-item').forEach((item) => {
+          const matchesGroup = activeGroup === 'all' || item.dataset.group === activeGroup;
+          const matchesTag =
+            !activeTag || (item.dataset.tags ?? '').split('|').includes(activeTag);
+          const matchesSearch = !query || (item.dataset.search ?? '').includes(query);
+          const show = matchesGroup && matchesTag && matchesSearch;
+
+          item.hidden = !show;
+          if (show) {
+            visible += 1;
+            sectionVisible += 1;
+          }
+        });
+
+        section.hidden = sectionVisible === 0;
+      });
+
+      emptyState.hidden = visible > 0;
+      resultCount.textContent =
+        visible === total
+          ? `Showing all ${total} articles`
+          : `Showing ${visible} of ${total} articles`;
+
+      updateClearButton();
+    }
+
+    topicPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        activeGroup = pill.dataset.group ?? 'all';
+        setTopicPill(activeGroup);
+        applyFilters();
+      });
+    });
+
+    tagPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const tag = pill.dataset.tag ?? '';
+        activeTag = activeTag === tag ? '' : tag;
+        setTagPill(activeTag);
+        applyFilters();
+      });
+    });
+
+    searchInput?.addEventListener('input', applyFilters);
+
+    clearBtn?.addEventListener('click', () => {
+      activeGroup = 'all';
+      activeTag = '';
+      if (searchInput) searchInput.value = '';
+      setTopicPill('all');
+      setTagPill('');
+      applyFilters();
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .blog-index-header h1 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    letter-spacing: -0.02em;
+  }
+
+  .blog-toolbar {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-field input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  .search-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+  }
+
+  .result-count {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .topic-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .topic-pill,
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+
+  .topic-pill:hover,
+  .tag-pill:hover {
+    border-color: rgba(34, 211, 238, 0.45);
+    color: var(--text);
+  }
+
+  .topic-pill.active,
+  .tag-pill.active {
+    border-color: rgba(34, 211, 238, 0.55);
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--accent);
+  }
+
+  .pill-count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    opacity: 0.85;
+  }
+
+  .tag-filter {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tag-filter-label {
+    display: block;
+    margin-bottom: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  .tag-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .clear-filters {
+    margin-top: 0.85rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .topic-section {
+    margin-bottom: 3rem;
+  }
+
+  .topic-section-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .topic-section-header h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .topic-section-header p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 42rem;
+  }
+
+  .blog-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  .blog-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .blog-card:hover {
+    border-color: rgba(34, 211, 238, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .blog-card h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .blog-card h3 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .blog-card h3 a:hover {
+    color: var(--accent);
+  }
+
+  .blog-card > p {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .blog-card-tags {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .inline-tag {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    cursor: pointer;
+  }
+
+  .inline-tag:hover {
+    border-color: rgba(34, 211, 238, 0.45);
+  }
+
+  .blog-card-link {
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    margin-top: auto;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 1rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (min-width: 768px) {
+    .blog-toolbar {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+
+    .result-count {
+      justify-self: end;
+      white-space: nowrap;
+    }
+  }
+</style>

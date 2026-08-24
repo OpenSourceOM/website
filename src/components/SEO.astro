@@ -1,0 +1,75 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-image.svg',
+  ogType = 'website',
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const siteName = 'OpenSourceOM';
+const googleSiteVerification =
+  import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION ?? 'RA2GQryf8Udk1K8n9tpa-8PMNeH_cxaPHbZN-Uz-vxg';
+const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+const ogImageUrl = new URL(ogImage, Astro.site).href;
+
+const defaultJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: siteName,
+  applicationCategory: 'SecurityApplication',
+  operatingSystem: 'Cross-platform',
+  description:
+    'Open-source cloud security platform with attack-path graphing, risk prioritization, and CSPM for AWS, Azure, and GCP.',
+  url: Astro.site?.href,
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+};
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+{googleSiteVerification && (
+  <meta name="google-site-verification" content={googleSiteVerification} />
+)}
+<link rel="canonical" href={canonicalUrl} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:site_name" content={siteName} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:locale" content="en_US" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageUrl} />
+
+<meta name="theme-color" content="#070b12" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd ?? defaultJsonLd)} />

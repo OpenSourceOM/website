@@ -1,0 +1,44 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Getting started"
+  description="Install OpenSourceOM and connect your first cloud account to start building your security graph."
+>
+  <h1>Getting started</h1>
+  <p>
+    OpenSourceOM runs as a self-hosted stack. You will deploy collectors in your environment, ingest
+    cloud inventory and security signals, and explore findings in the security graph UI.
+  </p>
+
+  <h2>Prerequisites</h2>
+  <ul>
+    <li>Docker 24+ and Docker Compose</li>
+    <li>Read-only cloud credentials for AWS, Azure, or GCP</li>
+    <li>4 vCPU / 8 GB RAM minimum for a small pilot</li>
+  </ul>
+
+  <h2>Quick start</h2>
+  <pre><code>{`git clone https://github.com/OpenSourceOM/core.git
+cd core
+cp .env.example .env
+docker compose up -d
+
+# Open the UI (default)
+open http://localhost:8080`}</code></pre>
+
+  <h2>Connect a cloud account</h2>
+  <p>
+    Create a read-only IAM role (AWS), service principal (Azure), or workload identity (GCP) and
+    paste the credentials into the setup wizard. Collectors begin syncing assets within minutes.
+  </p>
+
+  <h2>Next steps</h2>
+  <ul>
+    <li>Read about <a href="/docs/the-graph/">the security graph</a></li>
+    <li>Review the <a href="/docs/architecture/">architecture</a> before scaling to production</li>
+  </ul>
+</DocsLayout>

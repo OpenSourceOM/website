@@ -1,0 +1,40 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import SEO from '@/components/SEO.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import Analytics from '@/components/Analytics.astro';
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  ogType?: 'website' | 'article';
+  canonical?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description, ogType, canonical, jsonLd } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SEO
+      title={title}
+      description={description}
+      ogType={ogType}
+      canonical={canonical}
+      jsonLd={jsonLd}
+    />
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+    <Analytics />
+  </body>
+</html>

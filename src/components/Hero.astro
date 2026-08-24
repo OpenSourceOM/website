@@ -1,0 +1,166 @@
+<!-- Copyright 2026 OpenSourceOM. SPDX-License-Identifier: Apache-2.0 -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">Open source · Cloud-native · Graph-first</p>
+      <h1>The open cloud security graph for teams who need context, not noise</h1>
+      <p class="lead">
+        OpenSourceOM connects assets, identities, and exposures into a living security graph —
+        surfacing attack paths and the vulnerabilities that actually put your data at risk.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/docs/getting-started/">Start building</a>
+        <a class="btn btn-secondary" href="https://github.com/OpenSourceOM/core" target="_blank" rel="noopener noreferrer">
+          View on GitHub
+        </a>
+      </div>
+      <ul class="hero-stats" aria-label="Project highlights">
+        <li><strong>Graph-native</strong> risk context</li>
+        <li><strong>Multi-cloud</strong> AWS · Azure · GCP</li>
+        <li><strong>Apache-2.0</strong> open source</li>
+      </ul>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="orbit">
+        <span class="node core">Internet</span>
+        <span class="node n1">ALB</span>
+        <span class="node n2 critical">EC2 · CVE</span>
+        <span class="node n3">IAM Role</span>
+        <span class="node n4">S3 Bucket</span>
+        <span class="node n5 critical">Admin</span>
+        <svg class="edges" viewBox="0 0 420 320" preserveAspectRatio="none">
+          <line x1="210" y1="160" x2="80" y2="60" />
+          <line x1="210" y1="160" x2="340" y2="70" />
+          <line x1="210" y1="160" x2="350" y2="200" />
+          <line x1="210" y1="160" x2="90" y2="240" />
+          <line x1="210" y1="160" x2="210" y2="280" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: 5rem 0 3rem;
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    margin: 0 0 1rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-copy h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 14ch;
+  }
+
+  .lead {
+    margin: 0 0 1.75rem;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    max-width: 42rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .hero-stats strong {
+    color: var(--text);
+  }
+
+  .hero-visual {
+    min-height: 320px;
+  }
+
+  .orbit {
+    position: relative;
+    height: 320px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(circle at center, rgba(34, 211, 238, 0.08), transparent 55%),
+      var(--bg-card);
+    overflow: hidden;
+  }
+
+  .edges {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .edges line {
+    stroke: rgba(34, 211, 238, 0.35);
+    stroke-width: 1.5;
+  }
+
+  .node {
+    position: absolute;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .node.critical {
+    border-color: rgba(248, 113, 113, 0.6);
+    color: var(--danger);
+    box-shadow: 0 0 18px rgba(248, 113, 113, 0.15);
+  }
+
+  .core {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: rgba(34, 211, 238, 0.5);
+    color: var(--accent);
+  }
+
+  .n1 { top: 12%; left: 10%; }
+  .n2 { top: 8%; right: 8%; }
+  .n3 { top: 52%; right: 6%; }
+  .n4 { bottom: 10%; left: 8%; }
+  .n5 { bottom: 8%; left: 42%; }
+
+  @media (min-width: 960px) {
+    .hero-grid {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+  }
+</style>

@@ -1,0 +1,101 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import Logo from '@/components/Logo.astro';
+
+const nav = [
+  { href: '/#features', label: 'Features' },
+  { href: '/#graph', label: 'The Graph' },
+  { href: '/#community', label: 'Community' },
+  { href: '/docs/', label: 'Docs' },
+  { href: '/blog/', label: 'Blog' },
+  { href: 'https://github.com/OpenSourceOM/core', label: 'GitHub', external: true },
+];
+---
+
+<header class="header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="OpenSourceOM home">
+      <Logo size="sm" />
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-list">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <a class="btn btn-primary header-cta" href="/docs/getting-started/">Get started</a>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(7, 11, 18, 0.85);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 4rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--text);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .brand:hover {
+    text-decoration: none;
+  }
+
+  .nav-list {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1.5rem;
+  }
+
+  .nav-list a {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none;
+  }
+
+  .nav-list a:hover {
+    color: var(--accent);
+  }
+
+  .header-cta {
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 768px) {
+    .nav-list {
+      display: flex;
+    }
+  }
+</style>

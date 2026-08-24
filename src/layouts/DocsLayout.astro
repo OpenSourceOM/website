@@ -1,0 +1,119 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} ogType="article">
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <p class="sidebar-label">Documentation</p>
+      <nav aria-label="Docs">
+        <ul>
+          <li><a href="/docs/">Overview</a></li>
+          <li><a href="/docs/getting-started/">Getting started</a></li>
+          <li><a href="/docs/the-graph/">The graph</a></li>
+          <li><a href="/docs/architecture/">Architecture</a></li>
+          <li><a href="/docs/open-source/">Open source scope</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <article class="docs-content prose container">
+      <slot />
+      <p class="docs-copyright">
+        Copyright &copy; 2026 OpenSourceOM. Licensed under{' '}
+        <a
+          href="https://github.com/OpenSourceOM/website/blob/main/LICENSE"
+          target="_blank"
+          rel="noopener noreferrer">Apache-2.0</a>.
+      </p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style>
+  .docs-shell {
+    display: grid;
+    gap: 2rem;
+    padding: 3rem 0 4rem;
+  }
+
+  .docs-sidebar {
+    padding: 0 1rem;
+  }
+
+  .sidebar-label {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .docs-sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .docs-sidebar a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+
+  .docs-sidebar a:hover,
+  .docs-sidebar a[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  .docs-content {
+    padding: 0 1rem;
+  }
+
+  .docs-copyright {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .docs-copyright a {
+    color: var(--text-muted);
+  }
+
+  .docs-copyright a:hover {
+    color: var(--accent);
+  }
+
+  @media (min-width: 960px) {
+    .docs-shell {
+      grid-template-columns: 240px minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .docs-sidebar {
+      position: sticky;
+      top: 5rem;
+    }
+  }
+</style>
+
+<script>
+  const current = window.location.pathname.replace(/\/$/, '');
+  document.querySelectorAll('.docs-sidebar a').forEach((link) => {
+    const href = (link as HTMLAnchorElement).pathname.replace(/\/$/, '');
+    if (href === current) link.setAttribute('aria-current', 'page');
+  });
+</script>

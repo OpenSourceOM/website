@@ -1,0 +1,54 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+const features = [
+  {
+    title: 'The Security Graph',
+    description:
+      'Continuously model relationships between workloads, identities, network paths, and data stores to expose reachable attack paths — not just isolated findings.',
+  },
+  {
+    title: 'Risk that ranks itself',
+    description:
+      'Prioritize CVEs and misconfigurations by exploitability, blast radius, and exposure — so your team fixes what attackers can actually reach first.',
+  },
+  {
+    title: 'Multi-cloud inventory',
+    description:
+      'Normalize assets across AWS, Azure, and GCP with a unified graph schema. Plug in Kubernetes, containers, and SaaS connectors as you grow.',
+  },
+  {
+    title: 'Policy-as-code CSPM',
+    description:
+      'Detect drift from CIS, PCI, and custom guardrails. Map failed controls to graph nodes so remediation has context, not just ticket IDs.',
+  },
+  {
+    title: 'Self-hosted & auditable',
+    description:
+      'Run OpenSourceOM in your VPC. No black-box scoring — inspect the graph, rules, and enrichment pipelines in plain code.',
+  },
+  {
+    title: 'API-first integrations',
+    description:
+      'Push prioritized findings to Jira, Slack, or SIEM. Pull context from CNAPP, EDR, and vulnerability scanners via open connectors.',
+  },
+];
+---
+
+<section id="features" class="section">
+  <div class="container">
+    <h2 class="section-title">Cloud security built around context</h2>
+    <p class="section-lead">
+      Traditional scanners flood you with alerts. OpenSourceOM connects the dots — showing which
+      vulnerabilities sit on paths to sensitive data and privileged access.
+    </p>
+    <div class="card-grid">
+      {features.map((feature) => (
+        <article class="card">
+          <h3>{feature.title}</h3>
+          <p>{feature.description}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

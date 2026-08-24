@@ -1,0 +1,100 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+
+const year = new Date().getFullYear();
+const licenseUrl = 'https://github.com/OpenSourceOM/website/blob/main/LICENSE';
+---
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div>
+      <p class="footer-brand">OpenSourceOM</p>
+      <p class="footer-tagline">Open-source cloud security with context that matters.</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="footer-links">
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="https://github.com/OpenSourceOM/core" target="_blank" rel="noopener noreferrer">Core repo</a></li>
+        <li><a href="/docs/architecture/">Architecture</a></li>
+        <li><a href="/docs/open-source/">Open source scope</a></li>
+        <li><a href={licenseUrl} target="_blank" rel="noopener noreferrer">License</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <p>
+      Copyright &copy; {year} OpenSourceOM. Licensed under{' '}
+      <a href={licenseUrl} target="_blank" rel="noopener noreferrer">Apache-2.0</a>.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+    padding: 3rem 0 2rem;
+    background: var(--bg-elevated);
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .footer-brand {
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .footer-tagline {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+  }
+
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent);
+  }
+
+  .footer-bottom {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-bottom a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .footer-bottom a:hover {
+    color: var(--accent);
+  }
+
+  .footer-bottom p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>

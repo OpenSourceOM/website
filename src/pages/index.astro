@@ -1,0 +1,23 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import TrustBar from '@/components/TrustBar.astro';
+import FeatureGrid from '@/components/FeatureGrid.astro';
+import GraphDemo from '@/components/GraphDemo.astro';
+import CompareSection from '@/components/CompareSection.astro';
+import CommunitySection from '@/components/CommunitySection.astro';
+---
+
+<BaseLayout
+  title="OpenSourceOM — Open-source cloud security graph"
+  description="OpenSourceOM is an open-source cloud security platform with attack-path graphing, CSPM, and vulnerability prioritization for AWS, Azure, and GCP."
+>
+  <Hero />
+  <TrustBar />
+  <FeatureGrid />
+  <GraphDemo />
+  <CompareSection />
+  <CommunitySection />
+</BaseLayout>

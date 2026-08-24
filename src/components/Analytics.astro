@@ -1,0 +1,51 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import VercelAnalytics from '@vercel/analytics/astro';
+
+const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? '';
+---
+
+{
+  gaId && (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+      <script is:inline define:vars={{ gaId }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', gaId);
+      </script>
+    </>
+  )
+}
+
+<VercelAnalytics />
+
+<script define:vars={{ gaId }}>
+  import { track } from '@vercel/analytics';
+
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const anchor = target.closest('a');
+    if (!anchor?.href.includes('github.com/OpenSourceOM')) return;
+
+    const label = anchor.textContent?.trim() || 'link';
+    const page = window.location.pathname;
+
+    track('github_click', { href: anchor.href, label, page });
+
+    if (gaId && 'gtag' in window && typeof window.gtag === 'function') {
+      window.gtag('event', 'github_click', {
+        event_category: 'outbound',
+        event_label: label,
+        link_url: anchor.href,
+        page_path: page,
+      });
+    }
+  });
+</script>

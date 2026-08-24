@@ -1,0 +1,48 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="The graph"
+  description="Learn how OpenSourceOM models cloud assets, identities, and exposures in a queryable security graph."
+>
+  <h1>The security graph</h1>
+  <p>
+    The graph is the core of OpenSourceOM. Instead of treating every CVE or misconfiguration as equal,
+    we model <strong>relationships</strong>: what can reach what, through which identities and network paths.
+  </p>
+
+  <h2>Nodes and edges</h2>
+  <ul>
+    <li><strong>Nodes</strong> — workloads, containers, identities, data stores, network interfaces, findings</li>
+    <li><strong>Edges</strong> — network reachability, IAM permissions, data access, vulnerability presence</li>
+  </ul>
+
+  <h2>Attack path queries</h2>
+  <p>
+    Security teams ask graph questions to cut through noise. Examples:
+  </p>
+  <pre><code>{`# Critical CVEs on internet-exposed paths to production data
+MATCH (i:Internet)-[*..5]->(v:Vulnerability {severity:'critical'})-[:AFFECTS]->(w:Workload)-[:CAN_REACH]->(d:Datastore {env:'prod'})
+RETURN v, w, d
+
+# Over-privileged roles reachable from a compromised VM
+MATCH (vm:VM {compromised:true})-[:ASSUMES|CAN_ASSUME*1..3]->(r:Role)
+WHERE r.admin = true
+RETURN r`}</code></pre>
+
+  <h2>Prioritization</h2>
+  <p>
+    Findings inherit risk from graph context: exposure, path length, asset sensitivity, and exploit
+    intelligence. A critical CVE on an isolated dev box ranks lower than a high CVE on a path to prod.
+  </p>
+
+  <h2>Compared to traditional CNAPP</h2>
+  <p>
+    Proprietary platforms like Wiz popularized graph-native cloud security. OpenSourceOM brings similar
+    <em>concepts</em> — attack paths, toxic combinations, identity blast radius — to an auditable,
+    self-hosted, Apache-2.0 codebase you can extend.
+  </p>
+</DocsLayout>

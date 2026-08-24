@@ -1,0 +1,137 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Open source scope"
+  description="What OpenSourceOM ships in the free Apache-2.0 core versus planned commercial capabilities for internal risk and enterprise deployment."
+>
+  <h1>Open source scope</h1>
+  <p>
+    OpenSourceOM Core is Apache-2.0 licensed and self-hosted. The free project is designed to help
+    teams defend against <strong>external attackers</strong> — mapping exposure, attack paths, and
+    which findings matter because an outsider could reach them.
+  </p>
+  <p>
+    Capabilities aimed at <strong>internal risk</strong> and <strong>enterprise deployment</strong>
+    (SAML, multi-tenant RBAC, compliance workflows) may ship as commercial offerings later. They are
+    not part of the OSS core today.
+  </p>
+
+  <h2>What is in the open source core</h2>
+  <ul>
+    <li>Attack path queries — internet → workload → datastore</li>
+    <li>Graph-context CSPM rules and CVE prioritization by reachability</li>
+    <li>Identity blast radius (compromise → reachable assets)</li>
+    <li>Multi-cloud and Kubernetes inventory collectors</li>
+    <li>Self-hosted API, CLI, and web console</li>
+    <li>SIEM, Slack, and Jira export integrations</li>
+    <li>Community extensibility — collectors, rules, and graph queries in code</li>
+  </ul>
+
+  <h2>Open source vs. commercial (planned)</h2>
+  <div class="scope-table-wrap">
+    <table class="scope-table">
+      <thead>
+        <tr>
+          <th scope="col">Open source (OSS)</th>
+          <th scope="col">Commercial (planned)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Attack path queries (internet → workload → datastore)</td>
+          <td>Insider / internal-threat analysis</td>
+        </tr>
+        <tr>
+          <td>Graph-context CSPM and CVE prioritization</td>
+          <td>Privileged access governance for operators</td>
+        </tr>
+        <tr>
+          <td>Multi-cloud + Kubernetes inventory</td>
+          <td>Multi-tenant RBAC, org/account scoping</td>
+        </tr>
+        <tr>
+          <td>Self-hosted API, CLI, and web console</td>
+          <td>SAML / SSO and enterprise identity integrations</td>
+        </tr>
+        <tr>
+          <td>Community collectors and rule packs</td>
+          <td>Enterprise compliance workflows and audit requirements</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Why this split</h2>
+  <p>
+    External attack defense — exposure, reachability, and path-aware prioritization — is the foundation
+    of graph-native cloud security. Keeping that in open source means any team can run a credible,
+    auditable CNAPP-style stack in their own environment without vendor lock-in.
+  </p>
+  <p>
+    Internal-threat controls and enterprise identity requirements add operational complexity that many
+    small teams do not need, but large organizations often require. A commercial tier lets us serve
+    those needs without bloating the core repository or slowing community contributions.
+  </p>
+
+  <h2>Status</h2>
+  <p>
+    The <a href="https://github.com/OpenSourceOM/core">core repository</a> is in active development
+    (Phase 2). Commercial offerings are <strong>not available yet</strong> — there is no pricing,
+    sales contact, or enterprise SKU at this time.
+  </p>
+  <p>
+    For phase-level detail and upcoming work, see the
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap on GitHub</a>.
+    To suggest priorities, open a
+    <a href="https://github.com/OpenSourceOM/core/discussions">GitHub Discussion</a> with the
+    <code>roadmap</code> label.
+  </p>
+
+  <h2>License</h2>
+  <p>
+    OpenSourceOM Core is licensed under
+    <a href="https://github.com/OpenSourceOM/core/blob/main/LICENSE">Apache-2.0</a>. You can inspect,
+    modify, and deploy it without a commercial agreement.
+  </p>
+</DocsLayout>
+
+<style>
+  .scope-table-wrap {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .scope-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.925rem;
+  }
+
+  .scope-table th,
+  .scope-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scope-table th {
+    color: var(--text);
+    background: var(--bg-elevated);
+    font-weight: 600;
+  }
+
+  .scope-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .scope-table td:first-child {
+    color: var(--text);
+  }
+</style>

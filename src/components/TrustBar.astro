@@ -1,0 +1,71 @@
+<!-- Copyright 2026 OpenSourceOM. SPDX-License-Identifier: Apache-2.0 -->
+<section class="trust-bar" aria-label="Project principles">
+  <div class="container trust-inner">
+    <div class="trust-item">
+      <span class="trust-icon" aria-hidden="true">◎</span>
+      <div>
+        <p class="trust-title">Graph-first</p>
+        <p class="trust-desc">Every finding tied to reachability and impact</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon" aria-hidden="true">⬡</span>
+      <div>
+        <p class="trust-title">Self-hosted</p>
+        <p class="trust-desc">Your data stays in your environment</p>
+      </div>
+    </div>
+    <div class="trust-item">
+      <span class="trust-icon" aria-hidden="true">◈</span>
+      <div>
+        <p class="trust-title">Apache-2.0</p>
+        <p class="trust-desc">Free to use, fork, and build on</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .trust-bar {
+    border-block: 1px solid var(--border);
+    background: rgba(13, 20, 32, 0.5);
+    padding: 1.5rem 0;
+  }
+
+  .trust-inner {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .trust-item {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+  }
+
+  .trust-icon {
+    font-size: 1.25rem;
+    color: var(--accent);
+    line-height: 1;
+    margin-top: 0.15rem;
+  }
+
+  .trust-title {
+    margin: 0 0 0.15rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .trust-desc {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  @media (min-width: 768px) {
+    .trust-inner {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

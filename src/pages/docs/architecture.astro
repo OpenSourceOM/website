@@ -1,0 +1,49 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Architecture"
+  description="OpenSourceOM architecture — collectors, graph engine, API, and deployment patterns."
+>
+  <h1>Architecture</h1>
+  <p>
+    OpenSourceOM is designed as modular, cloud-native components you can run on Kubernetes or Docker Compose.
+  </p>
+
+  <h2>Components</h2>
+  <ul>
+    <li><strong>Collectors</strong> — pull inventory, IAM, network, and vulnerability data from cloud APIs</li>
+    <li><strong>Normalizer</strong> — map provider-specific resources into a unified graph schema</li>
+    <li><strong>Graph store</strong> — persist nodes/edges and run path queries (Planned: open graph DB backend)</li>
+    <li><strong>Rules engine</strong> — CSPM policies and custom detections tied to graph context</li>
+    <li><strong>API & UI</strong> — GraphQL/REST API and web console for exploration and remediation</li>
+  </ul>
+
+  <h2>Data flow</h2>
+  <pre><code>{`Cloud APIs → Collectors → Normalizer → Graph Store → API/UI
+                              ↘ Rules Engine → Findings (with path context)`}</code></pre>
+
+  <h2>Deployment options</h2>
+  <ul>
+    <li><strong>Pilot</strong> — single-node Docker Compose</li>
+    <li><strong>Production</strong> — Kubernetes with HA graph store and horizontal collectors</li>
+    <li><strong>Air-gapped</strong> — offline vulnerability feeds and private registry mirrors</li>
+  </ul>
+
+  <h2>Extensibility</h2>
+  <p>
+    Connectors are plugins. Community adapters for Kubernetes, GitHub, and SIEM exports live alongside
+    core cloud providers. See the <code>core</code> repository for SDK details (coming soon).
+  </p>
+
+  <h2>Open source scope</h2>
+  <p>
+    The Apache-2.0 core targets <strong>external attack defense</strong> — attack paths, graph-context
+    CSPM, and exposure-aware prioritization. Internal-threat analysis, SAML/SSO, and multi-tenant RBAC
+    are planned outside the free OSS core.
+    <a href="/docs/open-source/">Read the full OSS vs. commercial split</a>.
+  </p>
+</DocsLayout>

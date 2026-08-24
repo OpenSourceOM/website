@@ -1,0 +1,210 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+const steps = [
+  {
+    title: 'Star the core repo',
+    description:
+      'A GitHub star is a small action with real impact — it helps others discover the project and signals that open cloud security deserves more attention.',
+    href: 'https://github.com/OpenSourceOM/core',
+    linkLabel: 'Star on GitHub',
+  },
+  {
+    title: 'Shape the roadmap',
+    description:
+      'Open issues for feature requests, bugs, or ideas. Upvote discussions that matter to you so we know what the community needs most.',
+    href: 'https://github.com/OpenSourceOM/core/issues',
+    linkLabel: 'Browse issues',
+  },
+  {
+    title: 'Spread the word',
+    description:
+      'Visibility is the biggest lever right now. Write about OpenSourceOM on Reddit, Hacker News, X/Twitter, LinkedIn, or wherever your cloud security peers hang out.',
+  },
+  {
+    title: 'Community channels (coming soon)',
+    description:
+      'We plan to launch Slack and Discord spaces for contributors and early adopters. Watch this site and the GitHub repo for announcements.',
+    comingSoon: true,
+  },
+];
+---
+
+<section id="community" class="section community">
+  <div class="container">
+    <p class="eyebrow">Early stage · Community-driven</p>
+    <h2 class="section-title">Your support shapes what we build next</h2>
+    <p class="section-lead">
+      OpenSourceOM is just getting started. Community momentum — stars, feedback, and word of mouth —
+      directly influences how fast we ship and what we prioritize. Here is how you can help today.
+    </p>
+
+    <ol class="step-list">
+      {
+        steps.map((step, index) => (
+          <li class="step-card">
+            <span class="step-number" aria-hidden="true">{index + 1}</span>
+            <div class="step-body">
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+              {
+                step.href && (
+                  <a
+                    class="step-link"
+                    href={step.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {step.linkLabel}
+                  </a>
+                )
+              }
+              {step.comingSoon && <span class="step-badge">Coming soon</span>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="community-closing">
+      The more support we get, the harder we push this project forward. Thank you for being here
+      this early.
+    </p>
+
+    <div class="community-actions">
+      <a
+        class="btn btn-primary"
+        href="https://github.com/OpenSourceOM/core"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Star on GitHub
+      </a>
+      <a
+        class="btn btn-secondary"
+        href="https://github.com/OpenSourceOM/core/issues/new/choose"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Suggest a feature
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .community {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34, 211, 238, 0.06), transparent),
+      var(--bg-elevated);
+    border-block: 1px solid var(--border);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    margin: 0 0 1rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+  }
+
+  .step-list {
+    list-style: none;
+    margin: 0 0 2.5rem;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .step-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    transition: border-color 0.2s ease;
+  }
+
+  .step-card:hover {
+    border-color: rgba(34, 211, 238, 0.35);
+  }
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: var(--gradient);
+    color: #041018;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-body h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .step-body p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .step-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .step-link:hover {
+    text-decoration: underline;
+  }
+
+  .step-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  .community-closing {
+    margin: 0 0 1.75rem;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 42rem;
+    line-height: 1.6;
+  }
+
+  .community-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .step-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

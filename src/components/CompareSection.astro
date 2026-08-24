@@ -1,0 +1,116 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+const rows = [
+  {
+    aspect: 'Risk context',
+    traditional: 'Flat lists of CVEs and misconfigurations',
+    opensourceom: 'Graph paths from exposure to sensitive assets',
+  },
+  {
+    aspect: 'Prioritization',
+    traditional: 'CVSS score and severity alone',
+    opensourceom: 'Reachability, blast radius, and exploit signals',
+  },
+  {
+    aspect: 'Deployment',
+    traditional: 'Vendor SaaS only',
+    opensourceom: 'Self-hosted in your cloud, auditable code',
+  },
+  {
+    aspect: 'Extensibility',
+    traditional: 'Closed integrations',
+    opensourceom: 'Open connectors and policy-as-code',
+  },
+];
+---
+
+<section class="section compare">
+  <div class="container">
+    <h2 class="section-title">From alert fatigue to attack-path clarity</h2>
+    <p class="section-lead">
+      CNAPP platforms proved that context beats volume. OpenSourceOM brings graph-native security
+      to teams that want transparency, control, and community-driven innovation.
+    </p>
+    <div class="compare-table" role="table" aria-label="Comparison with traditional scanning">
+      <div class="compare-row compare-header" role="row">
+        <span role="columnheader"></span>
+        <span role="columnheader">Traditional scanning</span>
+        <span role="columnheader">OpenSourceOM</span>
+      </div>
+      {
+        rows.map((row) => (
+          <div class="compare-row" role="row">
+            <span class="compare-label" role="rowheader">{row.aspect}</span>
+            <span role="cell">{row.traditional}</span>
+            <span class="compare-highlight" role="cell">{row.opensourceom}</span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .compare-table {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .compare-row {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .compare-header {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    padding: 0 1.25rem;
+  }
+
+  .compare-label {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .compare-highlight {
+    color: var(--text);
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .compare-highlight::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.35rem;
+    width: 4px;
+    height: calc(100% - 0.7rem);
+    border-radius: 4px;
+    background: var(--gradient);
+  }
+
+  @media (min-width: 768px) {
+    .compare-header {
+      display: grid;
+      grid-template-columns: 140px 1fr 1fr;
+    }
+
+    .compare-row {
+      grid-template-columns: 140px 1fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

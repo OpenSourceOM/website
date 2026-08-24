@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://opensourceom.org/sitemap-index.xml

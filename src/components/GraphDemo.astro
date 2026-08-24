@@ -1,0 +1,154 @@
+<!-- Copyright 2026 OpenSourceOM. SPDX-License-Identifier: Apache-2.0 -->
+<section id="graph" class="section graph-section">
+  <div class="container graph-grid">
+    <div>
+      <h2 class="section-title">The graph of vulns that matter to you</h2>
+      <p class="section-lead">
+        Inspired by graph-native CNAPP platforms, OpenSourceOM builds a queryable model of your
+        environment. Ask questions like “Which critical CVEs are internet-exposed and can reach
+        production databases?” — and get an answer in seconds.
+      </p>
+      <ul class="graph-points">
+        <li>
+          <span class="dot critical"></span>
+          <span><strong>Attack path analysis</strong> — trace lateral movement from ingress to crown jewels.</span>
+        </li>
+        <li>
+          <span class="dot"></span>
+          <span><strong>Identity blast radius</strong> — see what a compromised role can actually access.</span>
+        </li>
+        <li>
+          <span class="dot"></span>
+          <span><strong>Exposure-aware prioritization</strong> — deprioritize findings with no reachable path.</span>
+        </li>
+      </ul>
+      <a class="btn btn-secondary" href="/docs/the-graph/">Learn how the graph works</a>
+    </div>
+    <div class="graph-panel" aria-label="Example security graph visualization">
+      <div class="panel-header">
+        <span>Query</span>
+        <code>reachable(critical_cve) → datastore(prod)</code>
+      </div>
+      <div class="panel-body">
+        <div class="finding critical">
+          <p class="finding-title">CVE-2024-1234 · OpenSSL</p>
+          <p class="finding-meta">EC2 / web-tier · Internet exposed · Path length 3</p>
+        </div>
+        <div class="finding">
+          <p class="finding-title">S3 bucket policy · Public list</p>
+          <p class="finding-meta">No path to prod data · Deprioritized</p>
+        </div>
+        <div class="finding">
+          <p class="finding-title">IAM user · Unused access key</p>
+          <p class="finding-meta">Stale credential · Medium · No active path</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .graph-section {
+    background: rgba(13, 20, 32, 0.65);
+    border-block: 1px solid var(--border);
+  }
+
+  .graph-grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .graph-points {
+    list-style: none;
+    margin: 0 0 1.75rem;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .graph-points li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    color: var(--text-muted);
+  }
+
+  .graph-points strong {
+    color: var(--text);
+  }
+
+  .dot {
+    flex-shrink: 0;
+    width: 0.65rem;
+    height: 0.65rem;
+    margin-top: 0.45rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+  }
+
+  .dot.critical {
+    background: var(--danger);
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+  }
+
+  .graph-panel {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  .panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .panel-header code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+
+  .panel-body {
+    padding: 1rem 1.25rem 1.25rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .finding {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+  }
+
+  .finding.critical {
+    border-color: rgba(248, 113, 113, 0.45);
+  }
+
+  .finding-title {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .finding-meta {
+    margin: 0;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  @media (min-width: 960px) {
+    .graph-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

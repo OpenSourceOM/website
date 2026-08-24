@@ -1,0 +1,217 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, pubDate, updatedDate, author, tags, faq } = post.data;
+
+const canonical = new URL(`/blog/${post.id}/`, Astro.site).href;
+
+const articleJsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  author: { '@type': 'Organization', name: author, url: Astro.site?.href },
+  publisher: { '@type': 'Organization', name: 'OpenSourceOM', url: Astro.site?.href },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  keywords: tags.join(', '),
+};
+
+if (pubDate) {
+  articleJsonLd.datePublished = pubDate.toISOString();
+  articleJsonLd.dateModified = (updatedDate ?? pubDate).toISOString();
+}
+
+const faqJsonLd =
+  faq && faq.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faq.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: { '@type': 'Answer', text: item.answer },
+        })),
+      }
+    : null;
+
+const structuredData = faqJsonLd ? [articleJsonLd, faqJsonLd] : articleJsonLd;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  ogType="article"
+  canonical={canonical}
+  jsonLd={structuredData}
+>
+  <article class="blog-article">
+    <div class="container blog-article-inner">
+      <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+        <a href="/blog/">Blog</a>
+        <span aria-hidden="true">/</span>
+        <span>{title}</span>
+      </nav>
+      <header class="blog-header">
+        <p class="blog-meta">{author}</p>
+        <h1>{title}</h1>
+        <p class="blog-deck">{description}</p>
+        {
+          tags.length > 0 && (
+            <ul class="blog-tags">
+              {tags.map((tag) => (
+                <li>{tag}</li>
+              ))}
+            </ul>
+          )
+        }
+      </header>
+      <div class="prose blog-body">
+        <Content />
+      </div>
+      <footer class="blog-footer">
+        <p>
+          OpenSourceOM builds open-source, graph-native cloud security.
+          <a href="/docs/the-graph/">Explore the security graph</a> or
+          <a href="https://github.com/OpenSourceOM/core">view the core repo</a>.
+        </p>
+        <p class="blog-copyright">
+          Copyright &copy; 2026 OpenSourceOM. Licensed under{' '}
+          <a
+            href="https://github.com/OpenSourceOM/website/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer">Apache-2.0</a>.
+        </p>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .blog-article {
+    padding: 3rem 0 5rem;
+  }
+
+  .blog-article-inner {
+    max-width: 720px;
+  }
+
+  .blog-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .blog-breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  .blog-breadcrumb a:hover {
+    color: var(--accent);
+  }
+
+  .blog-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .blog-meta {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .blog-header h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.85rem, 4vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .blog-deck {
+    margin: 0 0 1.25rem;
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .blog-tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .blog-tags li {
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .blog-body :global(h2) {
+    margin-top: 2.5rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .blog-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin: 1.5rem 0;
+  }
+
+  .blog-body :global(th),
+  .blog-body :global(td) {
+    border: 1px solid var(--border);
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+  }
+
+  .blog-body :global(th) {
+    background: var(--bg-elevated);
+    color: var(--text);
+  }
+
+  .blog-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .blog-copyright {
+    margin: 1rem 0 0;
+    font-size: 0.875rem;
+  }
+
+  .blog-copyright a {
+    color: var(--text-muted);
+  }
+
+  .blog-copyright a:hover {
+    color: var(--accent);
+  }
+</style>

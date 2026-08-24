@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#070b12"/>
+  <circle cx="600" cy="280" r="90" fill="none" stroke="url(#g)" stroke-width="4"/>
+  <circle cx="420" cy="180" r="16" fill="#6366f1"/>
+  <circle cx="780" cy="180" r="16" fill="#a855f7"/>
+  <circle cx="780" cy="380" r="16" fill="#22d3ee"/>
+  <circle cx="420" cy="380" r="16" fill="#f87171"/>
+  <line x1="600" y1="280" x2="420" y2="180" stroke="#334155" stroke-width="3"/>
+  <line x1="600" y1="280" x2="780" y2="180" stroke="#334155" stroke-width="3"/>
+  <line x1="600" y1="280" x2="780" y2="380" stroke="#334155" stroke-width="3"/>
+  <line x1="600" y1="280" x2="420" y2="380" stroke="#334155" stroke-width="3"/>
+  <text x="600" y="500" text-anchor="middle" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="52" font-weight="700">OpenSourceOM</text>
+  <text x="600" y="555" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="28">Open-source cloud security graph</text>
+</svg>
