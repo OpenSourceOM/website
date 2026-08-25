@@ -45,6 +45,11 @@ const faqJsonLd =
     : null;
 
 const structuredData = faqJsonLd ? [articleJsonLd, faqJsonLd] : articleJsonLd;
+
+const websiteRepo = 'OpenSourceOM/website';
+const blogSourcePath = `src/content/blog/${post.id}.md`;
+const editBlogUrl = `https://github.com/${websiteRepo}/edit/main/${blogSourcePath}`;
+const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSourcePath}`;
 ---
 
 <BaseLayout
@@ -78,6 +83,38 @@ const structuredData = faqJsonLd ? [articleJsonLd, faqJsonLd] : articleJsonLd;
       <div class="prose blog-body">
         <Content />
       </div>
+
+      <aside class="blog-contribute" aria-labelledby="contribute-heading">
+        <h2 id="contribute-heading">Help improve this article</h2>
+        <p>
+          We wrote this post to the best of our knowledge. If you spot something that could be more
+          accurate or clearer, you can fix it yourself — this website and every blog post are open
+          source in our public GitHub repo.
+        </p>
+        <div class="blog-contribute-actions">
+          <a
+            class="btn btn-secondary"
+            href={editBlogUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Edit this post on GitHub
+          </a>
+          <a
+            class="blog-contribute-source"
+            href={viewBlogSourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View source (<code>{blogSourcePath}</code>)
+          </a>
+        </div>
+        <p class="blog-contribute-hint">
+          GitHub will prompt you to fork the repo if needed, then open a pull request with your
+          changes.
+        </p>
+      </aside>
+
       <footer class="blog-footer">
         <p>
           OpenSourceOM builds open-source, graph-native cloud security.
@@ -192,6 +229,55 @@ const structuredData = faqJsonLd ? [articleJsonLd, faqJsonLd] : articleJsonLd;
   .blog-body :global(th) {
     background: var(--bg-elevated);
     color: var(--text);
+  }
+
+  .blog-contribute {
+    margin-top: 2.5rem;
+    padding: 1.5rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+  }
+
+  .blog-contribute h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .blog-contribute p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .blog-contribute-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .blog-contribute-source {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  .blog-contribute-source:hover {
+    color: var(--accent);
+  }
+
+  .blog-contribute-source code {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+  }
+
+  .blog-contribute-hint {
+    margin-top: 1rem !important;
+    font-size: 0.875rem !important;
   }
 
   .blog-footer {
