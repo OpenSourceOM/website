@@ -25,6 +25,10 @@ const siteName = 'OpenSourceOM';
 const googleSiteVerification =
   import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION ?? 'RA2GQryf8Udk1K8n9tpa-8PMNeH_cxaPHbZN-Uz-vxg';
 const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+const metaDescription =
+  description.length > 160
+    ? `${description.slice(0, 157).replace(/\s+\S*$/, '').trim()}…`
+    : description;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
 
@@ -48,7 +52,7 @@ const defaultJsonLd = {
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{fullTitle}</title>
-<meta name="description" content={description} />
+<meta name="description" content={metaDescription} />
 {googleSiteVerification && (
   <meta name="google-site-verification" content={googleSiteVerification} />
 )}
@@ -57,7 +61,7 @@ const defaultJsonLd = {
 
 <meta property="og:site_name" content={siteName} />
 <meta property="og:title" content={fullTitle} />
-<meta property="og:description" content={description} />
+<meta property="og:description" content={metaDescription} />
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:image" content={ogImageUrl} />
@@ -65,7 +69,7 @@ const defaultJsonLd = {
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
-<meta name="twitter:description" content={description} />
+<meta name="twitter:description" content={metaDescription} />
 <meta name="twitter:image" content={ogImageUrl} />
 
 <meta name="theme-color" content="#070b12" />

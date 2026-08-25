@@ -11,7 +11,13 @@ interface Props {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
-const { title, description, pubDate, updatedDate, author, tags, faq } = post.data;
+const { title, description, pubDate, updatedDate, author, tags, faq, focusKeyword } = post.data;
+
+const blogDeck = description.endsWith('...')
+  ? focusKeyword
+    ? `Practical guidance on ${focusKeyword} for AWS, Azure, GCP, and Kubernetes security teams.`
+    : description.slice(0, -3).replace(/\s+\S*$/, '').trim() + '.'
+  : description;
 
 const canonical = new URL(`/blog/${post.id}/`, Astro.site).href;
 
@@ -63,15 +69,13 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
     <div class="container blog-article-inner">
       <nav class="blog-breadcrumb" aria-label="Breadcrumb">
         <a href="/blog/">Blog</a>
-        <span aria-hidden="true">/</span>
-        <span>{title}</span>
       </nav>
 
       <div class="blog-layout">
         <header class="blog-header">
           <p class="blog-meta">{author}</p>
           <h1>{title}</h1>
-          <p class="blog-deck">{description}</p>
+          <p class="blog-deck">{blogDeck}</p>
           {
             tags.length > 0 && (
               <ul class="blog-tags">
