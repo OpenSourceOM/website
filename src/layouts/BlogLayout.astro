@@ -66,69 +66,71 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
         <span aria-hidden="true">/</span>
         <span>{title}</span>
       </nav>
-      <header class="blog-header">
-        <p class="blog-meta">{author}</p>
-        <h1>{title}</h1>
-        <p class="blog-deck">{description}</p>
-        {
-          tags.length > 0 && (
-            <ul class="blog-tags">
-              {tags.map((tag) => (
-                <li>{tag}</li>
-              ))}
-            </ul>
-          )
-        }
-      </header>
-      <div class="prose blog-body">
-        <Content />
-      </div>
 
-      <aside class="blog-contribute" aria-labelledby="contribute-heading">
-        <h2 id="contribute-heading">Help improve this article</h2>
-        <p>
-          We wrote this post to the best of our knowledge. If you spot something that could be more
-          accurate or clearer, you can fix it yourself — this website and every blog post are open
-          source in our public GitHub repo.
-        </p>
-        <div class="blog-contribute-actions">
-          <a
-            class="btn btn-secondary"
-            href={editBlogUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Edit this post on GitHub
-          </a>
-          <a
-            class="blog-contribute-source"
-            href={viewBlogSourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View source (<code>{blogSourcePath}</code>)
-          </a>
+      <div class="blog-layout">
+        <header class="blog-header">
+          <p class="blog-meta">{author}</p>
+          <h1>{title}</h1>
+          <p class="blog-deck">{description}</p>
+          {
+            tags.length > 0 && (
+              <ul class="blog-tags">
+                {tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+            )
+          }
+        </header>
+
+        <aside class="blog-contribute" aria-labelledby="contribute-heading">
+          <h2 id="contribute-heading">Help improve this article</h2>
+          <p>
+            We wrote this post to the best of our knowledge. If something could be more accurate or
+            clearer, you can fix it yourself — every blog post is open source on GitHub.
+          </p>
+          <div class="blog-contribute-actions">
+            <a
+              class="btn btn-secondary"
+              href={editBlogUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Edit on GitHub
+            </a>
+            <a
+              class="blog-contribute-source"
+              href={viewBlogSourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View source
+            </a>
+          </div>
+          <p class="blog-contribute-hint">
+            GitHub will prompt you to fork if needed, then open a pull request.
+          </p>
+        </aside>
+
+        <div class="prose blog-body">
+          <Content />
         </div>
-        <p class="blog-contribute-hint">
-          GitHub will prompt you to fork the repo if needed, then open a pull request with your
-          changes.
-        </p>
-      </aside>
 
-      <footer class="blog-footer">
-        <p>
-          OpenSourceOM builds open-source, graph-native cloud security.
-          <a href="/docs/the-graph/">Explore the security graph</a> or
-          <a href="https://github.com/OpenSourceOM/core">view the core repo</a>.
-        </p>
-        <p class="blog-copyright">
-          Copyright &copy; 2026 OpenSourceOM. Licensed under{' '}
-          <a
-            href="https://github.com/OpenSourceOM/website/blob/main/LICENSE"
-            target="_blank"
-            rel="noopener noreferrer">Apache-2.0</a>.
-        </p>
-      </footer>
+        <footer class="blog-footer">
+          <p>
+            OpenSourceOM builds open-source, graph-native cloud security.
+            <a href="/docs/the-graph/">Explore the security graph</a> or
+            <a href="https://github.com/OpenSourceOM/core">view the core repo</a>.
+          </p>
+          <p class="blog-copyright">
+            Copyright &copy; 2026 OpenSourceOM. Licensed under{' '}
+            <a
+              href="https://github.com/OpenSourceOM/website/blob/main/LICENSE"
+              target="_blank"
+              rel="noopener noreferrer">Apache-2.0</a>.
+          </p>
+        </footer>
+      </div>
     </div>
   </article>
 </BaseLayout>
@@ -139,7 +141,18 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
   }
 
   .blog-article-inner {
-    max-width: 720px;
+    max-width: 100%;
+  }
+
+  .blog-layout {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .blog-header {
+    margin-bottom: 0;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
   }
 
   .blog-breadcrumb {
@@ -160,19 +173,10 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
     color: var(--accent);
   }
 
-  .blog-header {
-    margin-bottom: 2.5rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
-  }
-
   .blog-meta {
     margin: 0 0 0.75rem;
     font-size: 0.875rem;
     color: var(--text-muted);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
   }
 
   .blog-header h1 {
@@ -232,37 +236,43 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
   }
 
   .blog-contribute {
-    margin-top: 2.5rem;
-    padding: 1.5rem 1.25rem;
+    padding: 1.25rem 1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg-elevated);
   }
 
   .blog-contribute h2 {
-    margin: 0 0 0.75rem;
-    font-size: 1.1rem;
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
     color: var(--text);
   }
 
   .blog-contribute p {
     margin: 0;
     color: var(--text-muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 0.875rem;
+    line-height: 1.55;
   }
 
   .blog-contribute-actions {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1.25rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin-top: 1rem;
+  }
+
+  .blog-contribute-actions .btn {
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 0.55rem 0.85rem;
   }
 
   .blog-contribute-source {
     color: var(--text-muted);
-    font-size: 0.875rem;
+    font-size: 0.8rem;
+    text-align: center;
     text-decoration: none;
   }
 
@@ -270,14 +280,42 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
     color: var(--accent);
   }
 
-  .blog-contribute-source code {
-    font-family: var(--font-mono);
-    font-size: 0.8em;
+  .blog-contribute-hint {
+    margin-top: 0.85rem !important;
+    font-size: 0.8rem !important;
   }
 
-  .blog-contribute-hint {
-    margin-top: 1rem !important;
-    font-size: 0.875rem !important;
+  @media (min-width: 900px) {
+    .blog-layout {
+      grid-template-columns: minmax(0, 1fr) 240px;
+      column-gap: 2rem;
+      row-gap: 0;
+    }
+
+    .blog-header {
+      grid-column: 1 / -1;
+      margin-bottom: 2rem;
+    }
+
+    .blog-body {
+      grid-column: 1;
+      grid-row: 2;
+      max-width: 720px;
+    }
+
+    .blog-contribute {
+      grid-column: 2;
+      grid-row: 2;
+      position: sticky;
+      top: 5rem;
+      align-self: start;
+    }
+
+    .blog-footer {
+      grid-column: 1 / -1;
+      margin-top: 2.5rem;
+      max-width: 720px;
+    }
   }
 
   .blog-footer {
