@@ -1,0 +1,212 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const contactEmail = 'contact@opensourceom.org';
+---
+
+<BaseLayout
+  title="Contact us"
+  description="Get in touch with OpenSourceOM. Email contact@opensourceom.org or send a message with the contact form."
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact OpenSourceOM',
+    url: 'https://opensourceom.org/contact/',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'OpenSourceOM',
+      email: contactEmail,
+      url: 'https://opensourceom.org',
+    },
+  }}
+>
+  <section class="section contact">
+    <div class="container">
+      <p class="eyebrow">We read every message</p>
+      <h1 class="section-title">Contact us</h1>
+      <p class="section-lead">
+        Questions about the project, partnership ideas, or security reports — we want to hear from
+        you. The fastest way is to email us directly.
+      </p>
+
+      <div class="contact-grid">
+        <aside class="card email-card">
+          <h2>Just email us</h2>
+          <p>
+            You do not need the form. Send a note to
+            <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            and we will get back to you.
+          </p>
+          <a class="btn btn-primary" href={`mailto:${contactEmail}`}>Email {contactEmail}</a>
+        </aside>
+
+        <div class="card form-card">
+          <h2>Or use this form</h2>
+          <p class="form-intro">
+            Submitting opens your email app with the message addressed to
+            <a href={`mailto:${contactEmail}`}>{contactEmail}</a>. If nothing opens, copy the address
+            and send it yourself.
+          </p>
+
+          <form id="contact-form" class="contact-form" novalidate>
+            <div class="field">
+              <label for="contact-name">Name</label>
+              <input id="contact-name" name="name" type="text" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="contact-email">Your email</label>
+              <input
+                id="contact-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="contact-message">Message</label>
+              <textarea id="contact-message" name="message" rows="6" required></textarea>
+            </div>
+            <p id="contact-status" class="form-status" role="status" hidden></p>
+            <button class="btn btn-primary" type="submit">Open email to send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const email = 'contact@opensourceom.org';
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('contact-status');
+
+  function setStatus(message: string) {
+    if (!status) return;
+    status.hidden = false;
+    status.textContent = message;
+  }
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement)) return;
+    const data = new FormData(form);
+    const name = String(data.get('name') ?? '').trim();
+    const from = String(data.get('email') ?? '').trim();
+    const message = String(data.get('message') ?? '').trim();
+
+    if (!name || !from || !message) {
+      setStatus('Please fill in your name, email, and message.');
+      return;
+    }
+
+    const subject = `OpenSourceOM contact from ${name}`;
+    const body = `Name: ${name}\nEmail: ${from}\n\n${message}`;
+    const href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = href;
+    setStatus(
+      `If your email app did not open, send this message to ${email} yourself.`,
+    );
+  });
+</script>
+
+<style>
+  .contact {
+    padding-top: 3.5rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .contact-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .email-card,
+  .form-card {
+    padding: 1.75rem;
+  }
+
+  .email-card:hover,
+  .form-card:hover {
+    transform: none;
+  }
+
+  .email-card h2,
+  .form-card h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .email-card p,
+  .form-intro {
+    margin: 0 0 1.25rem;
+    color: var(--text-muted);
+  }
+
+  .contact-form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .field label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    outline: 2px solid rgba(34, 211, 238, 0.45);
+    outline-offset: 1px;
+    border-color: var(--accent-dim);
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 8rem;
+  }
+
+  .form-status {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .contact-form .btn {
+    justify-self: start;
+  }
+
+  @media (min-width: 860px) {
+    .contact-grid {
+      grid-template-columns: minmax(16rem, 0.85fr) minmax(0, 1.15fr);
+    }
+  }
+</style>
