@@ -1,6 +1,10 @@
 # Copyright 2026 OpenSourceOM
 # SPDX-License-Identifier: Apache-2.0
-# Snyk policy: https://docs.snyk.io/manage-risk/policies/security-policies/.snyk-policy
+# Snyk policy: https://docs.snyk.io/manage-risk/policies/the-.snyk-file
+#
+# MPL-2.0 is accepted (weak copyleft; compatible with Apache-2.0 for unmodified
+# deps). Snyk has no SPDX-wide ignore, so new MPL-2.0 findings need an ID here:
+# snyk:lic:<ecosystem>:<package>:MPL-2.0
 version: v1.25.1
 ignore:
   SNYK-JS-PATHTOREGEXP-7925106:
@@ -10,4 +14,10 @@ ignore:
           declares unused 6.1.0 next to path-to-regexp-updated@6.3.0; there is
           no patched routing-utils that drops the 6.1.0 declaration.
         expires: 2027-08-26T00:00:00.000Z
+  'snyk:lic:npm:@vercel/analytics:MPL-2.0':
+    - '*':
+        reason: MPL-2.0 is compatible with Apache-2.0 for unmodified npm dependencies.
+  'snyk:lic:npm:lightningcss:MPL-2.0':
+    - '*':
+        reason: MPL-2.0 is compatible with Apache-2.0 for unmodified npm dependencies.
 patch: {}
