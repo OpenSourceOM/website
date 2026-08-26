@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 # OpenSourceOM Website
 
 [![CI](https://github.com/OpenSourceOM/website/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenSourceOM/website/actions/workflows/ci.yml)
-[![Known Vulnerabilities](https://snyk.io/test/github/OpenSourceOM/website/badge.svg?targetFile=package.json)](https://snyk.io/test/github/OpenSourceOM/website?targetFile=package.json)
+[![Snyk](https://github.com/OpenSourceOM/website/actions/workflows/snyk.yml/badge.svg)](https://github.com/OpenSourceOM/website/actions/workflows/snyk.yml)
 
 Marketing site and documentation for [OpenSourceOM](https://github.com/OpenSourceOM) — an open-source, graph-native cloud security platform.
 
