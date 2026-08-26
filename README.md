@@ -5,6 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 
 # OpenSourceOM Website
 
+[![CI](https://github.com/OpenSourceOM/website/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenSourceOM/website/actions/workflows/ci.yml)
+[![Known Vulnerabilities](https://snyk.io/test/github/OpenSourceOM/website/badge.svg)](https://snyk.io/test/github/OpenSourceOM/website)
+
 Marketing site and documentation for [OpenSourceOM](https://github.com/OpenSourceOM) — an open-source, graph-native cloud security platform.
 
 Built with [Astro](https://astro.build) for fast static pages and simple deployment to Vercel.
