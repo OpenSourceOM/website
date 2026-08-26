@@ -16,7 +16,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   </p>
   <p>
     Capabilities aimed at <strong>internal risk</strong> and <strong>enterprise deployment</strong>
-    (SAML, multi-tenant RBAC, compliance workflows) may ship as commercial offerings later. They are
+    (SAML, multi-tenant RBAC, compliance workflows, platform audit logs) may ship as commercial offerings later. They are
     not part of the OSS core today.
   </p>
 
@@ -59,11 +59,20 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td>Community collectors and rule packs</td>
-          <td>Enterprise compliance workflows and audit requirements</td>
+          <td>Enterprise compliance workflows</td>
+        </tr>
+        <tr>
+          <td>Cloud audit ingest as graph context (planned)</td>
+          <td>Immutable platform audit logs (who used OpenSourceOM)</td>
         </tr>
       </tbody>
     </table>
   </div>
+  <p>
+    Cloud provider audit APIs (for example CloudTrail) may later feed the OSS graph as evidence of
+    exposure and attack paths. <strong>Platform audit logs</strong> — operator actions in the
+    console/API, SSO identity, retention, and auditor export — belong in the commercial offering.
+  </p>
 
   <h2>Why this split</h2>
   <p>
