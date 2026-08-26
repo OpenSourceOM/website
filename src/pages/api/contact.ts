@@ -1,8 +1,13 @@
 // Copyright 2026 OpenSourceOM
 // SPDX-License-Identifier: Apache-2.0
 import type { APIRoute } from 'astro';
+import { getSecret } from 'astro:env/server';
 
 export const prerender = false;
+
+function secret(name: string) {
+  return getSecret(name) || process.env[name] || '';
+}
 
 const CONTACT_TO = 'contact@opensourceom.org';
 const MAX_NAME = 200;
@@ -40,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json(400, { ok: false, error: 'Please provide a valid name, email, and message.' });
   }
 
-  const apiKey = import.meta.env.RESEND_API_KEY as string | undefined;
+  const apiKey = secret('RESEND_API_KEY');
   if (!apiKey) {
     return json(503, {
       ok: false,
@@ -48,8 +53,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  const from = (import.meta.env.CONTACT_FROM as string | undefined) ?? `OpenSourceOM <${CONTACT_TO}>`;
-  const to = (import.meta.env.CONTACT_TO as string | undefined) ?? CONTACT_TO;
+  const from = secret('CONTACT_FROM') || `OpenSourceOM <${CONTACT_TO}>`;
+  const to = secret('CONTACT_TO') || CONTACT_TO;
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
