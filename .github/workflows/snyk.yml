@@ -26,10 +26,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Snyk
+      - name: Run Snyk test
         if: env.SNYK_TOKEN != ''
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high
+          args: --severity-threshold=high --policy-path=.snyk
+
+      - name: Upload snapshot for the README badge
+        if: env.SNYK_TOKEN != '' && github.event_name != 'pull_request'
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          args: --policy-path=.snyk

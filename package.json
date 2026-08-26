@@ -24,7 +24,11 @@
     "typescript": "^5.8.0"
   },
   "overrides": {
-    "esbuild": "^0.28.1",
-    "path-to-regexp": "^6.3.0"
+    "esbuild": "0.28.2",
+    "path-to-regexp": "6.3.0",
+    "@vercel/analytics": "$@vercel/analytics",
+    "@vercel/routing-utils": {
+      "path-to-regexp": "6.3.0"
+    }
   }
 }

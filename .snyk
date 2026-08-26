@@ -1,0 +1,13 @@
+# Copyright 2026 OpenSourceOM
+# SPDX-License-Identifier: Apache-2.0
+# Snyk policy: https://docs.snyk.io/manage-risk/policies/security-policies/.snyk-policy
+version: v1.25.1
+ignore:
+  SNYK-JS-PATHTOREGEXP-7925106:
+    - '*':
+        reason: >-
+          npm override installs path-to-regexp 6.3.0. @vercel/routing-utils still
+          declares unused 6.1.0 next to path-to-regexp-updated@6.3.0; there is
+          no patched routing-utils that drops the 6.1.0 declaration.
+        expires: 2027-08-26T00:00:00.000Z
+patch: {}
