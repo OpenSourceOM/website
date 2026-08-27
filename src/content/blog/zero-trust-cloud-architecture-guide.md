@@ -1,6 +1,8 @@
 ---
 title: "Zero Trust Cloud Architecture: Identity, Micro-Segmentation, and Verification"
-description: "Implement zero trust in AWS, Azure, and GCP with identity-centric access, micro-segmentation, continuous verification, and CSPM-backed policy enforcement for cloud-native workloads."
+description: "Validate cloud zero trust against live reachability: identity-aware ingress, default-deny east-west, no VPN-as-trust, and graph queries that show where the design leaks."
+pubDate: 2026-08-27
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - zero trust
@@ -10,95 +12,107 @@ tags:
   - CNAPP
 focusKeyword: zero trust cloud
 faq:
-  - question: Is zero trust different in the cloud?
-    answer: Principles are the same—never trust, always verify—but cloud zero trust emphasizes identity federation, service mesh, Private Link, and API-level policy instead of perimeter firewalls alone.
-  - question: Where do I start with zero trust in AWS or Azure?
-    answer: Start with strong identity (SSO, conditional access), eliminate flat network trust zones, enable centralized logging, and enforce least privilege on all service-to-service calls.
+  - question: If we have a VPN, do we have zero trust?
+    answer: No. A VPN that dumps users onto a flat VPC or a peered hub is a trusted network with extra authentication at the edge. Zero trust means each application (or each API) checks identity and device posture, and east-west traffic is default deny. The VPN can remain as a bootstrap; it cannot be the authorization layer.
   - question: Does zero trust replace CSPM?
-    answer: No. Zero trust is an architecture; CSPM validates configuration drift. Together they ensure policies match zero trust intent continuously.
+    answer: No. Zero trust is the intended design (who may talk to what). CSPM and a security graph check whether the live security groups, Private Link, and IAM still match that design after the last Terraform apply. Architecture slides go stale; reachability queries do not.
+  - question: Where do I start if everything is still flat?
+    answer: Put human admin paths on SSO plus an identity-aware proxy (not a jump box in a “trusted” subnet). Then default-deny security groups / NSGs between app and data tiers. Then kill standing admin. Do not start with a maturity model workshop.
+  - question: How is this different from the application security patterns post?
+    answer: >-
+      Cloud-native application security is how one service is built (mTLS, SAs,
+      admission). This page is how you prove the estate is not a trusted LAN. Identity at
+      the edge, segmentation, and queries that find the rule that re-opened 5432 from
+      0.0.0.0/0.
 ---
 
-**Zero trust cloud** architecture rejects the idea that anything inside a VPC is safe. Every request—human or machine—must be authenticated, authorized, and encrypted based on identity and context.
+Zero trust in cloud is **not** a vendor package and **not** “we turned on SSO.” It is a design you can **falsify** with reachability: after the last change, can identity A still reach datastore B without an authorization check?
 
-## Zero trust principles for cloud
+This page is that falsification loop. NIST and vendor maturity models are background reading. App-layer patterns (signed images, mesh mTLS) are in [cloud-native application security](/blog/cloud-native-application-security/). Identity blast radius is [CIEM](/blog/ciem-explained-for-cloud-teams/).
 
-1. **Verify explicitly** — authenticate and authorize every access decision
-2. **Least privilege access** — JIT elevation, scoped roles, no standing admin
-3. **Assume breach** — segment, log, and limit blast radius
+```
+User / CI
+  → Identity-aware proxy / ZTNA     (authn, device, app)
+       → VPC / cluster              (default deny between tiers)
+            → Data store            (IAM on the identity, not on the subnet)
+```
 
-Legacy "trusted internal network" models collapse when a single compromised workload can reach every database in the VPC.
+If any hop trusts “source IP is inside the VPN CIDR,” that hop is not zero trust.
 
-## Identity as the primary perimeter
+## 1. Stop treating the VPN CIDR as a principal
 
-| Cloud | Zero trust identity stack |
-|-------|---------------------------|
-| AWS | IAM Identity Center, STS, Verified Permissions |
-| Azure | Entra ID, Conditional Access, PIM |
-| GCP | Cloud Identity, BeyondCorp, IAM Conditions |
+| Anti-pattern | What the graph (or a SG dump) shows | Replace with |
+| --- | --- | --- |
+| `10.0.0.0/8` allowed to RDS 5432 | Every compromised laptop on the VPN is a DBA | Security group: app SG only; IAM DB auth or scoped SG |
+| Jump host in “prod-mgmt” with `0.0.0.0/0` SSH from VPN | Shared admin, no per-app auth | SSM / Azure Bastion / IAP, then per-app ZTNA |
+| Peered VPCs with wide route tables | Lateral movement is a routing problem | Per-spoke deny; Private Link to PaaS; no transitive 0.0.0.0 |
 
-Replace VPN-wide trust with **per-application access** via identity-aware proxy or Zero Trust Network Access (ZTNA) products—and enforce **CIEM** on cloud control planes per [CIEM explained](/blog/ciem-explained-for-cloud-teams/).
+Query to run (AWS-shaped; same idea on NSGs / GCP firewall):
 
-## Micro-segmentation in cloud networks
+```
+Internet OR VPN CIDR
+  REACHABLE  data store listener
+WHERE  no identity-aware proxy in path
+```
 
-- **Security groups / NSGs / firewall rules** with default deny
-- **Service mesh** (Istio, Linkerd) for mTLS east-west traffic
-- **Private endpoints** so PaaS traffic never traverses public internet
-- **Kubernetes NetworkPolicies** for pod-level segmentation
+If that path exists, the architecture document is wrong. Fix the SG, not the slide.
 
-Segmentation limits **lateral movement**—a finding that matters deeply in [attack path analysis](/blog/attack-path-analysis-cloud-security/).
+## 2. Humans: per-app access, not network location
 
-## Continuous verification and posture
+- SSO (Identity Center / Entra / Cloud Identity) with MFA.
+- Admin APIs: Conditional Access / PAM / PIM — standing `Owner` is not zero trust.
+- Application access: identity-aware proxy (IAP, Verified Access, App Proxy) or mesh auth, **not** “you can hit the ALB if you are on VPN.”
 
-Zero trust is not a one-time project. **CSPM** and **CNAPP** validate:
+Failure mode: SSO for the AWS console, but `kubectl` still uses a long-lived token from a jump box. The console is ZT; the cluster is a trusted LAN.
 
-- Are Private Link endpoints used where policy requires?
-- Do load balancers still allow legacy TLS?
-- Are break-glass accounts monitored and time-bound?
+## 3. Workloads: identity on the call, deny on the net
 
-Automate remediation for drift; manual quarterly reviews fail at cloud speed.
+East-west:
 
-## Zero trust maturity model
+- Security groups / NSGs: **data-tier SG allows app-tier SG only**, not the VPC CIDR.
+- Kubernetes: default-deny NetworkPolicy; see the app post for YAML.
+- PaaS: Private Link / Private Service Connect; public IP on SQL is a ZT exception, not a default.
 
-| Level | Characteristics |
-|-------|-----------------|
-| 1 - Initial | Perimeter VPN, flat VPCs |
-| 2 - Developing | SSO everywhere, some segmentation |
-| 3 - Defined | JIT access, CSPM, centralized SIEM |
-| 4 - Optimized | Graph-based path analysis, automated policy |
+North-south: the edge terminates TLS and identity ([Cloud Armor](/blog/gcp-cloud-armor-security-guide/) is one GCP edge; it is not ZT by itself). Authorization stays in the app or the mesh.
 
-## OpenSourceOM and zero trust validation
+Failure mode: mesh mTLS is on, but the database SG still allows the whole cluster pod CIDR. One compromised pod is still a DBA.
 
-Graph platforms like [OpenSourceOM](https://opensourceom.org) answer whether residual **network paths** bypass zero trust intent—e.g. a security group rule that re-opens east-west DB access. Visibility closes the gap between policy documents and live infrastructure.
+## 4. Continuous verification is a query, not a quarterly review
 
-## Device and workload trust signals
+CSPM tells you a control drifted. You still need a **path** question:
 
-Zero trust extends beyond human login to **machine identity**:
+1. Which listeners are reachable from Internet or from VPN CIDRs?
+2. Which of those identities can `CAN_ACCESS` production data?
+3. Which of those paths skip the identity-aware proxy you claimed was mandatory?
 
-- **Workload certificates** issued by internal PKI or mesh CAs for service-to-service auth
-- **Device compliance** checks via MDM before Conditional Access allows admin portals
-- **Attestation** on confidential computing workloads where hardware root of trust is available
-- **Runtime integrity** signals from CWPP agents feeding policy decisions (block lateral movement when tampering detected)
+[Attack path analysis](/blog/attack-path-analysis-cloud-security/) is that query language. This page’s job is to define **what “compliant ZT” means** so the query has a spec:
 
-Pair device trust with **short session lifetimes** and step-up authentication for destructive cloud API actions (delete bucket, attach admin policy).
+- No datastore listener reachable from VPN/Internet except through an identity-aware hop.
+- No standing admin on human principals.
+- No VPC-CIDR allow on data tiers.
 
-## Common zero trust anti-patterns in cloud
+[OpenSourceOM](https://opensourceom.org) is built to run those queries on a live graph so a re-opened `0.0.0.0/0` shows up as a broken ZT invariant, not as a medium finding.
 
-| Anti-pattern | Why it fails | Fix |
-|--------------|--------------|-----|
-| VPN = trusted | Flat access once connected | Per-app ZTNA with identity checks |
-| Shared admin creds | No attribution, no rotation | SSO + PIM/JIT |
-| Flat VPC peering | Lateral movement highway | Hub-spoke or mesh with policy |
-| Security groups 0.0.0.0/0 "temporarily" | Becomes permanent | CSPM alerts + auto-revert |
-| Ignoring serverless URLs | Public function endpoints | Auth at gateway + IAM on invoke |
+## 5. Device and workload signals (only where they change a decision)
 
-Review [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) when selecting platforms that validate zero trust posture continuously rather than at audit time.
+Add device compliance to **admin** paths (Conditional Access on the cloud consoles). Add workload identity to **service** paths (no JSON keys; IRSA / WI). Attestation and confidential VMs are optional; they do not fix a public RDS.
+
+Skip “maturity level 4” workshops until the three invariants above hold.
+
+## Checklist
+
+- [ ] Datastore ports not open to VPN CIDR or `0.0.0.0/0`
+- [ ] Human admin via SSO + proxy/PAM; no jump-box-as-trust
+- [ ] App-to-data SG/NSG is SG-to-SG, not CIDR-to-CIDR
+- [ ] Recurring query: Internet/VPN → data without identity hop
+- [ ] Standing Owner/Editor/cluster-admin inventoried and time-bound
 
 ## Key takeaways
 
-- **Identity replaces network location** as the primary trust signal
-- **Micro-segmentation** contains breach blast radius
-- **CSPM validates** that zero trust controls persist under drift
-- **Attack path queries** find holes architecture diagrams miss
+- **VPN membership is not a principal.** If the SG allows the VPN CIDR, you designed a trusted network.
+- **Per-app identity** for humans; **SG-to-SG (or mesh)** for workloads.
+- **Falsify with reachability queries** after every apply; CSPM checkboxes lag the path.
+- **App patterns and CIEM** are adjacent posts; this one is the estate-level invariant.
 
 ---
-**Related:** [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [azure-ad-privileged-identity-management](/blog/azure-ad-privileged-identity-management/)
+**Related:** [Attack path analysis](/blog/attack-path-analysis-cloud-security/) · [Cloud-native application security](/blog/cloud-native-application-security/)

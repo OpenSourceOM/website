@@ -1,6 +1,8 @@
 ---
 title: "Azure CSPM Implementation Guide: From Defender to Custom Policies"
-description: "Step-by-step Azure CSPM implementation using Defender for Cloud, Azure Policy, and graph-based prioritization to reduce misconfiguration noise across subscriptions and tenants."
+description: "Turn on Defender for Cloud CSPM at the management group, assign MCSB with Deny, export to Log Analytics, and avoid Secure Score theater and exemption rot."
+pubDate: 2026-08-27
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - Azure
@@ -10,94 +12,111 @@ tags:
   - Defender for Cloud
 focusKeyword: Azure CSPM
 faq:
-  - question: What is Azure CSPM?
-    answer: Azure CSPM continuously evaluates Azure resources against security baselines and regulatory frameworks, surfacing misconfigurations, identity risks, and compliance drift across subscriptions.
   - question: Is Microsoft Defender for Cloud the same as CSPM?
-    answer: Defender for Cloud includes CSPM capabilities (Secure Score, regulatory compliance) plus optional workload protection plans; CSPM specifically refers to posture and configuration assessment.
-  - question: How do I reduce Azure CSPM alert fatigue?
-    answer: Use initiative assignments scoped by environment, exempt documented exceptions, and prioritize findings on attack paths to sensitive data rather than flat severity.
+    answer: Defender for Cloud includes a CSPM plane (recommendations, Secure Score, regulatory standards) and optional Defender plans for servers, containers, and databases. Foundational CSPM can run without those plans. Defender CSPM (the paid plan) adds attack-path and some governance features. Do not conflate the product family with the free recommendation list.
+  - question: Where do I assign policy so it actually applies?
+    answer: Assign the Microsoft cloud security benchmark initiative at a management group that contains the subscriptions you care about—not only on a single sandbox subscription. Root-MG assignments hit every subscription under that MG, including future ones. Exclude the management-group for labs with an exemption that has an owner and an end date.
+  - question: Why is Secure Score going up while we are still exposed?
+    answer: Secure Score weights controls, not reachability. Fixing a logging recommendation on an internal VM can outscore leaving a storage account with public blob access. Track internet-facing resources and open management ports separately from the score.
+  - question: How is this different from CSPM vs CNAPP?
+    answer: This page is the Azure enablement sequence. The category choice is [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/). Ranking leftover recommendations is [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/).
 ---
 
-**Azure CSPM** helps teams discover misconfigurations across subscriptions before attackers do. Microsoft Defender for Cloud provides a strong native baseline, but mature programs combine **Azure Policy**, custom initiatives, and **attack path analysis** to focus remediation where it matters.
+This is the **Azure enablement path**: Defender for Cloud on a management group, Microsoft cloud security benchmark (MCSB) as Policy, continuous export, then Deny where you can survive it. It is not a generic CNAPP buyer's guide and not Entra PIM ([CIEM](/blog/ciem-explained-for-cloud-teams/) covers identity). Product names and SKU gates change; confirm in [Defender for Cloud overview](https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction).
 
-## Why Azure posture management is different
+```
+Tenant root management group
+  ├── Platform MG     identity, connectivity, management subscriptions
+  ├── Landing-zone MG prod / nonprod subscriptions  ← assign MCSB here
+  └── Sandbox MG      policy exemptions allowed, short TTL
+```
 
-Azure spans RBAC, resource policies, network security groups, Private Link, Key Vault, and Entra ID—each with separate APIs and audit surfaces. Without CSPM, blind spots accumulate:
+If recommendations live only on one subscription, the next landing zone will ship with public storage and no diagnostic settings.
 
-- Storage accounts with overly permissive network rules
-- VMs with management ports exposed via NSGs
-- Managed identities granted excessive roles at subscription scope
-- Diagnostic settings missing on production resources
+## 1. Onboard the MG, not a hero subscription
 
-Standalone scanners list these in isolation. Effective **Azure CSPM** correlates them with identity and network reachability—similar to how [CIEM](/blog/ciem-explained-for-cloud-teams/) addresses permission risk.
+1. Enable Defender for Cloud on every subscription under the landing-zone MG (Azure Policy `deployIfNotExists` for the Defender plans you actually pay for).
+2. Set a **continuous export** to a Log Analytics workspace in the security subscription—recommendations, secure score, and regulatory compliance. Portal-only is not an audit trail.
+3. Register the `Microsoft.Security` resource provider. Missing RP is the usual reason a new subscription shows zero recommendations for a day.
 
-## Phase 1: Enable native CSPM foundations
+```bash
+# Confirm Security RP and Defender pricing tier on a subscription
+az provider show -n Microsoft.Security --query registrationState -o tsv
+az security pricing list --query "[].{name:name,tier:pricingTier}" -o table
+```
 
-Start with Defender for Cloud free CSPM features:
+Failure mode: “CSPM is on” because someone clicked Defender on a sandbox. Production subscriptions were never connected. Check `az account list` against the MG.
 
-1. **Enable Defender for Cloud** on all subscriptions in your tenant
-2. **Turn on Microsoft cloud security benchmark (MCSB)** assessments
-3. **Assign regulatory compliance standards** you actually audit against (SOC 2, PCI, CIS)
-4. **Configure continuous export** of recommendations to Log Analytics or a SIEM
-5. **Integrate with Azure Policy** for deny and deploy-if-not-exists effects
+## 2. MCSB is the initiative; CIS is an add-on
 
-| Defender capability | CSPM value |
-|--------------------|------------|
-| Secure Score | Trending posture across subscriptions |
-| Resource graph integration | Inventory-aware recommendations |
-| Attack path analysis (Defender) | Prioritized chains to crown jewels |
-| Governance rules | Auto-remediate select misconfigurations |
+Assign **Microsoft cloud security benchmark** at the landing-zone MG. Add CIS or PCI initiatives only if those audits are real this year. Each extra initiative duplicates recommendations and trains people to ignore the queue.
 
-## Phase 2: Azure Policy as enforcement layer
+Policy **effects** that matter:
 
-Recommendations without enforcement regress quickly.
+| Effect | When to use |
+| --- | --- |
+| Audit / AuditIfNotExists | First 30–90 days; you need a baseline |
+| Deny | After you know the exception path (public IP, allowed SKUs, allowed locations) |
+| DeployIfNotExists | Diagnostic settings, Defender plans, required tags |
+| Disabled | Never as a silent default; use an exemption record instead |
 
-- **CIS Azure Foundations** initiative at management group level
-- **Custom policies** for tagging, region allowlists, and SKU restrictions
-- **Deny policies** for public IP on prod subnets where Private Link is mandatory
-- **Exemption workflow** with expiry dates and ticket references
+Failure mode: Deny on `append` tags at tenant root before app teams have a tagging standard. Everything fails CI. Start Audit, then Deny per control.
 
-Document every exemption—exemptions without owners become permanent holes.
+## 3. Exemptions without expiry are public storage
 
-## Phase 3: Prioritize with graph context
+Every exemption needs: resource ID, control ID, owner, ticket, **end date**. Azure Policy exemptions can be assigned at MG, subscription, or resource. Prefer the smallest scope.
 
-Flat Secure Score improvements do not equal risk reduction. Ask:
+```bash
+az policy exemption list --query "[].{name:name,expires:expiresOn,scope:systemData}" -o table
+```
 
-- Which storage accounts are both **publicly reachable** and contain ** sensitive tags**?
-- Which VMs have **critical CVEs** and **Managed Identity** roles that reach Key Vault?
-- Which NSG rules create **lateral movement** paths between tiers?
+Alert when `expiresOn` is null on a production MG. That list is your real exception register—not a wiki.
 
-These are [attack path analysis](/blog/attack-path-analysis-cloud-security/) questions. [OpenSourceOM](https://opensourceom.org) applies the same graph model across Azure, AWS, and GCP for teams avoiding proprietary CNAPP lock-in.
+## 4. Secure Score is a trend, not a risk ranking
 
-## Multi-subscription governance
+Secure Score will reward you for turning on disk encryption on an isolated VM while a storage account still allows `AllowBlobPublicAccess`. Export recommendations and **sort by attack surface**, not by score delta:
 
-| Pattern | Use when |
-|---------|----------|
-| Management groups | You have 10+ subscriptions |
-| Landing zone (ALZ) | Greenfield enterprise Azure |
-| Policy at root MG | Global guardrails (regions, SKUs) |
-| Per-env initiatives | Dev relaxed, prod strict |
+- Storage accounts with public blob/container access or `0.0.0.0/0` firewall
+- NSGs/ASGs allowing 22/3389/445 from `Internet`
+- SQL / PostgreSQL / Cosmos with public network access
+- Key Vaults without firewall or with `Allow` all networks
 
-## Measuring Azure CSPM success
+Those are Azure-specific entry nodes. Graph ranking of the leftovers is [attack path analysis](/blog/attack-path-analysis-cloud-security/), not a substitute for turning Deny on public storage.
 
-Track **exposure reduction** (internet-facing resources count), **mean time to remediate** critical path findings, and **repeat finding rate**—not raw recommendation count. A dropping Secure Score with fewer external entry points may be healthier than a high score with toxic combinations hiding in dev/test subscriptions promoted to prod.
+## 5. Continuous export and Sentinel, not screenshot audits
 
-## Integrating Azure CSPM with SIEM and SOAR
+Export to Log Analytics. In Sentinel (or any SIEM) alert on:
 
-Export Defender recommendations and Azure Policy compliance states to Log Analytics or Microsoft Sentinel. Build analytics rules that fire when:
+- `SecurityRecommendation` where assessment key is public storage / management ports and status is unhealthy
+- A new subscription under the landing-zone MG with no MCSB assignment within 24 hours (Resource Graph)
 
-- A storage account becomes publicly accessible
-- A new subscription lacks assigned regulatory initiatives within 24 hours
-- Secure Score drops more than 10 points week-over-week in production management groups
+SOAR tickets should include the **resource ID and the control ID**, not “Secure Score dropped.” If you need path context (VM + managed identity + Key Vault), that is a graph query—link it; do not paste the whole CNAPP pitch into the playbook.
 
-SOAR playbooks can open tickets with **attack path context** attached—e.g. whether the flagged VM sits one hop from a Key Vault—so responders prioritize correctly on first touch.
+## 6. Defender plans are optional; CSPM recommendations are not
+
+| Plan | What it adds | Skip if |
+| --- | --- | --- |
+| Foundational CSPM | Recommendations, score, standards | You never should |
+| Defender CSPM (paid) | Extra governance / path features in Microsoft’s graph | You already have another graph and only need Policy |
+| Servers / Containers / Databases | Workload protection, agent or agentless scanning | You have no VMs / AKS / SQL |
+
+Buying Defender for Servers does not assign MCSB. Assigning MCSB does not require Defender for Servers.
+
+## Checklist
+
+- [ ] `Microsoft.Security` registered on every landing-zone subscription
+- [ ] MCSB assigned at MG; sandbox MG excluded with dated exemptions
+- [ ] Continuous export to a security-subscription workspace
+- [ ] Deny (or DINE) for public storage and disallowed locations after a bake-in period
+- [ ] Exemption list has owners and `expiresOn`
+- [ ] Alerts on public blob access and open management ports, independent of Secure Score
 
 ## Key takeaways
 
-- **Defender for Cloud** is the starting point; **Azure Policy** makes posture durable
-- **Scope initiatives** by environment to avoid dev noise in prod dashboards
-- **Prioritize by attack paths**, not recommendation volume
-- **Open-source graph platforms** complement native Azure CSPM for multi-cloud teams
+- **Management group assignment** is the product. Subscription-level Defender is a demo.
+- **MCSB + effects** (Audit then Deny) beats collecting five regulatory initiatives.
+- **Exemptions expire** or they are production config.
+- **Secure Score** does not rank internet-facing storage; your export queries must.
 
 ---
-**Related:** [sbom-supply-chain-cloud-security](/blog/sbom-supply-chain-cloud-security/) · [azure-application-gateway-waf](/blog/azure-application-gateway-waf/)
+**Related:** [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [Toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/)

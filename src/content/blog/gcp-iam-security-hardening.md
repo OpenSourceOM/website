@@ -1,6 +1,8 @@
 ---
 title: "GCP IAM Security Hardening: Roles, Conditions, and Service Accounts"
-description: "Harden GCP IAM with least-privilege roles, IAM Conditions, service account key elimination, and organization policies—aligned with CIEM and CSPM workflows for Google Cloud teams."
+description: "Stop using basic roles and JSON keys: folder inheritance, IAM deny policies, organization constraints, Workload Identity Federation, and the default Compute SA."
+pubDate: 2026-08-27
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - GCP
@@ -10,101 +12,125 @@ tags:
   - Google Cloud
 focusKeyword: GCP IAM security
 faq:
-  - question: Should I use basic roles in GCP?
-    answer: Avoid Owner, Editor, and Viewer for routine access. Prefer predefined or custom roles scoped to required permissions only.
-  - question: How do I eliminate service account keys in GCP?
-    answer: Use Workload Identity Federation for external workloads, attached service accounts on GCE/GKE, and org policies that restrict key creation.
-  - question: What are IAM Conditions in GCP?
-    answer: IAM Conditions add attribute-based constraints—time, resource name, IP—to bindings so access is granted only when context matches policy.
+  - question: Why is Editor at the folder so much worse than Editor on one project?
+    answer: Folder bindings inherit to every project created under that folder, including projects that do not exist yet. A “platform admin” group with roles/editor on prod-folder is standing admin on next quarter’s acquisitions. Project-level Editor is already too broad; folder-level Editor is a factory for it.
+  - question: How do I stop new service account keys?
+    answer: Set organization policy iam.disableServiceAccountKeyCreation (and disableServiceAccountKeyUpload if you need it). Move GKE to Workload Identity, GCE to attached service accounts, and CI to Workload Identity Federation. Then inventory remaining keys with Policy Intelligence and delete them.
+  - question: Do IAM Conditions replace custom roles?
+    answer: No. Conditions restrict when a binding applies (resource name, time, CEL on attributes). They do not remove extra permissions inside roles/editor. Start by replacing basic roles, then add conditions for time-boxed or resource-prefixed access.
+  - question: What about deny policies vs allow bindings?
+    answer: IAM deny policies (and principal access boundaries, where you use them) sit on top of allow bindings. A deny on iam.serviceAccountKeys.create will block a custom role that still includes that permission. Test denies in a non-prod folder; they are easy to lock yourself out with.
 ---
 
-**GCP IAM security** failures rarely look like exotic zero-days. They look like a service account key in a repo, a project-level Owner binding, or a custom role with `resourcemanager.projects.setIamPolicy`. Google Cloud's IAM model is powerful but easy to over-provision without **CIEM** discipline and continuous audit.
-
-## Understand GCP IAM layers
-
-IAM bindings attach **roles** to **members** (users, groups, service accounts) at organization, folder, or project scope. Inheritance flows down— a folder-level Editor affects every project beneath it.
-
-| Layer | Typical mistake |
-|-------|-----------------|
-| Organization | Stale group with org-level roles |
-| Folder | Shared "platform admin" on all prod folders |
-| Project | Default compute SA with Editor |
-| Resource | Bucket-level allUsers legacy ACL |
-
-Map effective permissions with Policy Analyzer and IAM Recommender before revoking—surprise outages hurt adoption.
-
-## Least privilege patterns
-
-- **Replace basic roles** with predefined roles (e.g. `roles/storage.objectViewer` not Viewer)
-- **Custom roles** when predefined bundles are too broad—document each permission
-- **Groups via Google Groups or Cloud Identity** instead of individual user bindings
-- **Separate prod and non-prod** folders with different role baselines
-- **Audit service accounts** quarterly; delete unused SAs and keys
-
-## IAM Conditions and constraints
-
-**IAM Conditions** restrict when a binding applies:
+This is **Google Cloud IAM mechanics**: inheritance, basic roles, the default Compute service account, JSON keys, org constraints, and deny policies. It is not a multi-cloud CIEM explainer ([CIEM explained](/blog/ciem-explained-for-cloud-teams/)) and not SCC setup. Source of truth: [IAM overview](https://cloud.google.com/iam/docs/overview) and [organization policy constraints](https://cloud.google.com/resource-manager/docs/organization-policy/org-policy-constraints).
 
 ```
-resource.name.startsWith("projects/_/buckets/prod-")
+Organization
+  └── Folder: prod          ← never put roles/editor here
+        ├── Folder: prod-app-a
+        └── Project: payments-prod
+  └── Folder: nonprod       ← experiment with denies here
+```
+
+Effective permission = union of org + folder + project + resource bindings, **minus** deny policies. Inheritance is the usual outage-and-breach mechanism.
+
+## 1. Find the inherited Editor you forgot
+
+```bash
+gcloud asset search-all-iam-policies \
+  --scope="organizations/${ORG_ID}" \
+  --query='policy:roles/editor OR policy:roles/owner OR policy:roles/viewer'
+```
+
+Policy Analyzer (`gcloud policy-intelligence`) answers “who can `resourcemanager.projects.setIamPolicy` on this project?” before you revoke a group and break Terraform.
+
+Failure mode: you remove `roles/editor` from the project, but a folder two levels up still grants it to `group:eng@`. The project IAM page looks clean. Asset search does not.
+
+## 2. Basic roles are not a starter kit
+
+`roles/owner`, `roles/editor`, and `roles/viewer` include thousands of permissions. Replace with predefined roles (`roles/storage.objectViewer`, `roles/compute.instanceAdmin.v1`) or a **custom role** whose permission list you review.
+
+Do not mint a custom role that is Editor minus two permissions. That is Editor.
+
+Groups via Cloud Identity, not 80 individual `user:` bindings. Treat `group:gcp-prod-admins@` membership as a production change.
+
+## 3. The default Compute service account is Editor
+
+New projects still get `PROJECT_NUMBER-compute@developer.gserviceaccount.com` with **Editor** unless you change the org. That SA is what GCE and many GKE nodes use if you do not set a custom SA.
+
+```bash
+# Org policy: skip default network and constrain SA key creation
+gcloud org-policies set-policy policy-disable-sa-keys.yaml --project="${PROJECT_ID}"
+```
+
+Example constraint (YAML) for keys:
+
+```yaml
+name: organizations/ORG_ID/policies/iam.disableServiceAccountKeyCreation
+spec:
+  rules:
+    - enforce: true
+```
+
+Also set `iam.automaticIamGrantsForDefaultServiceAccounts` so new projects do not auto-grant Editor to the default Compute SA.
+
+Failure mode: GKE Workload Identity is “on,” but node pools still use the default Compute SA for image pulls and logging. Compromise the node, get Editor.
+
+## 4. Keys, federation, then deny
+
+Order of operations:
+
+1. Org policy **deny new keys**.
+2. GKE **Workload Identity**; GCE **attached SA** with a custom role; GitHub Actions **Workload Identity Federation** (no JSON in GitHub secrets).
+3. List remaining keys; delete; alert on `google.iam.v1.AuditData` for `CreateServiceAccountKey`.
+
+```bash
+gcloud iam service-accounts keys list --iam-account="${SA}" --format='table(name,validAfterTime)'
+```
+
+A key in a repo is not a “secret scanning finding.” It is standing admin until you disable `iam.disableServiceAccountKeyCreation` and rotate.
+
+## 5. IAM Conditions are CEL, not least privilege
+
+Conditions on a binding, for example object prefix or expiry:
+
+```
+resource.name.startsWith("projects/_/buckets/prod-payments/") &&
 request.time < timestamp("2026-12-31T00:00:00Z")
 ```
 
-Pair with **organization policy constraints**:
+They do not shrink `roles/editor`. Use them for break-glass (time) and for bucket-prefix grants after the role is already tight.
 
-- `iam.disableServiceAccountKeyCreation`
-- `constraints/iam.allowedPolicyMemberDomains`
-- Domain-restricted sharing for Cloud Storage
+**IAM deny policies** are the other lever: deny `iam.serviceAccountKeys.create` or `resourcemanager.organizations.setIamPolicy` even if an allow binding says yes. Prototype on `nonprod` folder. A deny on `*` at org level is a support ticket.
 
-## Service account hygiene
+## 6. What to review on a cadence (GCP-specific)
 
-Long-lived JSON keys are GCP's equivalent of static AWS access keys.
+| When | What |
+| --- | --- |
+| Every apply | Folder/org IAM diffs in Terraform (`google_folder_iam_binding` vs additive `member`) |
+| Weekly | New `roles/owner` or `roles/editor` at folder/org (Asset Search or SCC) |
+| Monthly | IAM Recommender: unused bindings; do not auto-apply on org-level groups |
+| On incident | Break-glass users, `setIamPolicy` on org, key creation |
 
-1. Inventory keys with **Policy Intelligence** and security center findings
-2. Migrate workloads to **Workload Identity** on GKE and attached SAs on GCE
-3. Use **Workload Identity Federation** for CI/CD from GitHub or Azure DevOps
-4. Alert on new key creation via log-based metrics
+Principal Access Boundary policies (where enabled) cap maximum permissions for a set of principals. They are not a substitute for deleting Editor on the prod folder.
 
-Compromised service accounts on paths to BigQuery or GCS buckets are classic [toxic combinations](/blog/toxic-combinations-aws-azure/) when combined with public ingress elsewhere.
+When a public Cloud Run service uses an SA that can `bigquery.tables.getData`, that pairing is a [toxic combination](/blog/toxic-combinations-aws-azure/)—after you have removed folder Editor and JSON keys. Do not skip those for a graph demo.
 
-## CIEM and CSPM integration
+## Checklist
 
-Native tools surface over-privileged bindings; graph platforms connect IAM to **network reachability** and **data stores**. A SA with storage.admin on an internal-only bucket differs from the same role where a misconfigured load balancer exposes an API that uses that SA.
-
-Teams evaluating [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) should treat GCP IAM as CIEM input feeding a unified **security graph**. [OpenSourceOM](https://github.com/OpenSourceOM/core) ingests GCP asset and IAM relationships for cross-cloud attack path queries.
-
-## GCP IAM review cadence
-
-| Frequency | Activity |
-|-----------|----------|
-| Weekly | Review new org/project IAM binding changes |
-| Monthly | IAM Recommender export and ticket backlog |
-| Quarterly | Service account and key census |
-| On incident | Break-glass role usage audit |
-
-## Privileged access and break-glass
-
-Emergency admin access is inevitable—ungoverned break-glass is not.
-
-- Maintain **two break-glass accounts** with hardware MFA, no day-to-day use, and Cloud Logging alerts on every action
-- Use **Just-in-Time (JIT)** access via PAM integration or temporary IAM Conditions with approval tickets
-- **Review break-glass usage** within 24 hours and rotate any exposed credentials immediately
-- Never attach **Owner** at org level to individual users—use groups with membership reviews
-
-Break-glass roles that can disable org policies or export every bucket belong in your **attack path** model as high-blast-radius nodes regardless of CVSS elsewhere.
-
-## Integrating GCP IAM with broader CNAPP workflows
-
-Export IAM Policy Analyzer results weekly into your vulnerability and CSPM workflows. When SCC flags a public Cloud Run service, the graph should immediately show which service accounts that revision uses and whether those identities reach BigQuery, Secret Manager, or cross-project resources.
-
-Teams migrating from on-prem AD often over-provision **Cloud Identity groups** with legacy broad roles. Treat group membership changes as production changes requiring approval—stale contractors in a `gcp-prod-admins` group bypass every technical control downstream.
+- [ ] No `roles/owner` or `roles/editor` on org or prod folders
+- [ ] Default Compute SA not Editor; custom SAs on GCE/GKE
+- [ ] `iam.disableServiceAccountKeyCreation` enforced; WIF for CI
+- [ ] Asset Search for leftover basic roles
+- [ ] Deny policies tested in nonprod before org
+- [ ] Break-glass accounts: hardware MFA, logged, unused day-to-day
 
 ## Key takeaways
 
-- **Folder hierarchy** amplifies both good governance and bad bindings—design it deliberately
-- **Eliminate SA keys**; federation and attached identities scale better
-- **IAM Conditions** and org policies enforce guardrails automation misses
-- **Graph-aware CIEM** prioritizes identities attackers can actually abuse
+- **Folder inheritance** is how Editor becomes infinite. Search the org, not the project IAM panel.
+- **Default Compute SA + Editor** is the GCE/GKE footgun. Turn off automatic grants.
+- **Org policy on keys** then federation; scanners will not outrun a key in CI.
+- **Conditions and denies** refine bindings; they do not replace removing basic roles.
 
 ---
-**Related:** [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/)
+**Related:** [CIEM explained](/blog/ciem-explained-for-cloud-teams/) · [Cloud Armor operator guide](/blog/gcp-cloud-armor-security-guide/)

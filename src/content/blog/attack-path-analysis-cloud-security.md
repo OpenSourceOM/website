@@ -32,15 +32,9 @@ A **cloud attack path** is a sequence of steps an adversary could take through y
 
 Each step is a node; permissions and reachability are edges. A **critical CVE on an internal-only dev box** is a dead end. The same CVE on an internet-exposed VM with a role that can read production S3 is a **live attack path**.
 
-## Why flat severity scoring fails in the cloud
+## Why this is not a CVSS sort
 
-CVSS and severity labels were designed for individual vulnerabilities, not cloud topology. In multi-account, multi-service environments:
-
-- **Exposure changes constantly** — a private subnet today may be public tomorrow
-- **Identity amplifies impact** — one over-privileged role links unrelated resources
-- **Blast radius is graph-shaped** — not visible in a spreadsheet of findings
-
-Attack path analysis re-scores risk by **reachability**, **path length**, **asset sensitivity**, and **identity privilege** — the same factors CNAPP platforms use to surface "toxic combinations."
+A critical CVE on an isolated lab VM is a dead end; a medium misconfiguration on an internet-facing role that can read production data is a live path. How to run that ranking every week is [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/). This page is the **model**: nodes, edges, and queries.
 
 ## How a security graph powers attack path analysis
 
