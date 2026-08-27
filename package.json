@@ -17,6 +17,7 @@
     "@astrojs/sitemap": "^3.7.3",
     "@astrojs/vercel": "^11.0.8",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "astro": "^7.2.7"
   },
   "devDependencies": {

@@ -2,6 +2,7 @@
 // Copyright 2026 OpenSourceOM
 // SPDX-License-Identifier: Apache-2.0
 import VercelAnalytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? '';
 ---
@@ -23,6 +24,7 @@ const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? '';
 }
 
 <VercelAnalytics />
+<SpeedInsights />
 
 <script define:vars={{ gaId }}>
   import { track } from '@vercel/analytics';
