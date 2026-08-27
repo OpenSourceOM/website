@@ -22,7 +22,7 @@ Your scanner reports **4,000 critical findings**. Your team closes **40 per spri
 
 **Vulnerability prioritization** in the cloud requires context scanners were never designed to hold: *Who can reach this asset? What can it access if compromised? Is anyone exploiting this in the wild?*
 
-This guide gives practitioners a repeatable framework to **prioritize cloud vulnerabilities** without burning out the team.
+This guide is the **ranking ritual** (RICE, weekly 30 minutes, KEV). It is not the product-category choice ([CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/)) and not the graph data model ([attack path analysis](/blog/attack-path-analysis-cloud-security/)).
 
 ## Why CVSS breaks down in cloud environments
 

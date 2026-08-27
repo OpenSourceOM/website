@@ -20,7 +20,7 @@ faq:
 
 In cloud security, the dangerous issues are often **pairs and chains** — not single misconfigurations. A medium-severity setting plus a high-privilege identity plus internet exposure becomes a **toxic combination**: individually defensible in a ticket comment, collectively exploitable in an afternoon.
 
-**Toxic combination cloud security** analysis is how modern CNAPP and graph platforms cut through noise. This guide covers common patterns in **AWS** and **Azure**, and how to detect them before attackers do.
+**Toxic combination cloud security** is the **named pairs** in AWS and Azure (public + admin, and so on). How you rank a full finding queue is [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/). How the graph represents hops is [attack path analysis](/blog/attack-path-analysis-cloud-security/).
 
 ## What makes a combination "toxic"?
 

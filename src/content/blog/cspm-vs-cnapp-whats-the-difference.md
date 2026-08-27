@@ -103,33 +103,7 @@ Example questions attack path analysis answers:
 - What is the **blast radius** if this IAM role is compromised?
 - Which misconfigurations are **safe to deprioritize** because no exploitable path exists?
 
-This is the **security graph** approach: assets, identities, exposures, and findings as nodes; reachability and permissions as edges. Prioritization becomes a graph query, not a sort by severity column.
-
-## How to prioritize cloud security findings (practical framework)
-
-Whether you use CSPM, CNAPP, or an open-source graph platform, use this sequence:
-
-### 1. Exposure first
-
-Fix internet-facing misconfigurations before internal hygiene. External reachability multiplies every other weakness.
-
-### 2. Path length and destination
-
-A medium-severity issue on a **three-hop path to crown jewels** outranks a critical CVE on an isolated lab instance.
-
-### 3. Identity privilege
-
-Over-privileged roles and long-lived keys amplify any workload compromise.
-
-### 4. Exploit intelligence
-
-Pair graph context with known exploitation in the wild—not every critical CVE is actively exploited.
-
-### 5. Automate re-validation
-
-Cloud changes daily. Static spreadsheet prioritization goes stale within hours.
-
-Platforms that encode this logic in a **queryable graph** reduce manual correlation work—the core promise of CNAPP and graph-native open-source tools alike.
+This is the **security graph** approach: assets, identities, exposures, and findings as nodes; reachability and permissions as edges. Prioritization becomes a graph query, not a sort by severity column. The weekly ranking ritual lives in [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/); this page stops at **which product category you are buying**.
 
 ## Open source and the CNAPP feature set
 

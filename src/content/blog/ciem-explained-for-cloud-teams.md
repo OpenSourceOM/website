@@ -41,15 +41,9 @@ It detects:
 | Cross-account trust | External account can assume admin role |
 | Toxic admin concentration | One role used by 50 services |
 
-## Why CIEM matters for attack path analysis
+## Why identity is half the path
 
-Attackers rarely stop at the first compromised VM. They **pivot through identity**:
-
-```
-Internet → vulnerable workload → instance profile → S3 admin → all buckets
-```
-
-Without **CIEM** data in your **security graph**, you miss half the **cloud attack path**. CNAPP vendors invest heavily here because **identity blast radius** often exceeds network blast radius in cloud-native apps.
+Attackers pivot through roles, not only through subnets. Without CIEM nodes on the graph you under-count blast radius. How those paths are queried is [attack path analysis](/blog/attack-path-analysis-cloud-security/); this page is **who can do what**.
 
 ## CIEM vs. CSPM vs. CNAPP
 

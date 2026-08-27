@@ -1,6 +1,8 @@
 ---
 title: "AWS Security Best Practices: A Practitioner Checklist for 2026"
-description: "Practical AWS security best practices for 2026 covering IAM, network segmentation, logging, encryption, and exposure reduction with CSPM-aligned controls teams can implement today."
+description: "Org-first AWS hardening: Identity Center over access keys, SCPs that actually deny, org CloudTrail, S3 Block Public Access, and the failure modes that keep those controls from working."
+pubDate: 2026-08-27
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - AWS
@@ -10,91 +12,140 @@ tags:
   - security best practices
 focusKeyword: AWS security best practices
 faq:
-  - question: What are the top AWS security priorities for new teams?
-    answer: Start with root account lockdown, MFA on privileged users, CloudTrail organization-wide, SCP guardrails, and eliminating public S3 and security group exposure before advanced tooling.
-  - question: How often should AWS security posture be reviewed?
-    answer: Continuous CSPM scanning is ideal; at minimum review IAM, exposure, and logging weekly and after every major infrastructure change or incident.
-  - question: Does AWS Shared Responsibility mean AWS handles security?
-    answer: No. AWS secures the cloud; customers secure what they put in it—identity, configuration, data classification, and application code remain your responsibility.
+  - question: What should I lock down first in a new AWS organization?
+    answer: Root MFA and a hardware or passkey second factor, an organization management account that nobody uses for workloads, Identity Center instead of IAM users, an organization CloudTrail trail to a locked log archive account, and account-level S3 Block Public Access. Do those before GuardDuty tuning or a CNAPP purchase.
+  - question: Why do SCPs fail to stop the thing I thought they blocked?
+    answer: SCPs never apply to the management account, do not restrict service-linked roles, and are an allow-list intersection with IAM—not a deny that always wins unless you write an explicit Deny. A Deny without a condition can also break AWS Config, CloudTrail, or org-wide GuardDuty. Test in a sandbox OU first.
+  - question: Is an account CloudTrail enough?
+    answer: No. A per-account trail misses management-account activity and is easy to disable with the same credentials that caused the incident. Use an organization trail, multi-region, log-file validation, a dedicated log-archive account, and a bucket policy that denies delete and public access from every other principal.
+  - question: Where does this sit versus attack-path tools?
+    answer: This page is the AWS control plane you should already have. Ranking which leftover finding is reachable is [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) and [attack path analysis](/blog/attack-path-analysis-cloud-security/).
 ---
 
-AWS environments grow faster than security teams can manually audit them. **AWS security best practices** in 2026 still start with fundamentals—identity, exposure, logging, and encryption—but mature programs layer **CSPM**, **attack path analysis**, and automated remediation on top.
+This is the **AWS organization control-plane** checklist: Identity Center, SCPs, org CloudTrail, and public-access blocks. It is not a multi-cloud CSPM overview, not an IAM-theory primer ([CIEM](/blog/ciem-explained-for-cloud-teams/)), and not how to score CVEs. Official behavior stays in [AWS Organizations](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html) and [IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html).
 
-This checklist is for engineers and security leads who need actionable controls, not a generic compliance PDF.
+```
+Management account (no workloads)
+  └── Root OU
+        ├── Security OU     log-archive, audit, GuardDuty delegated admin
+        ├── Sandbox OU      SCP test denials live here first
+        └── Workloads OU    prod / nonprod accounts
+```
 
-## Identity and access management
+If a control is missing at the **org** layer, every account-level “best practice” is optional for the next engineer with `AdministratorAccess`.
 
-IAM is the control plane for AWS. Most breaches involve abused credentials or over-privileged roles.
+## 1. Management account is not a place to run apps
 
-- **Eliminate long-lived access keys** for humans; use IAM Identity Center (SSO) with short-lived credentials
-- **Enforce MFA** on all console users and privileged API access where supported
-- **Apply least privilege** with permission boundaries and service control policies (SCPs)
-- **Rotate and audit** machine credentials; prefer IRSA or instance profiles over static keys
-- **Review trust policies** on roles—external ID and condition keys block confused-deputy issues
+Workloads in the management account skip SCPs. Billing, Organizations, and Control Tower live there; CI, Jenkins, and “temporary” EC2 do not.
 
-| IAM control | Why it matters |
-|-------------|----------------|
-| SCPs at org level | Prevent entire classes of misconfigurations |
-| Permission boundaries | Cap maximum privilege for delegated admins |
-| Access Analyzer | Surfaces unintended cross-account access |
-| IAM Access Advisor | Shows unused permissions for right-sizing |
+Failure mode: a CloudFormation stack in the management account with an instance profile that can `organizations:LeaveOrganization` or disable the org trail. Move the stack. Do not “SCP around it.”
 
-Over-privileged IAM is a common ingredient in [toxic combinations](/blog/toxic-combinations-aws-azure/)—pair IAM reviews with graph-based reachability, not spreadsheets alone.
+## 2. Humans use Identity Center, not IAM users
 
-## Network and exposure
+Create IAM users only for break-glass, with hardware MFA, no access keys, and CloudTrail alerts on `CreateAccessKey` and `ConsoleLogin` without MFA.
 
-Network misconfiguration is the fastest path from internet to data.
+```bash
+# Find IAM user access keys that are still active (every account)
+aws iam list-users --query 'Users[].UserName' --output text | tr '\t' '\n' | while read -r u; do
+  aws iam list-access-keys --user-name "$u" --query 'AccessKeyMetadata[?Status==`Active`].[UserName,AccessKeyId,CreateDate]' --output table
+done
+```
 
-- **Default deny** security groups; document every 0.0.0.0/0 rule with owner and expiry
-- **Segment** production, staging, and sandbox with separate VPCs or at least subnets and NACLs
-- **Use VPC endpoints** for S3, DynamoDB, and STS to keep traffic off the public internet
-- **Enable AWS Network Firewall or WAF** at ingress for internet-facing apps
-- **Validate** with CSPM rules and external attack surface scans
+Map permission sets to **job functions**, not to `AdministratorAccess`. Permission boundaries on the Identity Center provisioned roles cap what a delegated admin can grant in member accounts.
 
-Exposure reduction should precede CVE triage. A critical vulnerability on an unreachable instance is lower priority than a medium issue on an internet-facing path—see [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/).
+Failure mode: Identity Center is on, but developers still have long-lived keys in `~/.aws/credentials` from an old IAM user. Inventory keys; disable; delete. SSO sessions expire. Keys do not.
 
-## Logging, detection, and response
+## 3. SCPs that deny, in a sandbox OU first
 
-You cannot investigate what you never recorded.
+An SCP is **not** “IAM but for the org.” Effects:
 
-- **Organization CloudTrail** in all regions to a dedicated security account
-- **GuardDuty** with S3, EKS, and Malware Protection enabled where licensed
-- **Config** recorders with conformance packs mapped to CIS or your internal baseline
-- **Centralize logs** in a SIEM with retention aligned to compliance needs
-- **Run tabletop exercises** on credential compromise and S3 public exposure scenarios
+| Rule | What it means |
+| --- | --- |
+| No SCP on management account | Root and management IAM still win |
+| Allow statements are a ceiling | Member IAM cannot exceed the SCP |
+| Explicit Deny wins | Use Deny + conditions, then test |
+| Service-linked roles | Often exempt; do not assume they are blocked |
 
-## Encryption and data protection
+Example: deny creating IAM users in workload accounts (force Identity Center), except a named break-glass role:
 
-- **KMS CMKs** for S3, RDS, and EBS with key policies restricting admin roles
-- **Block public access** on all S3 accounts via account-level settings
-- **Enable Macie** or equivalent DSPM for sensitive data discovery in object stores
-- **Secrets Manager or Parameter Store** instead of environment variables in plain text
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyIamUsersOutsideBreakGlass",
+      "Effect": "Deny",
+      "Action": ["iam:CreateUser", "iam:CreateAccessKey"],
+      "Resource": "*",
+      "Condition": {
+        "ArnNotLike": {
+          "aws:PrincipalARN": "arn:aws:iam::*:role/BreakGlassAdmin"
+        }
+      }
+    }
+  ]
+}
+```
 
-## Operationalizing AWS security
+Attach to the **sandbox OU**, try to `iam:CreateUser`, then promote to workloads. A Deny on `iam:*` without exceptions will also break Auto Scaling, EKS node roles, and Config.
 
-Manual quarterly audits fail in elastic cloud. Automate:
+Pair with [toxic combinations](/blog/toxic-combinations-aws-azure/) only after these denials exist; otherwise the graph is ranking holes you already chose to leave open.
 
-1. **Continuous CSPM** against CIS AWS Foundations and custom policies
-2. **Drift detection** on Terraform and CloudFormation stacks
-3. **Attack path queries** for internet → workload → datastore chains
-4. **Ticket integration** with severity driven by reachability, not CVSS alone
+## 4. Public access is an org setting, not a ticket
 
-[OpenSourceOM](https://opensourceom.org) models AWS inventory, IAM relationships, and findings in a **security graph** so teams can ask which exposures sit on paths to production—without black-box scoring. The [core project on GitHub](https://github.com/OpenSourceOM/core) is Apache-2.0 for teams that need self-hosted CNAPP-style context.
+Account-level **S3 Block Public Access** and the org-level equivalent beat bucket-by-bucket heroics.
 
-## AWS security maturity stages
+```bash
+aws s3control get-public-access-block --account-id "$ACCOUNT_ID"
+aws s3control put-public-access-block --account-id "$ACCOUNT_ID" --public-access-block-configuration \
+  'BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true'
+```
 
-| Stage | Focus | Typical tooling |
-|-------|-------|-----------------|
-| Foundational | MFA, CloudTrail, public access blocks | Native AWS services |
-| Managed | CSPM, Config conformance, GuardDuty | CSPM + SIEM |
-| Optimized | Attack paths, CIEM, automated remediation | Graph-native CNAPP or OSS |
+Same idea for EC2: an SG with `0.0.0.0/0` on 22/3389/5432 is a path, not a “medium.” Use AWS Config `restricted-ssh` plus a periodic query of default VPCs that nobody owns.
+
+Failure mode: BPA is on, but a CloudFront OAC or a website bucket needs a controlled exception. Document the bucket, the principal, and an expiry. An exemption with no owner is a public bucket with extra steps.
+
+## 5. Organization CloudTrail, or you will not have a forensic trail
+
+Requirements that actually survive an incident:
+
+1. **Organization trail**, all regions, management events + data events for S3 and Lambda you care about.
+2. Destination bucket in a **log-archive account**, versioning, Object Lock if you can afford it, bucket policy denying `s3:DeleteObject` except a break-glass role.
+3. **Log file validation** enabled.
+4. Delegated **GuardDuty** and **Security Hub** admin in the security OU—not twenty independent detectors.
+
+Failure mode: “CloudTrail is enabled” in the member account console, writing to a bucket in the same account the attacker already has `s3:DeleteObject` on. That is not a trail.
+
+## 6. Encryption that is more than a checkbox
+
+KMS on EBS/RDS/S3 is table stakes. The failure is **who can use the key**.
+
+- Default `aws/s3` CMK: convenient; any principal with `s3:*` in the account can decrypt.
+- CMK key policy: only the app role and a security admin role; no `kms:*` for `arn:aws:iam::ACCOUNT:root` unless you know why.
+- Secrets in Lambda env vars: still in the console and in traces. Secrets Manager or SSM with IAM on `GetSecretValue`, not `Process.env`.
+
+## What not to do on this page
+
+Do not start with a 400-control CIS spreadsheet. Do not buy a scanner to discover that the management account runs Jenkins. Do not treat GuardDuty “low” findings as the program.
+
+When the org layer is in place, leftover findings belong in [prioritization](/blog/how-to-prioritize-cloud-vulnerabilities/)—exposure and identity first, CVSS last.
+
+## Checklist
+
+- [ ] Workloads out of the management account
+- [ ] Identity Center for humans; IAM users = break-glass only; no standing access keys
+- [ ] SCPs tested in sandbox OU; Deny for `CreateUser` / public S3 / leave-org
+- [ ] Account (and org) S3 Block Public Access
+- [ ] Organization CloudTrail to a locked log-archive account
+- [ ] GuardDuty / Security Hub delegated admin
+- [ ] CMK policies that are not “account root can kms:*”
 
 ## Key takeaways
 
-- **Identity and exposure** drive most real-world AWS incidents—prioritize them before tool sprawl
-- **SCPs and permission boundaries** scale governance across many accounts
-- **Continuous validation** beats annual audits; cloud drift is constant
-- **Graph context** connects IAM, network, and findings the way attackers actually chain them
+- **Org topology** is the control. Account-level checklists fail if SCPs never apply.
+- **Identity Center + Deny SCPs** beat hunting IAM users after the fact.
+- **Org CloudTrail to another account** is the difference between IR and folklore.
+- **Public access blocks** are cheaper than any graph query on a public bucket.
 
 ---
-**Related:** [cloud-vulnerability-management-program](/blog/cloud-vulnerability-management-program/) · [azure-key-vault-security-hardening](/blog/azure-key-vault-security-hardening/)
+**Related:** [Toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/)

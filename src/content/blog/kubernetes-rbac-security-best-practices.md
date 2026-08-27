@@ -1,6 +1,8 @@
 ---
 title: "Kubernetes RBAC Security Best Practices for Production Clusters"
-description: "Production Kubernetes RBAC best practices covering RoleBindings, service accounts, namespace isolation, and audit logging—integrated with CSPM and CNAPP-style cluster security."
+description: "Production Kubernetes RBAC: namespace Roles not cluster-admin, automount off, bound tokens, aws-auth vs access entries, and kubectl-who-can in CI."
+pubDate: 2026-08-27
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - Kubernetes
@@ -10,106 +12,166 @@ tags:
   - container security
 focusKeyword: Kubernetes RBAC security
 faq:
-  - question: What is the most common Kubernetes RBAC mistake?
-    answer: Cluster-admin bindings for application service accounts or developers—production apps should use namespace-scoped Roles with minimal verbs on required resources.
-  - question: Should I use default service accounts in pods?
-    answer: No. Create dedicated service accounts per workload, disable automount where unnecessary, and avoid default SA tokens in untrusted namespaces.
-  - question: How do I audit Kubernetes RBAC?
-    answer: Enable audit logging, use rbac-manager or policy engines, and periodically query who can secrets/get cluster-wide with tools like kubectl-who-can or CNAPP KSPM modules.
+  - question: Why is cluster-admin on a deploy SA so common?
+    answer: >-
+      Helm charts and "just to get CI working" ClusterRoleBindings. The SA token in the
+      pod is then a full API credential. Use a namespace Role with get/list/watch on the
+      objects the controller actually needs. Platform add-ons that truly need cluster
+      scope get a dedicated ClusterRole with verbs listed, not star.
+  - question: Should pods use the default service account?
+    answer: >-
+      No. Set automountServiceAccountToken to false on the default SA in every namespace,
+      create a dedicated SA per workload, and mount a token only if the process calls the
+      Kubernetes API. Bound service account tokens (TokenRequest) with audience and short
+      expiry replace the old never-expiring secret token.
+  - question: How do I see who can read secrets cluster-wide?
+    answer: >-
+      kubectl-who-can or rakkess against a staging API, for example who-can get secrets
+      --all-namespaces. Also grep ClusterRoleBindings for cluster-admin and for
+      aggregate-to-admin labels. Do this in CI against rendered manifests, not only in a
+      live cluster after merge.
+  - question: What is different on EKS vs GKE vs AKS?
+    answer: >-
+      Cloud IAM sits under Kubernetes RBAC. EKS aws-auth ConfigMap and Access Entries can
+      grant system:masters. GKE has the default Compute SA and Workload Identity. AKS has
+      Entra groups bound to cluster-admin. A clean Role in-cluster does not help if the
+      cloud mapping still grants system:masters to a wide IAM role.
 ---
 
-**Kubernetes RBAC security** is the gatekeeper for everything inside your cluster—secrets, workloads, and the API server itself. RBAC misconfiguration is a top enabler of **lateral movement** after a single compromised pod.
+This is **Kubernetes API authorization**: Roles, RoleBindings, service account tokens, and the cloud IAM mapping that can bypass all of that. It is not NetworkPolicy, not Pod Security, and not a CNAPP overview. Those belong in [cloud-native application security](/blog/cloud-native-application-security/). API behavior: [Using RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/).
 
-## RBAC fundamentals in production
+```
+kubectl / CI
+    → API server  (RBAC on this request)
+         → pod SA token (if automounted)
+              → cloud IAM via IRSA / Workload Identity / Entra  (second control plane)
+```
 
-Kubernetes RBAC binds **Roles** or **ClusterRoles** to **Subjects** via RoleBindings or ClusterRoleBindings.
+A tight Role is worthless if the same human is `system:masters` through `aws-auth`.
 
-| Object | Scope | Risk if misused |
-|--------|-------|-----------------|
-| Role + RoleBinding | Namespace | Elevated privileges in one NS |
-| ClusterRole + ClusterRoleBinding | Cluster-wide | Full cluster compromise potential |
-| Aggregated ClusterRoles | Cluster | Hidden permissions via label selectors |
+## 1. No ClusterRoleBinding for application service accounts
 
-**Rule of thumb:** no ClusterRoleBinding for app service accounts unless platform team explicitly requires it.
+```yaml
+# Wrong: deploy SA is cluster-admin
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: payments-deploy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: deploy
+    namespace: payments
+```
 
-## Namespace isolation strategy
+Replace with a **Role** in `payments`:
 
-- **One namespace per team or app** with ResourceQuotas and LimitRanges
-- **NetworkPolicies** default deny between namespaces (see dedicated network policy guides)
-- **Separate prod and non-prod clusters** when regulatory boundaries require it
-- **OPA Gatekeeper or Kyverno** to deny ClusterRoleBindings granting `*` verbs
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: payments-app
+  namespace: payments
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+    resourceNames: ["payments-api"]
+```
 
-Platform teams own cluster-scoped roles; application teams receive namespace Roles only.
+`get` on a named Secret is not `list` on `secrets` in the namespace. `list` dumps every secret to anyone who can compromise the SA.
 
-## Service account hardening
+Aggregated ClusterRoles (`rbac.authorization.k8s.io/aggregate-to-admin: "true"`) hide verbs. Read the aggregated rules, not the ClusterRole name.
 
-Pods run as service accounts (SAs). Weak SA = weak identity.
+## 2. Default SA: automount off
 
-- Disable **automountServiceAccountToken** unless the pod needs K8s API access
-- Never mount **default** SA in production deployments
-- Use **bound service account tokens** (TokenRequest API) with audience and expiry
-- On EKS/GKE/AKS, link K8s SAs to cloud IAM via IRSA / Workload Identity
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+  namespace: payments
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: payments-api
+  namespace: payments
+# automount only if this process talks to the API
+```
 
-A pod SA that can read Secrets cluster-wide plus a container escape becomes a cloud credential theft story—connect K8s findings to cloud **attack paths** per [attack path analysis guidance](/blog/attack-path-analysis-cloud-security/).
+On the Pod spec, `automountServiceAccountToken: false` unless you need it. Bound tokens (`TokenRequest`) with `expirationSeconds` and `audiences` replace the long-lived Secret-based token.
 
-## Auditing and continuous validation
+Failure mode: Istio/Linkerd sidecars and operators *do* need a token. That is a dedicated SA, not “turn automount back on for default.”
 
-1. Export RBAC with `kubectl auth can-i --list` baselines per role template
-2. Enable **audit logs** at Metadata or RequestResponse for auth decisions
-3. Run **KSPM** (Kubernetes Security Posture Management) in CI and continuously
-4. Alert on new ClusterRoleBindings to `cluster-admin`
+## 3. Prove it with who-can, in CI
 
-[OpenSourceOM](https://opensourceom.org) treats clusters as graph nodes linked to cloud identities and ingress—helpful when prioritizing which RBAC gaps sit on reachable paths.
+```bash
+kubectl-who-can get secrets -n payments
+kubectl-who-can get secrets --all-namespaces
+kubectl auth can-i --list --as=system:serviceaccount:payments:payments-api -n payments
+```
 
-## RBAC vs admission control
+Pipeline on rendered Helm:
+
+1. Fail if an application chart contains `kind: ClusterRoleBinding` to `cluster-admin`.
+2. Fail if `resources: ["secrets"]` with `verbs` containing `list` or `*` at cluster scope.
+3. Optional: apply to an ephemeral kind/k3d cluster and run who-can.
+
+Emergency Roles added at 2 a.m. never expire. Diff `ClusterRoleBinding` objects weekly against git.
+
+## 4. Cloud mappings that skip Kubernetes RBAC
+
+| Cluster | Mapping | Footgun |
+| --- | --- | --- |
+| EKS | Access Entries (preferred) or `aws-auth` ConfigMap | `system:masters` for an IAM role used by CI |
+| GKE | Google Groups + GKE RBAC, Workload Identity | Default Compute SA still Editor on GCP |
+| AKS | Entra ID / AKS-managed Entra | Entire `AAD-Cluster-Admins` group → cluster-admin |
+
+EKS Access Entries:
+
+```bash
+aws eks list-access-entries --cluster-name prod
+aws eks describe-access-entry --cluster-name prod --principal-arn "$ARN"
+```
+
+If you still use `aws-auth`, a merge conflict during an add-on upgrade can re-add `mapRoles` to `system:masters`. Treat that ConfigMap as production IAM.
+
+Workload identity (IRSA / GKE WI / AKS workload identity) is a **second** RBAC system: the pod SA may be namespace-scoped in Kubernetes and `s3:*` in AWS. Restrict both. Graph correlation of pod SA → cloud role is [attack path analysis](/blog/attack-path-analysis-cloud-security/), after these bindings are not `*`.
+
+## 5. RBAC is not PSS and not NetworkPolicy
 
 | Layer | Stops |
-|-------|-------|
-| RBAC | Unauthorized API actions |
-| Pod Security Standards | Privileged pods, host namespaces |
-| Admission webhooks | Non-compliant manifests at create time |
-| NetworkPolicy | Pod-to-pod traffic |
+| --- | --- |
+| RBAC | API verbs (get secret, create pod) |
+| Pod Security Admission | Privileged, hostNetwork, hostPath |
+| Admission (Kyverno/Gatekeeper) | Unsigned images, missing labels |
+| NetworkPolicy | Pod IP traffic |
 
-RBAC alone does not block privileged containers—layer controls.
+RBAC will not stop a privileged pod if the deployer already had `create pods`. Layer them; do not write a “Kubernetes security” mega-post here.
 
-## Sample production role (app workload)
+## Checklist
 
-| Verb | Resource | Reason |
-|------|----------|--------|
-| get, list | configmaps | App config |
-| get | secrets | App secrets in NS only |
-| get, list, watch | pods | Health sidecars |
-
-No `create` on secrets, no cross-namespace access, no nodes/proxy.
-
-## EKS, GKE, and AKS-specific RBAC notes
-
-Managed Kubernetes adds another IAM layer beneath Kubernetes RBAC.
-
-| Platform | Cloud IAM link | Common pitfall |
-|----------|----------------|----------------|
-| EKS | IRSA maps K8s SA to IAM role | Over-scoped trust policy on OIDC provider |
-| GKE | Workload Identity | Default compute SA still has broad GCP access |
-| AKS | Azure AD + managed identity | AAD admin group with cluster-admin for all devs |
-
-Map **aws-auth** or equivalent on every cluster upgrade—automation drift here silently grants cluster-admin to unexpected ARNs.
-
-## RBAC testing in CI
-
-Before merging Helm changes, run policy tests:
-
-1. Render manifests and assert no ClusterRoleBinding to `cluster-admin` for app charts
-2. Use **rakkess** or **kubectl-who-can** in pipeline smoke tests against a staging cluster
-3. Fail builds that introduce `secrets` `list` cluster-wide unless platform team approves
-
-Continuous validation matters because emergency hotfixes often add temporary Roles that never get removed.
+- [ ] Default SA: `automountServiceAccountToken: false` in every namespace
+- [ ] App SAs: namespace Role, named Secret `get`, no cluster-admin
+- [ ] CI: fail ClusterRoleBinding to cluster-admin in app charts
+- [ ] who-can on `secrets` cluster-wide is only platform SAs
+- [ ] EKS Access Entries / aws-auth / Entra groups reviewed after every cluster bump
+- [ ] IRSA/WI roles are not `AdministratorAccess`
 
 ## Key takeaways
 
-- **Namespace-scoped Roles** for apps; **ClusterRoles** sparingly for platform ops
-- **Dedicated service accounts** with token automount disabled by default
-- **Audit + KSPM** catch drift RBAC reviews miss
-- **Correlate K8s identity** with cloud IAM in your CNAPP or graph stack
+- **cluster-admin on a deploy SA** is a cluster credential in every pod that mounts it.
+- **automount false on default** is the smallest high-leverage change.
+- **who-can in CI** catches chart drift; live clusters drift after hotfixes.
+- **Cloud IAM mappings** can grant `system:masters` without a single RoleBinding.
 
 ---
-**Related:** [azure-blob-storage-security-guide](/blog/azure-blob-storage-security-guide/) · [terraform-security-scanning-iac-drift](/blog/terraform-security-scanning-iac-drift/)
+**Related:** [Cloud-native application security](/blog/cloud-native-application-security/) · [GCP IAM hardening](/blog/gcp-iam-security-hardening/)
