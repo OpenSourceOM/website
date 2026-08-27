@@ -2,6 +2,7 @@
 title: "Kubernetes Service Mesh mTLS Security Patterns"
 description: "Kubernetes Service Mesh mTLS Security Patterns — expert guide to Kubernetes service mesh mtls for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

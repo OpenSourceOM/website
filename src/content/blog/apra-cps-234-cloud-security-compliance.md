@@ -2,6 +2,7 @@
 title: "APRA CPS 234 Cloud Security for Australian Finance"
 description: "APRA CPS 234 Cloud Security for Australian Finance — expert guide to APRA CPS 234 cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - APRA CPS 234

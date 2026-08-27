@@ -15,7 +15,7 @@ faq:
   - question: What is cloud-native application security?
     answer: Cloud-native application security is the set of controls that protect apps built from containers, Kubernetes, and serverless functions across the whole lifecycle—from signed images and admission policy through identity, network, APIs, and runtime—rather than a single scanner product.
   - question: How is it different from CSPM or CNAPP?
-    answer: CSPM checks cloud account configuration. CNAPP correlates posture, workloads, and identities. Application security owns the app’s own attack surface—code, images, service-to-service auth, and APIs. You need both: a public bucket is a cloud finding; an unsigned image talking to production data is an application finding.
+    answer: "CSPM checks cloud account configuration. CNAPP correlates posture, workloads, and identities. Application security owns the app’s own attack surface—code, images, service-to-service auth, and APIs. You need both: a public bucket is a cloud finding; an unsigned image talking to production data is an application finding."
   - question: Which pattern should teams implement first?
     answer: Start with identity and exposure. Remove long-lived keys in favor of IRSA or Workload Identity, and keep internet-facing services behind an authenticated ingress. Those two changes shrink the blast radius of every other class of bug.
   - question: Can open-source tools cover cloud-native application security?

@@ -2,6 +2,7 @@
 title: "Azure Service Bus Security: Auth and Network Rules"
 description: "Azure Service Bus Security — expert guide to Azure Service Bus security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Service Bus

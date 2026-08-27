@@ -2,6 +2,7 @@
 title: "AWS CloudTrail for Security Monitoring: Organization-Wide Logging"
 description: "AWS CloudTrail for Security Monitoring—practical guidance on AWS CloudTrail security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - CloudTrail

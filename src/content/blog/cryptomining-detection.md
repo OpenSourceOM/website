@@ -2,6 +2,7 @@
 title: "Cryptomining Detection in Cloud Accounts"
 description: "Cryptomining Detection in Cloud Accounts — expert guide to cryptomining detection for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prior..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

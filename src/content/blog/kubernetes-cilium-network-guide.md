@@ -2,6 +2,7 @@
 title: "Cilium Network Security for Kubernetes Clusters"
 description: "Cilium Network Security for Kubernetes Clusters — expert guide to Kubernetes cilium network for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

@@ -2,6 +2,7 @@
 title: "AWS KMS Key Management: Encryption Policies Teams Actually Use"
 description: "AWS KMS Key Management—practical guidance on AWS KMS security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - KMS

@@ -2,6 +2,7 @@
 title: "AWS Security Groups Best Practices: Least-Privilege Network Access"
 description: "AWS Security Groups Best Practices—practical guidance on AWS security groups for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path pri..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - security groups

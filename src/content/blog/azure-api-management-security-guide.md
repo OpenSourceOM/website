@@ -2,6 +2,7 @@
 title: "Azure API Management Security: OAuth and Rate Limits"
 description: "Azure API Management Security — expert guide to Azure API Management security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritiz..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - API Management

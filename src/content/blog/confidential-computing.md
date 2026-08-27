@@ -2,6 +2,7 @@
 title: "Confidential Computing in Public Cloud Platforms"
 description: "Confidential Computing in Public Cloud Platforms — expert guide to confidential computing for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

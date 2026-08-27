@@ -2,6 +2,7 @@
 title: "Google Cloud NAT Security for Egress Control"
 description: "Google Cloud NAT Security for Egress Control — expert guide to GCP Cloud NAT security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud NAT

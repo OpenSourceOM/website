@@ -2,6 +2,7 @@
 title: "Amazon MSK Security: Kafka Encryption and ACL Best Practices"
 description: "Amazon MSK Security — expert guide to AWS MSK security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitioners."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - MSK

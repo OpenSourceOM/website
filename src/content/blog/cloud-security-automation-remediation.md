@@ -2,6 +2,7 @@
 title: "Cloud Security Automation: Remediation Playbooks That Scale"
 description: "Cloud Security Automation—practical guidance on cloud security automation for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path priori..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - automation
   - CSPM

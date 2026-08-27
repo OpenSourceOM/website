@@ -2,6 +2,7 @@
 title: "PCI DSS 4.0 Cloud Compliance for Payment Workloads"
 description: "PCI DSS 4.0 Cloud Compliance for Payment Workloads — expert guide to PCI DSS 4.0 cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - PCI DSS 4.0

@@ -2,6 +2,7 @@
 title: "AWS Step Functions Security and State Machine IAM"
 description: "AWS Step Functions Security and State Machine IAM — expert guide to AWS Step Functions security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Step Functions

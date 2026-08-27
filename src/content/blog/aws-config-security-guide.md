@@ -2,6 +2,7 @@
 title: "AWS Config Rules for Continuous Compliance Monitoring"
 description: "AWS Config Rules for Continuous Compliance Monitoring — expert guide to AWS Config security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Config

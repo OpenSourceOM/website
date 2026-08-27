@@ -2,6 +2,7 @@
 title: "Azure Functions Security: Managed Identity and Networking"
 description: "Azure Functions Security — expert guide to Azure Functions security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Functions

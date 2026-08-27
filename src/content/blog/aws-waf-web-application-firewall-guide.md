@@ -2,6 +2,7 @@
 title: "AWS WAF Guide: Rules, Managed Groups, and Logging"
 description: "AWS WAF Guide—practical guidance on AWS WAF for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - WAF

@@ -2,6 +2,7 @@
 title: "IRAP Cloud Security Assessment for Australian Government"
 description: "IRAP Cloud Security Assessment for Australian Government — expert guide to IRAP cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - IRAP

@@ -2,6 +2,7 @@
 title: "Kubernetes Egress Control: Preventing Data Exfiltration"
 description: "Kubernetes Egress Control — expert guide to Kubernetes egress control for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization fo..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

@@ -2,6 +2,7 @@
 title: "Amazon CloudFront Security: TLS, OAC, and WAF Integration"
 description: "Amazon CloudFront Security — expert guide to AWS CloudFront security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - CloudFront

@@ -2,6 +2,7 @@
 title: "AWS Site-to-Site VPN Security Configuration Guide"
 description: "AWS Site-to-Site VPN Security Configuration Guide — expert guide to AWS Site-to-Site VPN security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Site-to-Site VPN

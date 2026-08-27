@@ -2,6 +2,7 @@
 title: "Azure Application Gateway WAF: OWASP Rules and Tuning"
 description: "Azure Application Gateway WAF—practical guidance on Azure Application Gateway WAF for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - WAF

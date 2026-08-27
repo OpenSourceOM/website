@@ -2,6 +2,7 @@
 title: "Microsoft Defender for Cloud: Plans, Alerts, and Integration"
 description: "Microsoft Defender for Cloud—practical guidance on Azure Defender for Cloud for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Defender for Cloud

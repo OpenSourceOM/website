@@ -2,6 +2,7 @@
 title: "Google Cloud Logging Security and Retention Policies"
 description: "Google Cloud Logging Security and Retention Policies — expert guide to GCP Cloud Logging security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Logging

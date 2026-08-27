@@ -2,6 +2,7 @@
 title: "Azure Container Registry Security and Image Scanning"
 description: "Azure Container Registry Security and Image Scanning — expert guide to Azure ACR security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - ACR

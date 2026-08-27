@@ -2,6 +2,7 @@
 title: "FISMA Moderate Cloud Controls for US Agencies"
 description: "FISMA Moderate Cloud Controls for US Agencies — expert guide to FISMA Moderate cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - FISMA Moderate

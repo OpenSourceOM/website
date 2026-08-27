@@ -2,6 +2,7 @@
 title: "Azure CDN Security: TLS, Origin Protection, and Rules"
 description: "Azure CDN Security — expert guide to Azure CDN security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitioners."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - CDN

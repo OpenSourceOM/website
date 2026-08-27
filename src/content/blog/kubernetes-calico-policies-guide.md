@@ -2,6 +2,7 @@
 title: "Calico Network Policies for Kubernetes Segmentation"
 description: "Calico Network Policies for Kubernetes Segmentation — expert guide to Kubernetes calico policies for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

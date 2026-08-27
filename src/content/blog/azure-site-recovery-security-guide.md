@@ -2,6 +2,7 @@
 title: "Azure Site Recovery Security for DR Workloads"
 description: "Azure Site Recovery Security for DR Workloads — expert guide to Azure Site Recovery security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Site Recovery

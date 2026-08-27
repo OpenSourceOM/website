@@ -2,6 +2,7 @@
 title: "Open Policy Agent for Cloud Security Policies"
 description: "Open Policy Agent for Cloud Security Policies — expert guide to opa cloud governance for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path pr..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

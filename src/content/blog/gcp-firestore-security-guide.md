@@ -2,6 +2,7 @@
 title: "Cloud Firestore Security Rules and IAM Guide"
 description: "Cloud Firestore Security Rules and IAM Guide — expert guide to GCP Firestore security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Firestore

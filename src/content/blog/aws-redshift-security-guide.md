@@ -2,6 +2,7 @@
 title: "Amazon Redshift Security: Data Warehouse Access Controls"
 description: "Amazon Redshift Security — expert guide to AWS Redshift security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pra..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Redshift

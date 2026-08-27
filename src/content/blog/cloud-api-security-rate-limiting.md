@@ -2,6 +2,7 @@
 title: "Cloud API Security: Rate Limiting, Auth, and Abuse Prevention"
 description: "Cloud API Security—practical guidance on cloud API security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - API security
   - cloud security

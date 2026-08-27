@@ -2,6 +2,7 @@
 title: "Azure Container Instances Security Patterns"
 description: "Azure Container Instances Security Patterns — expert guide to Azure Container Instances security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Container Instances

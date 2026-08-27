@@ -2,6 +2,7 @@
 title: "Amazon Aurora Security Guide for Production Databases"
 description: "Amazon Aurora Security Guide for Production Databases — expert guide to AWS Aurora security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Aurora

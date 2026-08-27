@@ -2,6 +2,7 @@
 title: "Sealed Secrets for GitOps Kubernetes Deployments"
 description: "Sealed Secrets for GitOps Kubernetes Deployments — expert guide to Kubernetes sealed secrets for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

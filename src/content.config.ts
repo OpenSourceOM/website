@@ -24,6 +24,8 @@ const blog = defineCollection({
       )
       .optional(),
     draft: z.boolean().default(false),
+    /** When true, emit robots noindex and omit from the sitemap. */
+    noindex: z.boolean().default(false),
   }),
 });
 

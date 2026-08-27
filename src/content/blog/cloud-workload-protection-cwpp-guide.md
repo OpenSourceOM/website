@@ -2,6 +2,7 @@
 title: "Cloud Workload Protection (CWPP): VMs, Containers, and Serverless"
 description: "Cloud Workload Protection (CWPP)—practical guidance on cloud workload protection for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - CWPP
   - cloud security

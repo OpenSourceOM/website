@@ -2,6 +2,7 @@
 title: "Container Image Scanning in CI/CD: From CVE Noise to Priority"
 description: "Container Image Scanning in CI/CD—practical guidance on container image scanning for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - container security
   - CI/CD

@@ -2,6 +2,7 @@
 title: "Amazon Inspector for Vulnerability Management in AWS"
 description: "Amazon Inspector for Vulnerability Management in AWS — expert guide to AWS Inspector security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Inspector

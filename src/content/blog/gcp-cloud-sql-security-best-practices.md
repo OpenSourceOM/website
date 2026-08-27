@@ -2,6 +2,7 @@
 title: "GCP Cloud SQL Security Best Practices: Auth and Network Controls"
 description: "GCP Cloud SQL Security Best Practices—practical guidance on GCP Cloud SQL security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud SQL

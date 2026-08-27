@@ -2,6 +2,7 @@
 title: "AWS CodeBuild Security: Isolation, IAM, and Secrets"
 description: "AWS CodeBuild Security — expert guide to AWS CodeBuild security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for prac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - CodeBuild

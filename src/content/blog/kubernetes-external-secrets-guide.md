@@ -2,6 +2,7 @@
 title: "External Secrets Operator Security in Kubernetes"
 description: "External Secrets Operator Security in Kubernetes — expert guide to Kubernetes external secrets for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

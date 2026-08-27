@@ -2,6 +2,7 @@
 title: "GitOps Security for Kubernetes: Argo CD and Flux"
 description: "GitOps Security for Kubernetes — expert guide to Kubernetes gitops security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritizat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

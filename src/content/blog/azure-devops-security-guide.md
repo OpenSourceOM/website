@@ -2,6 +2,7 @@
 title: "Azure DevOps Security: Pipelines, Repos, and Secrets"
 description: "Azure DevOps Security — expert guide to Azure DevOps security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practi..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - DevOps

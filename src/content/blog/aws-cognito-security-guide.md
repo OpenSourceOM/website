@@ -2,6 +2,7 @@
 title: "Amazon Cognito Security: User Pools, Identity Pools, and OAuth"
 description: "Amazon Cognito Security — expert guide to AWS Cognito security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pract..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Cognito

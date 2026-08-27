@@ -2,6 +2,7 @@
 title: "Kyverno Policy Engine Security for Kubernetes"
 description: "Kyverno Policy Engine Security for Kubernetes — expert guide to Kubernetes kyverno policies for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

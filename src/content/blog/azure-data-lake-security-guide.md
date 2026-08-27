@@ -2,6 +2,7 @@
 title: "Azure Data Lake Storage Security and Access Control"
 description: "Azure Data Lake Storage Security and Access Control — expert guide to Azure Data Lake security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Data Lake

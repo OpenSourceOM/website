@@ -2,6 +2,7 @@
 title: "ISO 27001 Cloud Security Mapping for AWS and Azure"
 description: "ISO 27001 Cloud Security Mapping for AWS and Azure — expert guide to ISO 27001 cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - ISO 27001

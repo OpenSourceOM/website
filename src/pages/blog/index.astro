@@ -4,9 +4,9 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.title.localeCompare(b.data.title)
-);
+const posts = (
+  await getCollection('blog', ({ data }) => !data.draft && !data.noindex)
+).sort((a, b) => a.data.title.localeCompare(b.data.title));
 
 type PostEntry = {
   id: string;
@@ -172,6 +172,7 @@ const popularTags = [...tagCounts.entries()]
 const groupedCounts = Object.fromEntries(
   TOPIC_GROUPS.map((g) => [g.id, postEntries.filter((p) => p.group === g.id).length])
 );
+const visibleGroups = TOPIC_GROUPS.filter((g) => (groupedCounts[g.id] ?? 0) > 0);
 ---
 
 <BaseLayout
@@ -208,7 +209,7 @@ const groupedCounts = Object.fromEntries(
           <span class="pill-count">{postEntries.length}</span>
         </button>
         {
-          TOPIC_GROUPS.map((group) => (
+          visibleGroups.map((group) => (
             <button
               class="topic-pill"
               type="button"
@@ -242,7 +243,7 @@ const groupedCounts = Object.fromEntries(
 
       <div id="blog-sections">
         {
-          TOPIC_GROUPS.map((group) => {
+          visibleGroups.map((group) => {
             const groupPosts = postEntries.filter((p) => p.group === group.id);
             if (groupPosts.length === 0) return null;
             return (

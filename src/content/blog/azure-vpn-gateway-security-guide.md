@@ -2,6 +2,7 @@
 title: "Azure VPN Gateway Security and Site-to-Site Setup"
 description: "Azure VPN Gateway Security and Site-to-Site Setup — expert guide to Azure VPN Gateway security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - VPN Gateway

@@ -2,6 +2,7 @@
 title: "Azure Management Groups and Policy: Enterprise Guardrails"
 description: "Azure Management Groups and Policy—practical guidance on Azure management groups policy for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Azure Policy

@@ -2,6 +2,7 @@
 title: "Essential Eight Cloud Security Maturity for Australian Orgs"
 description: "Essential Eight Cloud Security Maturity for Australian Orgs — expert guide to Essential Eight cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, C..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - Essential Eight

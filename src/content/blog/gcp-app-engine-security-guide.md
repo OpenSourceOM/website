@@ -2,6 +2,7 @@
 title: "Google App Engine Security for Legacy and New Apps"
 description: "Google App Engine Security for Legacy and New Apps — expert guide to GCP App Engine security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - App Engine

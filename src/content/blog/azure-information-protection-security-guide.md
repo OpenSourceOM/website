@@ -2,6 +2,7 @@
 title: "Microsoft Information Protection in Azure Workloads"
 description: "Microsoft Information Protection in Azure Workloads — expert guide to Azure Information Protection security for AWS, Azure, GCP, and Kubernetes with CSPM, CN..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Information Protection

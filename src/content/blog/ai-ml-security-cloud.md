@@ -2,6 +2,7 @@
 title: "AI and ML Security Risks in Cloud Workloads"
 description: "AI and ML Security Risks in Cloud Workloads — expert guide to ai ml security cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

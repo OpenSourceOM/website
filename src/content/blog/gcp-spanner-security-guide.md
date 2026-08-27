@@ -2,6 +2,7 @@
 title: "Google Cloud Spanner Security for Global Databases"
 description: "Google Cloud Spanner Security for Global Databases — expert guide to GCP Spanner security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Spanner

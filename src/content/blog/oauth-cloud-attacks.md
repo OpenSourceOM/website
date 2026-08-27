@@ -2,6 +2,7 @@
 title: "OAuth and OIDC Attack Patterns in Cloud Apps"
 description: "OAuth and OIDC Attack Patterns in Cloud Apps — expert guide to oauth cloud attacks for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

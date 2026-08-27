@@ -2,6 +2,7 @@
 title: "Azure Arc Security for Hybrid and Multi-Cloud Servers"
 description: "Azure Arc Security for Hybrid and Multi-Cloud Servers — expert guide to Azure Arc security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Arc

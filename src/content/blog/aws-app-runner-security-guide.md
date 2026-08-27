@@ -2,6 +2,7 @@
 title: "AWS App Runner Security for Containerized Web Services"
 description: "AWS App Runner Security for Containerized Web Services — expert guide to AWS App Runner security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - App Runner

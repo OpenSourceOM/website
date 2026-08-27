@@ -2,6 +2,7 @@
 title: "Amazon API Gateway Security: Auth, Throttling, and WAF"
 description: "Amazon API Gateway Security — expert guide to AWS API Gateway security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization f..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - API Gateway

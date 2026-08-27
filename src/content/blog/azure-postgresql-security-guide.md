@@ -2,6 +2,7 @@
 title: "Azure Database for PostgreSQL Security Hardening"
 description: "Azure Database for PostgreSQL Security Hardening — expert guide to Azure PostgreSQL security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - PostgreSQL

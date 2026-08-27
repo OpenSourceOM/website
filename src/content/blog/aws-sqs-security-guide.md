@@ -2,6 +2,7 @@
 title: "Amazon SQS Security: Queues, Policies, and Dead-Letter Handling"
 description: "Amazon SQS Security — expert guide to AWS SQS security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitioners."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - SQS

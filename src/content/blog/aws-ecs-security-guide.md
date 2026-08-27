@@ -2,6 +2,7 @@
 title: "Amazon ECS Security: Task Roles, Networking, and Fargate Hardening"
 description: "Amazon ECS Security — expert guide to AWS ECS security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitioners."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - ECS

@@ -2,6 +2,7 @@
 title: "Google Cloud Functions Security Best Practices"
 description: "Google Cloud Functions Security Best Practices — expert guide to GCP Cloud Functions security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Functions

@@ -2,6 +2,7 @@
 title: "Google Cloud Filestore Security and VPC Peering"
 description: "Google Cloud Filestore Security and VPC Peering — expert guide to GCP Filestore security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Filestore

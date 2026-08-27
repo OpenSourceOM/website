@@ -2,6 +2,7 @@
 title: "Amazon OpenSearch Service Security and Access Policies"
 description: "Amazon OpenSearch Service Security and Access Policies — expert guide to AWS OpenSearch security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - OpenSearch

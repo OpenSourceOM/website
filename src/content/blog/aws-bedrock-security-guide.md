@@ -2,6 +2,7 @@
 title: "Amazon Bedrock Security: Guardrails, IAM, and Data Privacy"
 description: "Amazon Bedrock Security — expert guide to AWS Bedrock security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pract..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Bedrock

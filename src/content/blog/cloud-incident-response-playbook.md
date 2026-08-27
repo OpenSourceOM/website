@@ -2,6 +2,7 @@
 title: "Cloud Incident Response Playbook: Contain, Eradicate, Recover"
 description: "Cloud Incident Response Playbook—practical guidance on cloud incident response for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - incident response
   - cloud security

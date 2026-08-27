@@ -2,6 +2,7 @@
 title: "Terraform Security Scanning: Catch IaC Drift Before Deploy"
 description: "Terraform Security Scanning—practical guidance on Terraform security scanning for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path pr..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Terraform
   - IaC

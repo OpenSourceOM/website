@@ -2,6 +2,7 @@
 title: "Azure Load Balancer Security and NSG Integration"
 description: "Azure Load Balancer Security and NSG Integration — expert guide to Azure Load Balancer security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Load Balancer

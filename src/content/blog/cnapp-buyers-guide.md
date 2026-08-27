@@ -2,6 +2,7 @@
 title: "CNAPP Buyers Guide: Evaluation Criteria for 2026"
 description: "CNAPP Buyers Guide — expert guide to cnapp buyers guide for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitioners."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

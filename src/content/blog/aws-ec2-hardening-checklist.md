@@ -2,6 +2,7 @@
 title: "AWS EC2 Hardening Checklist: AMIs, IMDS, and Patch Management"
 description: "AWS EC2 Hardening Checklist—practical guidance on AWS EC2 hardening for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - EC2

@@ -13,9 +13,10 @@ interface Props {
   ogType?: 'website' | 'article';
   canonical?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
 }
 
-const { title, description, ogType, canonical, jsonLd } = Astro.props;
+const { title, description, ogType, canonical, jsonLd, noindex = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -27,6 +28,7 @@ const { title, description, ogType, canonical, jsonLd } = Astro.props;
       ogType={ogType}
       canonical={canonical}
       jsonLd={jsonLd}
+      noindex={noindex}
     />
   </head>
   <body>

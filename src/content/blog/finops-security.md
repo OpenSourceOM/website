@@ -2,6 +2,7 @@
 title: "FinOps and Cloud Security: Cost Anomaly Detection"
 description: "FinOps and Cloud Security — expert guide to finops security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practiti..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

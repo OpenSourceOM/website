@@ -2,6 +2,7 @@
 title: "DSPM Explained: Data Security Posture Management in the Cloud"
 description: "DSPM Explained—practical guidance on DSPM cloud security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - DSPM
   - data security

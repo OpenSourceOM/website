@@ -2,6 +2,7 @@
 title: "Kubernetes Control Plane Hardening Checklist"
 description: "Kubernetes Control Plane Hardening Checklist — expert guide to Kubernetes control plane hardening for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

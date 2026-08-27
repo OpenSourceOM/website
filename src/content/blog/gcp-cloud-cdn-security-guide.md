@@ -2,6 +2,7 @@
 title: "Google Cloud CDN Security and Origin Shielding"
 description: "Google Cloud CDN Security and Origin Shielding — expert guide to GCP Cloud CDN security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud CDN

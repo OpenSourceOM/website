@@ -2,6 +2,7 @@
 title: "Kubernetes Persistent Volume Security Best Practices"
 description: "Kubernetes Persistent Volume Security Best Practices — expert guide to Kubernetes persistent volume security for AWS, Azure, GCP, and Kubernetes with CSPM, C..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

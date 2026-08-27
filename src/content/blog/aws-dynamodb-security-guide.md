@@ -2,6 +2,7 @@
 title: "Amazon DynamoDB Security: IAM, Encryption, and Access Patterns"
 description: "Amazon DynamoDB Security — expert guide to AWS DynamoDB security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pra..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - DynamoDB

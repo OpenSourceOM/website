@@ -2,6 +2,7 @@
 title: "Cloud Security Maturity Model: Stages and Metrics"
 description: "Cloud Security Maturity Model — expert guide to cloud security maturity model for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritiz..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

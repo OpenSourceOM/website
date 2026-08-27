@@ -2,6 +2,7 @@
 title: "AWS AppSync Security for GraphQL APIs in the Cloud"
 description: "AWS AppSync Security for GraphQL APIs in the Cloud — expert guide to AWS AppSync security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - AppSync

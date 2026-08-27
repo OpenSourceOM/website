@@ -2,6 +2,7 @@
 title: "Google Cloud Interconnect Security Guide"
 description: "Google Cloud Interconnect Security Guide — expert guide to GCP Cloud Interconnect security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Interconnect

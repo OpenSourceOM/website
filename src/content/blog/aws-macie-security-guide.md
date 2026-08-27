@@ -2,6 +2,7 @@
 title: "Amazon Macie for Sensitive Data Discovery in S3"
 description: "Amazon Macie for Sensitive Data Discovery in S3 — expert guide to AWS Macie security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path pr..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Macie

@@ -2,6 +2,7 @@
 title: "Microsoft Purview for Cloud Data Governance and DSPM"
 description: "Microsoft Purview for Cloud Data Governance and DSPM — expert guide to Azure Purview security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Purview

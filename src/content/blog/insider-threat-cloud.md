@@ -2,6 +2,7 @@
 title: "Insider Threat Detection in Cloud Control Planes"
 description: "Insider Threat Detection in Cloud Control Planes — expert guide to insider threat cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

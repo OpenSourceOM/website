@@ -2,6 +2,7 @@
 title: "CCPA Cloud Privacy and Security for California Data"
 description: "CCPA Cloud Privacy and Security for California Data — expert guide to CCPA cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - CCPA

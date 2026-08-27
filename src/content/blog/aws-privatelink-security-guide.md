@@ -2,6 +2,7 @@
 title: "AWS PrivateLink Security for Private Service Access"
 description: "AWS PrivateLink Security for Private Service Access — expert guide to AWS PrivateLink security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - PrivateLink

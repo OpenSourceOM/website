@@ -2,6 +2,7 @@
 title: "FedRAMP Moderate Cloud Security Authorization Guide"
 description: "FedRAMP Moderate Cloud Security Authorization Guide — expert guide to FedRAMP Moderate cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - FedRAMP Moderate

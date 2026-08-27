@@ -2,6 +2,7 @@
 title: "Cloud Penetration Testing Scope and Rules of Engagement"
 description: "Cloud Penetration Testing Scope and Rules of Engagement — expert guide to cloud penetration testing for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

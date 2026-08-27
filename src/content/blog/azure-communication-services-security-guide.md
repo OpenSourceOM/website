@@ -2,6 +2,7 @@
 title: "Azure Communication Services Security Guide"
 description: "Azure Communication Services Security Guide — expert guide to Azure Communication Services security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Communication Services

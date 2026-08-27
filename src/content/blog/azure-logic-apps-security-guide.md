@@ -2,6 +2,7 @@
 title: "Azure Logic Apps Security for Workflow Automation"
 description: "Azure Logic Apps Security for Workflow Automation — expert guide to Azure Logic Apps security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Logic Apps

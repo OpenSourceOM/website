@@ -2,6 +2,7 @@
 title: "Google Certificate Manager TLS Security Guide"
 description: "Google Certificate Manager TLS Security Guide — expert guide to GCP Certificate Manager security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Certificate Manager

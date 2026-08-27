@@ -2,6 +2,7 @@
 title: "Azure Batch Security for High-Performance Computing"
 description: "Azure Batch Security for High-Performance Computing — expert guide to Azure Batch security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Batch

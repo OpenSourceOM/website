@@ -2,6 +2,7 @@
 title: "Azure Static Web Apps Security and Auth Integration"
 description: "Azure Static Web Apps Security and Auth Integration — expert guide to Azure Static Web Apps security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, an..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Static Web Apps

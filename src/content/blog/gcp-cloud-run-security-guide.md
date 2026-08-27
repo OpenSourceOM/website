@@ -2,6 +2,7 @@
 title: "Google Cloud Run Security: IAM, VPC, and Ingress Controls"
 description: "Google Cloud Run Security — expert guide to GCP Cloud Run security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Run

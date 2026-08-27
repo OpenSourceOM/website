@@ -2,6 +2,7 @@
 title: "AWS Transit Gateway Security and Segmentation Patterns"
 description: "AWS Transit Gateway Security and Segmentation Patterns — expert guide to AWS Transit Gateway security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Transit Gateway

@@ -2,6 +2,7 @@
 title: "Kubernetes Worker Node Hardening for Production"
 description: "Kubernetes Worker Node Hardening for Production — expert guide to Kubernetes node hardening for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

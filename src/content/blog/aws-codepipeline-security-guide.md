@@ -2,6 +2,7 @@
 title: "AWS CodePipeline Security for Secure CI/CD Delivery"
 description: "AWS CodePipeline Security for Secure CI/CD Delivery — expert guide to AWS CodePipeline security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - CodePipeline

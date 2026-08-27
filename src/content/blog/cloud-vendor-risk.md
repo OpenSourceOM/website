@@ -2,6 +2,7 @@
 title: "Cloud Vendor Risk Assessment Framework"
 description: "Cloud Vendor Risk Assessment Framework — expert guide to cloud vendor risk for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritizati..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

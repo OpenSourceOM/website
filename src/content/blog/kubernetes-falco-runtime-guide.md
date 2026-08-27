@@ -2,6 +2,7 @@
 title: "Falco Runtime Security for Kubernetes Threat Detection"
 description: "Falco Runtime Security for Kubernetes Threat Detection — expert guide to Kubernetes falco runtime for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

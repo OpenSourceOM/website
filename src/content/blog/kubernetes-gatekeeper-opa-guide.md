@@ -2,6 +2,7 @@
 title: "OPA Gatekeeper Policies for Kubernetes Compliance"
 description: "OPA Gatekeeper Policies for Kubernetes Compliance — expert guide to Kubernetes gatekeeper opa for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

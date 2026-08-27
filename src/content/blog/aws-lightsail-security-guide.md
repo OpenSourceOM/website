@@ -2,6 +2,7 @@
 title: "Amazon Lightsail Security Basics for Small Cloud Workloads"
 description: "Amazon Lightsail Security Basics for Small Cloud Workloads — expert guide to AWS Lightsail security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Lightsail

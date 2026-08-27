@@ -2,6 +2,7 @@
 title: "Amazon ElastiCache Security for Redis and Memcached"
 description: "Amazon ElastiCache Security for Redis and Memcached — expert guide to AWS ElastiCache security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - ElastiCache

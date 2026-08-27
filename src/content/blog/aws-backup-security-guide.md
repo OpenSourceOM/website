@@ -2,6 +2,7 @@
 title: "AWS Backup Security: Vaults, Encryption, and Cross-Account"
 description: "AWS Backup Security — expert guide to AWS Backup security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practition..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Backup

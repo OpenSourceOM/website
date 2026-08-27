@@ -2,6 +2,7 @@
 title: "GCP Compute Engine Security Hardening for Production VMs"
 description: "GCP Compute Engine Security Hardening for Production VMs—practical guidance on GCP Compute Engine security for AWS, Azure, GCP, and Kubernetes teams using CS..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Compute Engine

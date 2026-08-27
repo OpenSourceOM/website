@@ -2,6 +2,7 @@
 title: "Cloud Tagging Strategy for Security Governance and Cost"
 description: "Cloud Tagging Strategy for Security Governance and Cost—practical guidance on cloud tagging strategy security for AWS, Azure, GCP, and Kubernetes teams using..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - governance
   - tagging
