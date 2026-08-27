@@ -73,7 +73,23 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
 
       <div class="blog-layout">
         <header class="blog-header">
-          <p class="blog-meta">{author}</p>
+          <p class="blog-meta">
+            {author}
+            {
+              pubDate && (
+                <>
+                  {' · '}
+                  <time datetime={pubDate.toISOString()}>
+                    {pubDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </time>
+                </>
+              )
+            }
+          </p>
           <h1>{title}</h1>
           <p class="blog-deck">{blogDeck}</p>
           {
