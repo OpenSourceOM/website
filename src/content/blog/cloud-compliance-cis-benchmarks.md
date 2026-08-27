@@ -2,6 +2,7 @@
 title: "Cloud Compliance: CIS Benchmarks Across AWS, Azure, and GCP"
 description: "Cloud Compliance—practical guidance on CIS cloud benchmarks for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - CIS

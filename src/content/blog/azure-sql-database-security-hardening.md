@@ -2,6 +2,7 @@
 title: "Azure SQL Database Security Hardening for Regulated Workloads"
 description: "Azure SQL Database Security Hardening for Regulated Workloads—practical guidance on Azure SQL security for AWS, Azure, GCP, and Kubernetes teams using CSPM, ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - SQL Database

@@ -2,6 +2,7 @@
 title: "MSSP Cloud Security Service Design Patterns"
 description: "MSSP Cloud Security Service Design Patterns — expert guide to mssp cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prior..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

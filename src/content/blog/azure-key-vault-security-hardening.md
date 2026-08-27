@@ -2,6 +2,7 @@
 title: "Azure Key Vault Security Hardening for Production Workloads"
 description: "Azure Key Vault Security Hardening for Production Workloads—practical guidance on Azure Key Vault security for AWS, Azure, GCP, and Kubernetes teams using CS..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Key Vault

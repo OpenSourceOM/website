@@ -2,6 +2,7 @@
 title: "AWS Certificate Manager Security and TLS Best Practices"
 description: "AWS Certificate Manager Security and TLS Best Practices — expert guide to AWS ACM security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - ACM

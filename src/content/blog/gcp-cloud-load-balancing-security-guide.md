@@ -2,6 +2,7 @@
 title: "Google Cloud Load Balancing Security Architecture"
 description: "Google Cloud Load Balancing Security Architecture — expert guide to GCP Cloud Load Balancing security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Load Balancing

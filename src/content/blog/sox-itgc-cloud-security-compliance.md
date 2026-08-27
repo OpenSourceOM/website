@@ -2,6 +2,7 @@
 title: "SOX IT General Controls in Cloud Environments"
 description: "SOX IT General Controls in Cloud Environments — expert guide to SOX ITGC cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - SOX ITGC

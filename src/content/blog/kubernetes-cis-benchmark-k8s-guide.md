@@ -2,6 +2,7 @@
 title: "CIS Kubernetes Benchmark Implementation Guide"
 description: "CIS Kubernetes Benchmark Implementation Guide — expert guide to Kubernetes cis benchmark k8s for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

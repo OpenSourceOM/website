@@ -2,6 +2,7 @@
 title: "HIPAA Cloud Security Requirements for Healthcare Data"
 description: "HIPAA Cloud Security Requirements for Healthcare Data — expert guide to HIPAA cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - HIPAA

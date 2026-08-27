@@ -2,6 +2,7 @@
 title: "Kubernetes Network Policies: A Practical Implementation Guide"
 description: "Kubernetes Network Policies—practical guidance on Kubernetes network policies for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path pr..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - NetworkPolicy

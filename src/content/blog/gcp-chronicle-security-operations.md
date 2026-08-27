@@ -2,6 +2,7 @@
 title: "Google Chronicle SecOps for GCP and Hybrid Cloud Monitoring"
 description: "Google Chronicle SecOps for GCP and Hybrid Cloud Monitoring—practical guidance on GCP Chronicle security for AWS, Azure, GCP, and Kubernetes teams using CSPM..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Chronicle

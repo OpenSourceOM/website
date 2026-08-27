@@ -2,6 +2,7 @@
 title: "Argo CD Security Hardening for Production GitOps"
 description: "Argo CD Security Hardening for Production GitOps — expert guide to Kubernetes argo cd hardening for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

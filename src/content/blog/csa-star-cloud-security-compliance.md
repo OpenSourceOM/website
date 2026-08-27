@@ -2,6 +2,7 @@
 title: "CSA STAR Cloud Security Assurance Framework Guide"
 description: "CSA STAR Cloud Security Assurance Framework Guide — expert guide to CSA STAR cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - CSA STAR

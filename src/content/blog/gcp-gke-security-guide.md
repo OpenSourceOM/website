@@ -2,6 +2,7 @@
 title: "Google GKE Security Hardening for Production Clusters"
 description: "Google GKE Security Hardening for Production Clusters — expert guide to GCP GKE security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - GKE

@@ -2,6 +2,7 @@
 title: "Kubernetes etcd Encryption at Rest Configuration"
 description: "Kubernetes etcd Encryption at Rest Configuration — expert guide to Kubernetes etcd encryption for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

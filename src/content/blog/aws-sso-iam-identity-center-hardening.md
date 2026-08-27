@@ -2,6 +2,7 @@
 title: "AWS IAM Identity Center Hardening: SSO Permission Sets Done Right"
 description: "AWS IAM Identity Center Hardening—practical guidance on AWS IAM Identity Center for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - IAM Identity Center

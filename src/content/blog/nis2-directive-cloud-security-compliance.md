@@ -2,6 +2,7 @@
 title: "NIS2 Cloud Security Requirements for EU Operators"
 description: "NIS2 Cloud Security Requirements for EU Operators — expert guide to NIS2 Directive cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - NIS2 Directive

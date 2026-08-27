@@ -2,6 +2,7 @@
 title: "GCP VPC Service Controls Explained: Data Exfiltration Guardrails"
 description: "GCP VPC Service Controls Explained—practical guidance on GCP VPC Service Controls for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - VPC Service Controls

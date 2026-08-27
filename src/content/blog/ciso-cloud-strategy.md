@@ -2,6 +2,7 @@
 title: "CISO Cloud Security Strategy for Growing Startups"
 description: "CISO Cloud Security Strategy for Growing Startups — expert guide to ciso cloud strategy for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

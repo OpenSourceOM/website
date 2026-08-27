@@ -2,6 +2,7 @@
 title: "Azure Monitor Security Logging and Alert Rules"
 description: "Azure Monitor Security Logging and Alert Rules — expert guide to Azure Monitor security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Monitor

@@ -51,6 +51,7 @@ function buildFrontmatter(topic) {
 title: "${yamlEscape(topic.title)}"
 description: "${yamlEscape(topic.description)}"
 author: OpenSourceOM Team
+noindex: true
 tags:
 ${topic.tags.map((t) => `  - ${t}`).join('\n')}
 focusKeyword: ${topic.focusKeyword}

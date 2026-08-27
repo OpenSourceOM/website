@@ -2,6 +2,7 @@
 title: "External Attack Surface Management for Cloud Assets"
 description: "External Attack Surface Management for Cloud Assets — expert guide to external attack surface management for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

@@ -2,6 +2,7 @@
 title: "Azure Privileged Identity Management for Cloud Administrators"
 description: "Azure Privileged Identity Management for Cloud Administrators—practical guidance on Azure Privileged Identity Management for AWS, Azure, GCP, and Kubernetes ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - PIM

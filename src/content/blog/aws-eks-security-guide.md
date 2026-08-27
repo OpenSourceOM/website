@@ -2,6 +2,7 @@
 title: "Amazon EKS Security Hardening: Control Plane, Nodes, and IRSA"
 description: "Amazon EKS Security Hardening — expert guide to AWS EKS security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pra..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - EKS

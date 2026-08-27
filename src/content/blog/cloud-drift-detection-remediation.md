@@ -2,6 +2,7 @@
 title: "Cloud Drift Detection and Remediation: Closing the IaC Gap"
 description: "Cloud Drift Detection and Remediation—practical guidance on cloud drift detection for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud drift
   - IaC

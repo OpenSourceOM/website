@@ -2,6 +2,7 @@
 title: "AWS GuardDuty Threat Detection: Tuning Alerts for Real Incidents"
 description: "AWS GuardDuty Threat Detection—practical guidance on AWS GuardDuty for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - GuardDuty

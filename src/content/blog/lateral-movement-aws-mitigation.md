@@ -2,6 +2,7 @@
 title: "Lateral Movement in AWS: Detection Patterns and Mitigation"
 description: "Lateral Movement in AWS—practical guidance on lateral movement AWS for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - lateral movement

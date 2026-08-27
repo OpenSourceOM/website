@@ -2,6 +2,7 @@
 title: "Edge Cloud Security for CDN and IoT Gateways"
 description: "Edge Cloud Security for CDN and IoT Gateways — expert guide to edge cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

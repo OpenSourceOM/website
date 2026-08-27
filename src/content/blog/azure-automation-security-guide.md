@@ -2,6 +2,7 @@
 title: "Azure Automation Security for Runbooks and Updates"
 description: "Azure Automation Security for Runbooks and Updates — expert guide to Azure Automation security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Automation

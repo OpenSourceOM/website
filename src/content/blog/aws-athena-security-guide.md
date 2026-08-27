@@ -2,6 +2,7 @@
 title: "Amazon Athena Security: Query Access and S3 Data Controls"
 description: "Amazon Athena Security — expert guide to AWS Athena security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practit..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Athena

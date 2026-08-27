@@ -2,6 +2,7 @@
 title: "AWS Lambda Security Deep Dive: Permissions, Layers, and URLs"
 description: "AWS Lambda Security Deep Dive — expert guide to AWS Lambda security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Lambda

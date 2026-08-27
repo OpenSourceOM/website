@@ -2,6 +2,7 @@
 title: "Kubernetes Pod Security Standards: Enforcing Baseline and Restricted"
 description: "Kubernetes Pod Security Standards—practical guidance on Kubernetes Pod Security Standards for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - pod security

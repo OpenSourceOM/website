@@ -2,6 +2,7 @@
 title: "Google Binary Authorization for Supply Chain Security"
 description: "Google Binary Authorization for Supply Chain Security — expert guide to GCP Binary Authorization security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAP..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Binary Authorization

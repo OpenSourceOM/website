@@ -11,7 +11,8 @@ interface Props {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
-const { title, description, pubDate, updatedDate, author, tags, faq, focusKeyword } = post.data;
+const { title, description, pubDate, updatedDate, author, tags, faq, focusKeyword, noindex } =
+  post.data;
 
 const blogDeck = description.endsWith('...')
   ? focusKeyword
@@ -38,7 +39,7 @@ if (pubDate) {
 }
 
 const faqJsonLd =
-  faq && faq.length > 0
+  !noindex && faq && faq.length > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -64,6 +65,7 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
   ogType="article"
   canonical={canonical}
   jsonLd={structuredData}
+  noindex={noindex}
 >
   <article class="blog-article">
     <div class="container blog-article-inner">

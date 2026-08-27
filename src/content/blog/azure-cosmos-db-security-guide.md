@@ -2,6 +2,7 @@
 title: "Azure Cosmos DB Security: RBAC, Firewall, and Encryption"
 description: "Azure Cosmos DB Security — expert guide to Azure Cosmos DB security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Cosmos DB

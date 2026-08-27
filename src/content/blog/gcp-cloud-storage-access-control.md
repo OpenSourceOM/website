@@ -2,6 +2,7 @@
 title: "GCP Cloud Storage Access Control: IAM, ACLs, and Uniform Access"
 description: "GCP Cloud Storage Access Control—practical guidance on GCP Cloud Storage security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Storage

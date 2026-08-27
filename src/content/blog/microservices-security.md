@@ -2,6 +2,7 @@
 title: "Microservices Security Patterns in the Cloud"
 description: "Microservices Security Patterns in the Cloud — expert guide to microservices security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

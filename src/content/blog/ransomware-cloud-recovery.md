@@ -2,6 +2,7 @@
 title: "Ransomware Recovery Planning for Cloud Workloads"
 description: "Ransomware Recovery Planning for Cloud Workloads — expert guide to ransomware cloud recovery for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

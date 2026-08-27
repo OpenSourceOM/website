@@ -2,6 +2,7 @@
 title: "Google Cloud VPN Security and HA Setup"
 description: "Google Cloud VPN Security and HA Setup — expert guide to GCP Cloud VPN security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path priorit..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud VPN

@@ -2,6 +2,7 @@
 title: "AWS Secrets Manager vs Parameter Store Security Patterns"
 description: "AWS Secrets Manager vs Parameter Store Security Patterns — expert guide to AWS Secrets Manager security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP,..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Secrets Manager

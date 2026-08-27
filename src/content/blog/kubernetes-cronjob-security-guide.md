@@ -2,6 +2,7 @@
 title: "Kubernetes CronJob Security and RBAC Scoping"
 description: "Kubernetes CronJob Security and RBAC Scoping — expert guide to Kubernetes cronjob security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

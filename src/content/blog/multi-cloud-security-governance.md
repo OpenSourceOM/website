@@ -2,6 +2,7 @@
 title: "Multi-Cloud Security Governance: Frameworks That Scale"
 description: "Multi-Cloud Security Governance—practical guidance on multi-cloud security governance for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - multi-cloud
   - governance

@@ -2,6 +2,7 @@
 title: "Azure SQL Managed Instance Security Baseline"
 description: "Azure SQL Managed Instance Security Baseline — expert guide to Azure SQL Managed Instance security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - SQL Managed Instance

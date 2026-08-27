@@ -2,6 +2,7 @@
 title: "Kubernetes Cluster Autoscaler Security Considerations"
 description: "Kubernetes Cluster Autoscaler Security Considerations — expert guide to Kubernetes cluster autoscaler security for AWS, Azure, GCP, and Kubernetes with CSPM,..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

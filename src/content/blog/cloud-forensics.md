@@ -2,6 +2,7 @@
 title: "Cloud Forensics: Evidence Collection Across AWS and Azure"
 description: "Cloud Forensics — expert guide to cloud forensics for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitioners."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

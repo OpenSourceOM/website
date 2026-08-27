@@ -2,6 +2,7 @@
 title: "Cyber Essentials Plus for Cloud-Hosted UK Businesses"
 description: "Cyber Essentials Plus for Cloud-Hosted UK Businesses — expert guide to Cyber Essentials Plus cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CN..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - Cyber Essentials Plus

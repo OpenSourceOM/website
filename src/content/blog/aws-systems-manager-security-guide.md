@@ -2,6 +2,7 @@
 title: "AWS Systems Manager Security for Patch and Session Manager"
 description: "AWS Systems Manager Security for Patch and Session Manager — expert guide to AWS Systems Manager security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAP..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Systems Manager

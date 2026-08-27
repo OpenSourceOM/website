@@ -2,6 +2,7 @@
 title: "Google Artifact Registry Security and Scanning"
 description: "Google Artifact Registry Security and Scanning — expert guide to GCP Artifact Registry security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Artifact Registry

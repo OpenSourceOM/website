@@ -2,6 +2,7 @@
 title: "Azure OpenAI Service Security and Data Residency"
 description: "Azure OpenAI Service Security and Data Residency — expert guide to Azure OpenAI Service security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - OpenAI Service

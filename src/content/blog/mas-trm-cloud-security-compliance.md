@@ -2,6 +2,7 @@
 title: "MAS TRM Cloud Technology Risk Management Guide"
 description: "MAS TRM Cloud Technology Risk Management Guide — expert guide to MAS TRM cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - MAS TRM

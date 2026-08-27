@@ -2,6 +2,7 @@
 title: "AWS S3 Bucket Security Hardening: Block Public Access and Beyond"
 description: "AWS S3 Bucket Security Hardening—practical guidance on AWS S3 security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritiz..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - S3

@@ -2,6 +2,7 @@
 title: "AWS Organizations SCPs: Guardrails for Multi-Account Security"
 description: "AWS Organizations SCPs—practical guidance on AWS Organizations SCP for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - SCP

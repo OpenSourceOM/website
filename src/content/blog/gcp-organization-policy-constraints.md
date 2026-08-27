@@ -2,6 +2,7 @@
 title: "GCP Organization Policy Constraints for Security Baselines"
 description: "GCP Organization Policy Constraints for Security Baselines—practical guidance on GCP organization policy for AWS, Azure, GCP, and Kubernetes teams using CSPM..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - organization policy

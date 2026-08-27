@@ -2,6 +2,7 @@
 title: "Amazon EventBridge Security for Event-Driven Architectures"
 description: "Amazon EventBridge Security for Event-Driven Architectures — expert guide to AWS EventBridge security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - EventBridge

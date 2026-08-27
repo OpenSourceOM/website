@@ -2,6 +2,7 @@
 title: "Google Cloud Deploy Security and Release Controls"
 description: "Google Cloud Deploy Security and Release Controls — expert guide to GCP Cloud Deploy security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Deploy

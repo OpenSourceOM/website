@@ -2,6 +2,7 @@
 title: "Azure Synapse Analytics Security for Data Warehouses"
 description: "Azure Synapse Analytics Security for Data Warehouses — expert guide to Azure Synapse security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Synapse

@@ -2,6 +2,7 @@
 title: "Google Dataproc Security for Spark and Hadoop"
 description: "Google Dataproc Security for Spark and Hadoop — expert guide to GCP Dataproc security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Dataproc

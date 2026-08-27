@@ -2,6 +2,7 @@
 title: "GDPR Cloud Data Protection and Security Obligations"
 description: "GDPR Cloud Data Protection and Security Obligations — expert guide to GDPR cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - GDPR

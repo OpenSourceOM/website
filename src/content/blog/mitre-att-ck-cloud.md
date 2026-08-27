@@ -2,6 +2,7 @@
 title: "MITRE ATT&CK for Cloud: Mapping Detections to TTPs"
 description: "MITRE ATT&CK for Cloud — expert guide to mitre att&ck cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practiti..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

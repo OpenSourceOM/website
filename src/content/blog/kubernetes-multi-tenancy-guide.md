@@ -2,6 +2,7 @@
 title: "Kubernetes Multi-Tenancy Security with Namespaces"
 description: "Kubernetes Multi-Tenancy Security with Namespaces — expert guide to Kubernetes multi-tenancy for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

@@ -2,6 +2,7 @@
 title: "Google Identity-Aware Proxy for Zero Trust Access"
 description: "Google Identity-Aware Proxy for Zero Trust Access — expert guide to GCP Identity-Aware Proxy security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Identity-Aware Proxy

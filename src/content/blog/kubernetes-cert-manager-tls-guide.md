@@ -2,6 +2,7 @@
 title: "cert-manager TLS Security for Kubernetes Ingress"
 description: "cert-manager TLS Security for Kubernetes Ingress — expert guide to Kubernetes cert manager tls for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

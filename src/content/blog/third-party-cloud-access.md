@@ -2,6 +2,7 @@
 title: "Third-Party Cloud Access Risk Management"
 description: "Third-Party Cloud Access Risk Management — expert guide to third party cloud access for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path pri..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

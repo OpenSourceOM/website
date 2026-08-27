@@ -2,6 +2,7 @@
 title: "AWS Network Firewall Rules and Inspection Design"
 description: "AWS Network Firewall Rules and Inspection Design — expert guide to AWS Network Firewall security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Network Firewall

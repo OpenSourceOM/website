@@ -2,6 +2,7 @@
 title: "AWS Security Hub: Centralizing Findings and Compliance"
 description: "AWS Security Hub — expert guide to AWS Security Hub security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practit..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Security Hub

@@ -2,6 +2,7 @@
 title: "Amazon Kinesis Data Streams Security and IAM Policies"
 description: "Amazon Kinesis Data Streams Security and IAM Policies — expert guide to AWS Kinesis security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Kinesis

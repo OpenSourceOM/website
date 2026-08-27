@@ -2,6 +2,7 @@
 title: "Azure Backup Security: Vaults, Encryption, and RBAC"
 description: "Azure Backup Security — expert guide to Azure Backup security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practi..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Backup

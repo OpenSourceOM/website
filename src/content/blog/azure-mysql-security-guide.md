@@ -2,6 +2,7 @@
 title: "Azure Database for MySQL Security Best Practices"
 description: "Azure Database for MySQL Security Best Practices — expert guide to Azure MySQL security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - MySQL

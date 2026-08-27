@@ -2,6 +2,7 @@
 title: "HITRUST CSF Cloud Security Certification Roadmap"
 description: "HITRUST CSF Cloud Security Certification Roadmap — expert guide to HITRUST cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - HITRUST

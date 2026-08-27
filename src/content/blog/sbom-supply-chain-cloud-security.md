@@ -2,6 +2,7 @@
 title: "SBOM and Supply Chain Security for Cloud-Native Teams"
 description: "SBOM and Supply Chain Security for Cloud-Native Teams—practical guidance on SBOM cloud security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - SBOM
   - supply chain

@@ -2,6 +2,7 @@
 title: "Google Apigee API Security Management Guide"
 description: "Google Apigee API Security Management Guide — expert guide to GCP Apigee security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prior..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Apigee

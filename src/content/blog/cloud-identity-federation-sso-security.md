@@ -2,6 +2,7 @@
 title: "Cloud Identity Federation and SSO Security Best Practices"
 description: "Cloud Identity Federation and SSO Security Best Practices—practical guidance on cloud identity federation for AWS, Azure, GCP, and Kubernetes teams using CSP..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - identity
   - SSO

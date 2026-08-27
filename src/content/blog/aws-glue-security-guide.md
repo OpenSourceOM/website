@@ -2,6 +2,7 @@
 title: "AWS Glue Security for ETL Pipelines and Data Catalogs"
 description: "AWS Glue Security for ETL Pipelines and Data Catalogs — expert guide to AWS Glue security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Glue

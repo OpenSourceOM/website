@@ -2,6 +2,7 @@
 title: "Serverless Security: AWS Lambda and Azure Functions Hardening"
 description: "Serverless Security—practical guidance on serverless security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - serverless
   - Lambda

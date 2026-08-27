@@ -2,6 +2,7 @@
 title: "Helm Chart Security Scanning and Best Practices"
 description: "Helm Chart Security Scanning and Best Practices — expert guide to Kubernetes helm chart security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

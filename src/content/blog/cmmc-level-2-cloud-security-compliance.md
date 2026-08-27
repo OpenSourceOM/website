@@ -2,6 +2,7 @@
 title: "CMMC Level 2 Cloud Security for Defense Contractors"
 description: "CMMC Level 2 Cloud Security for Defense Contractors — expert guide to CMMC Level 2 cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - CMMC Level 2

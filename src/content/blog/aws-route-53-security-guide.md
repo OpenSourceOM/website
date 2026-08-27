@@ -2,6 +2,7 @@
 title: "Amazon Route 53 Security: DNS Hijacking Prevention"
 description: "Amazon Route 53 Security — expert guide to AWS Route 53 security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pra..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Route 53

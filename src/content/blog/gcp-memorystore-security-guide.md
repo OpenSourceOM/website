@@ -2,6 +2,7 @@
 title: "Google Memorystore Redis Security Configuration"
 description: "Google Memorystore Redis Security Configuration — expert guide to GCP Memorystore security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Memorystore

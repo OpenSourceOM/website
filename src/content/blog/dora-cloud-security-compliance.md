@@ -2,6 +2,7 @@
 title: "DORA Resilience Requirements for Cloud Financial Services"
 description: "DORA Resilience Requirements for Cloud Financial Services — expert guide to DORA cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and att..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - DORA

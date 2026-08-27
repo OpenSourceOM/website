@@ -2,6 +2,7 @@
 title: "Google Cloud Trace Security for Microservices"
 description: "Google Cloud Trace Security for Microservices — expert guide to GCP Cloud Trace security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Trace

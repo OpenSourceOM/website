@@ -2,6 +2,7 @@
 title: "Azure DDoS Protection Standard Configuration Guide"
 description: "Azure DDoS Protection Standard Configuration Guide — expert guide to Azure DDoS Protection security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - DDoS Protection

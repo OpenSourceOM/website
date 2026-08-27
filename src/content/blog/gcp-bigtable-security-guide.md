@@ -2,6 +2,7 @@
 title: "Cloud Bigtable Security and Access Control Patterns"
 description: "Cloud Bigtable Security and Access Control Patterns — expert guide to GCP Bigtable security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Bigtable

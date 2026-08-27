@@ -2,6 +2,7 @@
 title: "Azure App Service Security for Web Applications"
 description: "Azure App Service Security for Web Applications — expert guide to Azure App Service security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - App Service

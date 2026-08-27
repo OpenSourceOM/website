@@ -2,6 +2,7 @@
 title: "Azure Blob Storage Security: Access Tiers, SAS, and Private Link"
 description: "Azure Blob Storage Security—practical guidance on Azure blob storage security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path pr..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - blob storage

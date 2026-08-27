@@ -2,6 +2,7 @@
 title: "Cloud Security Architect Skills and Career Path"
 description: "Cloud Security Architect Skills and Career Path — expert guide to security architect cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

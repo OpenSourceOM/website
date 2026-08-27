@@ -2,6 +2,7 @@
 title: "Google Cloud Build Security for CI/CD Pipelines"
 description: "Google Cloud Build Security for CI/CD Pipelines — expert guide to GCP Cloud Build security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Build

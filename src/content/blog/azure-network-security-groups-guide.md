@@ -2,6 +2,7 @@
 title: "Azure NSG Rules: A Practical Security Guide for Cloud Teams"
 description: "Azure NSG Rules—practical guidance on Azure NSG security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - NSG

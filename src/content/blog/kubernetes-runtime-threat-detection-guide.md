@@ -2,6 +2,7 @@
 title: "Kubernetes Runtime Threat Detection with eBPF"
 description: "Kubernetes Runtime Threat Detection with eBPF — expert guide to Kubernetes runtime threat detection for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

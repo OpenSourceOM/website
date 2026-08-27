@@ -2,6 +2,7 @@
 title: "Cloud Secrets Management: AWS, Azure, and GCP Best Practices"
 description: "Cloud Secrets Management—practical guidance on cloud secrets management for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioriti..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - secrets management
   - cloud security

@@ -2,6 +2,7 @@
 title: "GraphQL API Security in Cloud-Native Architectures"
 description: "GraphQL API Security in Cloud-Native Architectures — expert guide to graphql api security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

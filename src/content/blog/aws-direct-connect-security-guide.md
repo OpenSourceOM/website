@@ -2,6 +2,7 @@
 title: "AWS Direct Connect Security and Encryption Options"
 description: "AWS Direct Connect Security and Encryption Options — expert guide to AWS Direct Connect security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and at..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Direct Connect

@@ -2,6 +2,7 @@
 title: "AWS Amplify Security for Full-Stack Web Applications"
 description: "AWS Amplify Security for Full-Stack Web Applications — expert guide to AWS Amplify security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - Amplify

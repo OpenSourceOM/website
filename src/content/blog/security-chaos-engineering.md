@@ -2,6 +2,7 @@
 title: "Security Chaos Engineering in Cloud Environments"
 description: "Security Chaos Engineering in Cloud Environments — expert guide to security chaos engineering for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

@@ -2,6 +2,7 @@
 title: "Policy as Code for Multi-Cloud Security Governance"
 description: "Policy as Code for Multi-Cloud Security Governance — expert guide to policy as code cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

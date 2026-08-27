@@ -2,6 +2,7 @@
 title: "AWS RDS Security Guide: Encryption, Network Isolation, and Auditing"
 description: "AWS RDS Security Guide—practical guidance on AWS RDS security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prioritization."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - RDS

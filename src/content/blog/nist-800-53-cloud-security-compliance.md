@@ -2,6 +2,7 @@
 title: "NIST 800-53 Controls for Cloud Service Providers"
 description: "NIST 800-53 Controls for Cloud Service Providers — expert guide to NIST 800-53 cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - NIST 800-53

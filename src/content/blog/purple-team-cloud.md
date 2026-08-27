@@ -2,6 +2,7 @@
 title: "Purple Team Exercises for Cloud Security Programs"
 description: "Purple Team Exercises for Cloud Security Programs — expert guide to purple team cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

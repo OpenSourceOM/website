@@ -2,6 +2,7 @@
 title: "Hybrid Cloud Security Architecture Best Practices"
 description: "Hybrid Cloud Security Architecture Best Practices — expert guide to hybrid cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

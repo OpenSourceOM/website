@@ -2,6 +2,7 @@
 title: "Azure Event Hubs Security for Streaming Data"
 description: "Azure Event Hubs Security for Streaming Data — expert guide to Azure Event Hubs security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Event Hubs

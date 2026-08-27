@@ -2,6 +2,7 @@
 title: "Trivy Container Scanning in Kubernetes CI/CD"
 description: "Trivy Container Scanning in Kubernetes CI/CD — expert guide to Kubernetes trivy scanning for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

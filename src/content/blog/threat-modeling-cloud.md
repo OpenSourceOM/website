@@ -2,6 +2,7 @@
 title: "Threat Modeling for Cloud-Native Applications"
 description: "Threat Modeling for Cloud-Native Applications — expert guide to threat modeling cloud for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

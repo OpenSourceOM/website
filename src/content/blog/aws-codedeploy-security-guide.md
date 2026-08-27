@@ -2,6 +2,7 @@
 title: "AWS CodeDeploy Security for Blue-Green Deployments"
 description: "AWS CodeDeploy Security for Blue-Green Deployments — expert guide to AWS CodeDeploy security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - CodeDeploy

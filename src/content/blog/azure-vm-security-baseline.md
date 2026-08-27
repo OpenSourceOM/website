@@ -2,6 +2,7 @@
 title: "Azure VM Security Baseline: Disk Encryption, NSGs, and Monitoring"
 description: "Azure VM Security Baseline—practical guidance on Azure VM security baseline for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path prio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - virtual machines

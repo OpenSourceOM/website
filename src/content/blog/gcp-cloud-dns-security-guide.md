@@ -2,6 +2,7 @@
 title: "Google Cloud DNS Security and DNSSEC Configuration"
 description: "Google Cloud DNS Security and DNSSEC Configuration — expert guide to GCP Cloud DNS security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack ..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud DNS

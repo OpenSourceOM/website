@@ -2,6 +2,7 @@
 title: "Kubernetes Ingress Security: TLS, Auth, and WAF"
 description: "Kubernetes Ingress Security — expert guide to Kubernetes ingress security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritizatio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - container security

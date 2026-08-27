@@ -2,6 +2,7 @@
 title: "SOC 2 Type II Cloud Security Controls Checklist"
 description: "SOC 2 Type II Cloud Security Controls Checklist — expert guide to SOC 2 Type II cloud security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - compliance
   - SOC 2 Type II

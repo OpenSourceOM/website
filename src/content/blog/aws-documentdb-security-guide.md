@@ -2,6 +2,7 @@
 title: "Amazon DocumentDB Security Hardening Checklist"
 description: "Amazon DocumentDB Security Hardening Checklist — expert guide to AWS DocumentDB security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - AWS
   - DocumentDB

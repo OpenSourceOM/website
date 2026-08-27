@@ -2,6 +2,7 @@
 title: "Google BigQuery Security: IAM, Row Access, and Encryption"
 description: "Google BigQuery Security — expert guide to GCP BigQuery security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for pra..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - BigQuery

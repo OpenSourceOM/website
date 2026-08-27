@@ -2,6 +2,7 @@
 title: "Kubernetes Admission Controllers for Security Policy Enforcement"
 description: "Kubernetes Admission Controllers for Security Policy Enforcement—practical guidance on Kubernetes admission controllers for AWS, Azure, GCP, and Kubernetes t..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Kubernetes
   - admission control

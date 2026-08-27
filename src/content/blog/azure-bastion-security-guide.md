@@ -2,6 +2,7 @@
 title: "Azure Bastion Security for Secure RDP and SSH Access"
 description: "Azure Bastion Security for Secure RDP and SSH Access — expert guide to Azure Bastion security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attac..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Bastion

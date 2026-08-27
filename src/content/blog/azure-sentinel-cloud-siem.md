@@ -2,6 +2,7 @@
 title: "Microsoft Sentinel for Cloud Security Operations"
 description: "Microsoft Sentinel for Cloud Security Operations—practical guidance on Azure Sentinel cloud security for AWS, Azure, GCP, and Kubernetes teams using CSPM, CN..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Sentinel

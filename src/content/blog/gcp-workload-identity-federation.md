@@ -2,6 +2,7 @@
 title: "GCP Workload Identity Federation: Keyless Access from CI/CD"
 description: "GCP Workload Identity Federation—practical guidance on GCP Workload Identity Federation for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and atta..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Workload Identity

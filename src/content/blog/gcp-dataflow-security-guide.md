@@ -2,6 +2,7 @@
 title: "Google Cloud Dataflow Security for Streaming ETL"
 description: "Google Cloud Dataflow Security for Streaming ETL — expert guide to GCP Dataflow security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Dataflow

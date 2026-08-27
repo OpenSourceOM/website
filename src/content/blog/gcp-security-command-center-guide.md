@@ -2,6 +2,7 @@
 title: "GCP Security Command Center: Findings, Sources, and Workflows"
 description: "GCP Security Command Center—practical guidance on GCP Security Command Center for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack path pr..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Security Command Center

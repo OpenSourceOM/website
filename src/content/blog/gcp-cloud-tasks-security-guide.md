@@ -2,6 +2,7 @@
 title: "Google Cloud Tasks Security for Async Workloads"
 description: "Google Cloud Tasks Security for Async Workloads — expert guide to GCP Cloud Tasks security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Cloud Tasks

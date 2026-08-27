@@ -2,6 +2,7 @@
 title: "Azure Firewall Policy Design for Cloud Networks"
 description: "Azure Firewall Policy Design for Cloud Networks — expert guide to Azure Firewall security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - Azure
   - Firewall

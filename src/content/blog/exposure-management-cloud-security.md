@@ -2,6 +2,7 @@
 title: "Exposure Management in Cloud Security: Beyond Vulnerability Lists"
 description: "Exposure Management in Cloud Security—practical guidance on exposure management cloud for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - exposure management
   - attack surface

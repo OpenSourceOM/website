@@ -2,6 +2,7 @@
 title: "Cloud Red Team Operations: Tactics and Tooling"
 description: "Cloud Red Team Operations — expert guide to cloud red team for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for practitio..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

@@ -2,6 +2,7 @@
 title: "Bug Bounty Program Scope for Cloud Infrastructure"
 description: "Bug Bounty Program Scope for Cloud Infrastructure — expert guide to bug bounty cloud scope for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack p..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - cloud security
   - CNAPP

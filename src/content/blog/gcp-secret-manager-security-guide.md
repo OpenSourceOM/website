@@ -2,6 +2,7 @@
 title: "Google Secret Manager Security and Rotation"
 description: "Google Secret Manager Security and Rotation — expert guide to GCP Secret Manager security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
 author: OpenSourceOM Team
+noindex: true
 tags:
   - GCP
   - Secret Manager
