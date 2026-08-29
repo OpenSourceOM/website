@@ -1,107 +1,130 @@
 ---
-title: "AWS Glue Security for ETL Pipelines and Data Catalogs"
-description: "AWS Glue Security for ETL Pipelines and Data Catalogs — expert guide to AWS Glue security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pa..."
+title: "AWS Glue Security: Job Roles, Catalog Encryption, and Connections"
+description: "AWS Glue security for ETL: least-privilege job roles, Lake Formation vs IAM, connection credentials, catalog encryption, and why a crawler role that can s3:* is an exfil path."
+pubDate: 2026-08-29
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
-noindex: true
 tags:
   - AWS
   - Glue
-  - cloud security
-  - CSPM
-  - CNAPP
+  - IAM
+  - Lake Formation
+  - data security
 focusKeyword: AWS Glue security
 faq:
-  - question: Why does AWS Glue security matter for cloud teams?
-    answer: AWS Glue security reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does AWS Glue security relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether AWS Glue security gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support AWS Glue security?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize AWS Glue security without proprietary black boxes.
+  - question: Does Lake Formation replace the Glue job IAM role?
+    answer: >-
+      No. The job still assumes an IAM role to talk to Glue APIs, S3, KMS, and
+      CloudWatch. Lake Formation adds a second grant layer on Data Catalog
+      tables and S3 locations. A job role with s3:* on the data lake bypasses
+      the point of LF column filters.
+  - question: Are Glue connections encrypted?
+    answer: >-
+      JDBC passwords in connections are stored by Glue and retrieved at runtime
+      by the job role. If that role can glue:GetConnection on every connection
+      in the account, every warehouse password is in play. Scope GetConnection
+      to named connections and put secrets in Secrets Manager with a resource
+      policy the job role can read—one secret per connection.
+  - question: Why do public Glue jobs keep showing up in CSPM?
+    answer: >-
+      Glue jobs do not have a public IP the way RDS does. The exposure is the
+      role: network (can the ENI reach the internet?), S3 (can it write to an
+      attacker bucket?), and catalog (can it drop tables?). Treat the job role
+      as the blast radius, not the job name.
 ---
 
-**AWS Glue security** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+Glue runs Spark (or Python shell) under an **IAM role you chose**. That role can read every bucket you were too busy to name, call `glue:GetConnection` on prod JDBC, and write to a “scratch” prefix that is world-readable. **AWS Glue security** is the job role, the Data Catalog, and connections—not a Spark tuning guide, not Lake Formation marketing, and not [Amazon RDS security](/blog/aws-rds-security-guide/) (the warehouse behind JDBC is a different origin). AWS reference: [Security in AWS Glue](https://docs.aws.amazon.com/glue/latest/dg/security.html).
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+```
+Scheduler / trigger
+  → Glue job  —ASSUMES→  job role
+       → S3 (source + junkyard)
+       → Data Catalog / Lake Formation
+       → JDBC connection secret
+       → KMS
+```
 
-## Why AWS Glue security matters now
+If the job role can `s3:PutObject` on a bucket your org does not own, ETL is an exfil pipeline.
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+## 1. One job role is not an org role
 
-| Challenge | Without AWS Glue security | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+Do not reuse `GlueServiceRole` with `AdministratorAccess` “until we land.” Split:
 
-Teams comparing [aws sso iam identity center hardening](/blog/aws-sso-iam-identity-center-hardening/) and [dspm data security posture management](/blog/dspm-data-security-posture-management/) often discover that **prioritization** matters more than acquiring yet another point product.
+| Role | Allowed to |
+| --- | --- |
+| `glue-payments-etl` | Read `s3://lake/payments/…`, write `s3://lake/payments/curated/…`, `glue:GetConnection` on `payments-pg` only |
+| `glue-crawler-payments` | Crawl those prefixes; **no** `iam:PassRole` on the ETL role |
+| Break-glass | Catalog admin in a separate account or permission set |
 
-## Core controls and implementation steps
+```json
+{
+  "Effect": "Allow",
+  "Action": ["s3:GetObject", "s3:PutObject"],
+  "Resource": [
+    "arn:aws:s3:::lake/payments/raw/*",
+    "arn:aws:s3:::lake/payments/curated/*"
+  ]
+}
+```
 
-Start with visibility, then enforcement, then continuous validation:
+`iam:PassRole` on the Glue service should allow **only** the job roles Glue may assume (`iam:PassedToService` = `glue.amazonaws.com`). A developer who can pass `OrganizationAccountAccessRole` into a Glue job owns the account.
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+```bash
+aws glue get-job --job-name payments-daily \
+  --query 'Job.[Role,GlueVersion,Command.Name]'
+```
 
-### AWS considerations
+## 2. Connections and secrets
 
-On AWS, align AWS Glue security with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+JDBC connections store a username/password Glue decrypts at runtime. Bound the job role:
 
-### Azure considerations
+```json
+{
+  "Effect": "Allow",
+  "Action": "glue:GetConnection",
+  "Resource": "arn:aws:glue:us-east-1:123456789012:connection/payments-pg"
+}
+```
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+Prefer **Secrets Manager** as the connection password source. The secret resource policy should allow the job role, not `glue.amazonaws.com` from every account. Rotate the warehouse password when a job role is retired.
 
-### GCP considerations
+**Failure mode:** one `glue-shared` connection used by twenty jobs. Every job role then needs `GetConnection` on that name; one over-privileged job dumps the warehouse.
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+Network: put Glue ENIs in **private subnets** with VPC endpoints for S3 and Glue ([VPC endpoints vs NAT](/blog/aws-vpc-endpoints-vs-nat-security/)). A job that NATs to the internet can `pip install` from anywhere and can PUT to an external bucket if IAM allows it.
 
-### Kubernetes considerations
+## 3. Catalog encryption and Lake Formation
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce AWS Glue security at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+Encrypt the Data Catalog with a CMK. Encrypt CloudWatch logs for the job. At-rest encryption on S3 is the bucket CMK—Glue `SecurityConfiguration` must name the same keys the job role can use or the job fails closed (good) or someone adds `kms:*` (bad).
 
-## Avoiding toxic combinations
+```bash
+aws glue get-data-catalog-encryption-settings
+aws glue get-security-configuration --name payments-glue-sec
+```
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+If you use **Lake Formation**:
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+- Register the S3 location; do not also grant the job `s3:*` on that prefix.
+- Grant the job role LF permissions on **named databases/tables**, not `ALL TABLES IN DATABASE`.
+- Hybrid access mode exists so IAM-only tables do not silently ignore LF. Know which tables are which.
 
-## Metrics that prove progress
+LF data filters do nothing if the job reads the parquet files with raw `s3:GetObject`.
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+## 4. Dev endpoints, notebooks, and bookmarks
 
-Executives care about trend lines, not raw finding counts—a mature AWS Glue security program ** reduces reachable risk**, not merely closes tickets.
+Deprecated **dev endpoints** were long-lived Spark clusters with a role. Do not recreate them. Use Glue Studio / interactive sessions with the **same** least-privilege role as prod, or you will debug with prod credentials.
 
-## Open-source and self-hosted options
+Job bookmarks and temp dirs (`--TempDir`) inherit the job role’s S3 rights. A world-readable temp bucket is a copy of last night’s PII.
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+## Checklist
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+- [ ] Unique job role per sensitivity boundary; no org-admin pass-role
+- [ ] `GetConnection` and Secrets Manager ARNs named, not `*`
+- [ ] Glue ENIs private; S3/Glue via endpoints, not open NAT plus `s3:*`
+- [ ] Catalog + job logs encrypted; S3 CMK usable by the job without `kms:*`
+- [ ] Lake Formation grants match IAM (no dual `s3:*` backdoor)
+- [ ] TempDir and bookmark buckets are private and lifecycle-expired
+- [ ] Triggers and crawlers use the crawler role, not the ETL role
 
-## Operational cadence
+A Glue job with `s3:*` and `glue:GetConnection` on `*` is a **path to data** with a scheduler. Rank it like any other over-privileged workload in [blast-radius analysis](/blog/blast-radius-analysis-cloud-iam/).
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
-
-## Key takeaways
-
-- **AWS Glue security** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
-
----
-**Related:** [aws-sso-iam-identity-center-hardening](/blog/aws-sso-iam-identity-center-hardening/) · [dspm-data-security-posture-management](/blog/dspm-data-security-posture-management/)
+**Related:** [Amazon RDS security](/blog/aws-rds-security-guide/) · [VPC endpoints vs NAT](/blog/aws-vpc-endpoints-vs-nat-security/) · [AWS security best practices](/blog/aws-security-best-practices-2026/)

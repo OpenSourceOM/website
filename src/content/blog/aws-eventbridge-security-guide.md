@@ -1,107 +1,132 @@
 ---
-title: "Amazon EventBridge Security for Event-Driven Architectures"
-description: "Amazon EventBridge Security for Event-Driven Architectures — expert guide to AWS EventBridge security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, a..."
+title: "Amazon EventBridge Security: Bus Policies and API Destinations"
+description: "Amazon EventBridge security: default-bus vs custom bus resource policies, cross-account PutEvents, API destinations and connection secrets, and encryption that does not cover the event you already leaked to a partner."
+pubDate: 2026-08-29
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
-noindex: true
 tags:
   - AWS
   - EventBridge
-  - cloud security
-  - CSPM
-  - CNAPP
-focusKeyword: AWS EventBridge security
+  - IAM
+  - event-driven
+  - API destinations
+focusKeyword: Amazon EventBridge security
 faq:
-  - question: Why does AWS EventBridge security matter for cloud teams?
-    answer: AWS EventBridge security reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does AWS EventBridge security relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether AWS EventBridge security gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support AWS EventBridge security?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize AWS EventBridge security without proprietary black boxes.
+  - question: Is the default event bus private to my account?
+    answer: >-
+      The default bus accepts AWS service events for the account. A resource
+      policy that allows events.amazonaws.com or a partner to PutEvents on *
+      makes it a shared inbox. Custom buses exist so you can attach a tight
+      policy without fighting default-bus service events.
+  - question: Does KMS encryption on the bus hide events from rules in another account?
+    answer: >-
+      Encryption at rest protects storage of the event. A rule in another
+      account that you authorized still receives the payload. Cross-account
+      targets are a data-sharing decision. KMS does not undo a resource policy
+      that allowed PutEvents or a rule you created.
+  - question: What is the blast radius of an API destination?
+    answer: >-
+      EventBridge will call an HTTPS endpoint with the connection’s auth
+      (API key, OAuth, Basic). The connection secret is in Secrets Manager.
+      Anyone who can events:InvokeApiDestination or update the connection can
+      fire that credential at the URL. Scope the connection and the destination
+      ARN the same way you scope a Lambda resource policy.
 ---
 
-**AWS EventBridge security** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+Something `PutEvents` into a bus; rules fan out to Lambda, SQS, Step Functions, or an **API destination**. **Amazon EventBridge security** is the **bus resource policy**, who may create rules, and whether a connection secret can leave the account. It is not EventBridge Pipes mapping trivia, not a Kafka comparison, and not [AWS Lambda security](/blog/aws-lambda-security-guide/) (that is the target). AWS reference: [Using resource-based policies for EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-use-resource-based.html).
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+```
+Producer (IAM / AWS service / partner)
+  → PutEvents  (bus resource policy)
+       → rules (who can events:PutRule)
+            → Lambda / SQS / API destination + connection secret
+```
 
-## Why AWS EventBridge security matters now
+If `events:PutEvents` is `*` on the default bus, every account that guesses the bus ARN can inject events your rules trust.
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+## 1. Default bus vs custom bus
 
-| Challenge | Without AWS EventBridge security | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+Use the **default bus** for AWS service events (`aws.ec2`, GuardDuty, etc.). Use a **custom bus** for application and partner events so the resource policy is obvious and small.
 
-Teams comparing [aws kms encryption key management](/blog/aws-kms-encryption-key-management/) and [aws security best practices 2026](/blog/aws-security-best-practices-2026/) often discover that **prioritization** matters more than acquiring yet another point product.
+```bash
+aws events list-event-buses
+aws events describe-event-bus --name payments
+```
 
-## Core controls and implementation steps
+Attach a policy that allows `events:PutEvents` only from named accounts or org IDs:
 
-Start with visibility, then enforcement, then continuous validation:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowProdAccountPut",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::111111111111:root" },
+      "Action": "events:PutEvents",
+      "Resource": "arn:aws:events:us-east-1:222222222222:event-bus/payments",
+      "Condition": {
+        "StringEquals": { "events:source": "payments.api" }
+      }
+    }
+  ]
+}
+```
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+`events:source` is attacker-controlled if they can PutEvents—use it as a **convention**, not as authentication. Authentication is the `Principal`.
 
-### AWS considerations
+**Failure mode:** copying a blog policy with `"AWS": "*"` to “make the partner integration work.” That is a public bus.
 
-On AWS, align AWS EventBridge security with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+## 2. Rules and confused deputies
 
-### Azure considerations
+`events:PutRule` / `PutTargets` on `*` lets an IAM user point your bus at **their** Lambda in another account (with a matching resource policy on that Lambda). Scope:
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+```json
+{
+  "Effect": "Allow",
+  "Action": ["events:PutRule", "events:PutTargets"],
+  "Resource": "arn:aws:events:us-east-1:222222222222:rule/payments/*"
+}
+```
 
-### GCP considerations
+Every Lambda target still needs its **own** resource policy with `AWS:SourceArn` equal to **this** rule ([AWS Lambda security](/blog/aws-lambda-security-guide/)). EventBridge will not save you from `Principal: "*"` on the function.
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+## 3. API destinations and connections
 
-### Kubernetes considerations
+API destinations are EventBridge as an HTTP client.
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce AWS EventBridge security at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+```bash
+aws events list-connections
+aws events describe-connection --name payments-pagerduty
+```
 
-## Avoiding toxic combinations
+The **connection** holds OAuth/API-key material in Secrets Manager. Lock:
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+- `events:InvokeApiDestination` to the named destination ARN
+- `secretsmanager:GetSecretValue` on that secret only for the EventBridge service role EventBridge uses—not for every developer
+- HTTPS-only destinations; pin to a hostname you own
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+Rotate the partner key when a destination is deleted. Dead destinations with live secrets show up in incident IR as “we thought we decommissioned PagerDuty.”
 
-## Metrics that prove progress
+## 4. Encryption and archives
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+Customer managed keys on the bus encrypt events at rest. Archives and replays copy the same payload to storage you must lock (`events:StartReplay` is a prod-write). If you archive to investigate incidents, the archive is a **second database** of PII.
 
-Executives care about trend lines, not raw finding counts—a mature AWS EventBridge security program ** reduces reachable risk**, not merely closes tickets.
+Schema registry and input transformers can **drop** fields; they are not a security boundary. Assume the target sees whatever the rule matched.
 
-## Open-source and self-hosted options
+## 5. EventBridge vs the rest of the path
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+Producers on EC2 still need [IMDSv2](/blog/aws-imdsv2-hop-limit-enforcement/) so a web vuln cannot `PutEvents` as the instance profile. Targets that hit RDS still need [Amazon RDS security](/blog/aws-rds-security-guide/). EventBridge only moves the JSON.
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+## Checklist
 
-## Operational cadence
+- [ ] Application events on a custom bus, not a wide default-bus policy
+- [ ] `PutEvents` principals are account/org IDs, never `*`
+- [ ] `PutRule`/`PutTargets` scoped to a prefix; Lambda targets have SourceArn conditions
+- [ ] API destination connections: named secrets, HTTPS, invoke scoped
+- [ ] CMK on buses that carry regulated data; archives treated as data stores
+- [ ] CloudTrail `PutEvents` / `PutRule` logged to the org trail ([AWS security best practices](/blog/aws-security-best-practices-2026/))
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
+An open bus policy is **identity plus invocation**, the same class as a public Lambda URL. Graph it as a path, not as a “serverless finding.”
 
-## Key takeaways
-
-- **AWS EventBridge security** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
-
----
-**Related:** [aws-kms-encryption-key-management](/blog/aws-kms-encryption-key-management/) · [aws-security-best-practices-2026](/blog/aws-security-best-practices-2026/)
+**Related:** [AWS Lambda security](/blog/aws-lambda-security-guide/) · [AWS security best practices](/blog/aws-security-best-practices-2026/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/)
