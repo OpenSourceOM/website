@@ -1,107 +1,133 @@
 ---
-title: "Amazon CloudFront Security: TLS, OAC, and WAF Integration"
-description: "Amazon CloudFront Security — expert guide to AWS CloudFront security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for..."
+title: "Amazon CloudFront Security: OAC, TLS, and Origin Lockdown"
+description: "Amazon CloudFront security that actually holds: Origin Access Control instead of OAI, HTTPS only, S3 bucket policies that deny non-CloudFront, WAF attachment, and the bypass of hitting the bucket URL directly."
+pubDate: 2026-08-29
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
-noindex: true
 tags:
   - AWS
   - CloudFront
-  - cloud security
-  - CSPM
-  - CNAPP
-focusKeyword: AWS CloudFront security
+  - S3
+  - WAF
+  - TLS
+focusKeyword: Amazon CloudFront security
 faq:
-  - question: Why does AWS CloudFront security matter for cloud teams?
-    answer: AWS CloudFront security reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does AWS CloudFront security relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether AWS CloudFront security gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support AWS CloudFront security?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize AWS CloudFront security without proprietary black boxes.
+  - question: If CloudFront is in front of S3, why can I still open the bucket website URL?
+    answer: >-
+      Because the bucket is still a public (or authenticated) origin. CloudFront
+      is a cache, not a lock. Origin Access Control plus a bucket policy that
+      allows s3:GetObject only from that distribution’s service principal is
+      what stops the bypass. OAI is the legacy version of the same idea.
+  - question: Does attaching a WAF to the distribution protect the origin?
+    answer: >-
+      It protects viewers that go through CloudFront. Anyone who can reach the
+      ALB or S3 REST endpoint skips the WAF. Lock the origin to the CloudFront
+      prefix list or to OAC. Otherwise WAF is theater.
+  - question: Is a custom TLS certificate on the distribution enough?
+    answer: >-
+      It secures viewer HTTPS. You still need ViewerProtocolPolicy redirect-to-https
+      or https-only, a modern TLS policy, and origin protocol https-only if the
+      origin speaks TLS. HTTP-only origin plus HTTPS viewers is a decrypt at
+      the edge you probably did not intend for APIs.
 ---
 
-**AWS CloudFront security** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+Viewers hit `d111111abcdef8.cloudfront.net` (or your alias). The origin is still an S3 bucket, an ALB, or a custom host. **Amazon CloudFront security** is making the **distribution the only door**: Origin Access Control, HTTPS, and a WAF that actually sits on that door. It is not CloudFront Functions fan-out, not a CDN performance guide, and not [Cloud Armor](/blog/gcp-cloud-armor-security-guide/) (that is GCP). AWS reference: [Restricting access to an origin](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-origin.html).
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+```
+Viewer
+  → CloudFront (TLS, WAF, cache)
+       → OAC sigv4   → S3 (bucket policy)
+       → or HTTPS    → ALB (SG: CloudFront prefix list only)
+```
 
-## Why AWS CloudFront security matters now
+If `bucket.s3.amazonaws.com/secret.pdf` still 200s, the distribution is a convenience URL, not a control.
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+## 1. Origin Access Control, not a public bucket
 
-| Challenge | Without AWS CloudFront security | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+**OAI** (legacy canonical user) still works. **OAC** is the current control: CloudFront signs `GetObject` with SigV4, and the bucket policy allows that service principal for **this** distribution.
 
-Teams comparing [cloud incident response playbook](/blog/cloud-incident-response-playbook/) and [azure application gateway waf](/blog/azure-application-gateway-waf/) often discover that **prioritization** matters more than acquiring yet another point product.
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontOAC",
+      "Effect": "Allow",
+      "Principal": { "Service": "cloudfront.amazonaws.com" },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::payments-web/*",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "arn:aws:cloudfront::123456789012:distribution/EDFDVBD6EXAMPLE"
+        }
+      }
+    }
+  ]
+}
+```
 
-## Core controls and implementation steps
+Block Public Access on the bucket stays **on**. Website hosting on the bucket stays **off** unless you have a written exception—the website endpoint ignores this policy model.
 
-Start with visibility, then enforcement, then continuous validation:
+```bash
+aws s3api get-bucket-policy --bucket payments-web
+aws cloudfront get-distribution-config --id EDFDVBD6EXAMPLE \
+  --query 'DistributionConfig.Origins.Items[].OriginAccessControlId'
+```
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+Empty `OriginAccessControlId` and a public ACL is the classic miss. Migrate OAI → OAC with AWS’s documented cutover; do not delete OAI before OAC is serving.
 
-### AWS considerations
+## 2. Viewer TLS and origin protocol
 
-On AWS, align AWS CloudFront security with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+| Setting | Prod default |
+| --- | --- |
+| `ViewerProtocolPolicy` | `redirect-to-https` or `https-only` |
+| `MinimumProtocolVersion` | `TLSv1.2_2021` (or current AWS recommended) |
+| Origin `OriginProtocolPolicy` | `https-only` for ALB/custom; S3 REST uses OAC not HTTP origin |
 
-### Azure considerations
+Custom domains need an ACM certificate in **us-east-1** for CloudFront. Alternate domain names without a matching cert fail; do not “fix” that by serving the default `cloudfront.net` name in production emails.
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+**Failure mode:** `allow-all` viewer policy so a partner’s HTTP health check works. Attackers use HTTP too.
 
-### GCP considerations
+## 3. Lock ALB origins to CloudFront
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+For an ALB origin, OAC does not apply. Use the **CloudFront managed prefix list** (`com.amazonaws.global.cloudfront.origin-facing`) on the ALB security group, **and** a custom header CloudFront injects that the ALB listener rule requires (or AWS’s origin verify with a secret header). Prefix list alone is necessary but not sufficient if someone copies the prefix list onto another attacker-controlled distribution.
 
-### Kubernetes considerations
+```bash
+aws ec2 describe-managed-prefix-lists \
+  --filters Name=prefix-list-name,Values=com.amazonaws.global.cloudfront.origin-facing
+```
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce AWS CloudFront security at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+If the ALB SG still allows `0.0.0.0/0` on 443, users and scanners skip CloudFront, skip WAF, and skip your cache behaviors.
 
-## Avoiding toxic combinations
+## 4. WAF on the distribution
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+Associate a WAFv2 Web ACL with the distribution, not only with the ALB.
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+```bash
+aws wafv2 list-web-acls --scope CLOUDFRONT --region us-east-1
+```
 
-## Metrics that prove progress
+CloudFront WAF is **us-east-1** / global. An ACL on the ALB in `eu-west-1` does not inspect viewers who never reach the ALB because of a cache hit—and does not inspect viewers who hit the ALB directly if you failed step 3.
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+Start with AWS managed common rule set in **count**, then block. Rate-limit `/login` here; application quotas still belong in the origin ([cloud-native application security](/blog/cloud-native-application-security/)).
 
-Executives care about trend lines, not raw finding counts—a mature AWS CloudFront security program ** reduces reachable risk**, not merely closes tickets.
+## 5. Logging and signed URLs
 
-## Open-source and self-hosted options
+- **Standard logs** (legacy) or **v2 access logs** to a dedicated bucket with Block Public Access. The log bucket must not be the origin bucket.
+- **Signed cookies/URLs** for non-public objects: trusted key groups, short TTL, no `*` in `Resource` for the canned policy if you can avoid it.
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+Field-level encryption is a niche PCI control; do not enable it because a checklist said “encryption.” It breaks caching and origin parsers if you do not own the private key path.
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+## Checklist
 
-## Operational cadence
+- [ ] OAC (or documented OAI) on every S3 origin; bucket policy scoped to that distribution ARN
+- [ ] S3 Block Public Access on; no static website endpoint for private content
+- [ ] Viewer HTTPS-only or redirect; TLS 1.2+ policy
+- [ ] ALB SG = CloudFront prefix list + origin secret header (or equivalent)
+- [ ] WAFv2 associated on the distribution in us-east-1
+- [ ] Access logs in a separate locked bucket
+- [ ] Direct origin URL returns 403
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
+A CloudFront distribution with a public S3 origin is still an **internet-reachable object store**. Rank leftover public objects with [attack path analysis](/blog/attack-path-analysis-cloud-security/).
 
-## Key takeaways
-
-- **AWS CloudFront security** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
-
----
-**Related:** [cloud-incident-response-playbook](/blog/cloud-incident-response-playbook/) · [azure-application-gateway-waf](/blog/azure-application-gateway-waf/)
+**Related:** [AWS security best practices](/blog/aws-security-best-practices-2026/) · [Cloud-native application security](/blog/cloud-native-application-security/) · [GCP Cloud Armor](/blog/gcp-cloud-armor-security-guide/)

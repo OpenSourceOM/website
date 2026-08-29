@@ -1,107 +1,126 @@
 ---
-title: "AWS Lambda Security Deep Dive: Permissions, Layers, and URLs"
-description: "AWS Lambda Security Deep Dive — expert guide to AWS Lambda security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack path prioritization for ..."
+title: "AWS Lambda Security: Execution Roles, Resource Policies, and Function URLs"
+description: "AWS Lambda security that matters in prod: execution-role blast radius, resource-based policies, Function URL auth, public layers, and env vars that are still plaintext secrets."
+pubDate: 2026-08-29
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
-noindex: true
 tags:
   - AWS
   - Lambda
-  - cloud security
-  - CSPM
-  - CNAPP
+  - IAM
+  - Function URLs
+  - serverless
 focusKeyword: AWS Lambda security
 faq:
-  - question: Why does AWS Lambda security matter for cloud teams?
-    answer: AWS Lambda security reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does AWS Lambda security relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether AWS Lambda security gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support AWS Lambda security?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize AWS Lambda security without proprietary black boxes.
+  - question: Is a Function URL with AWS_IAM safer than a public Function URL?
+    answer: >-
+      AWS_IAM requires a SigV4-signed caller. NONE plus a “secret” header is
+      not auth—the header is in every browser, log, and partner ticket. Prefer
+      Function URLs only behind CloudFront+WAF or drop them and use API Gateway
+      with an authorizer. IAM auth on the URL still needs a locked execution
+      role; it does not shrink what the function can do in AWS.
+  - question: Does putting Lambda in a VPC make it private?
+    answer: >-
+      It changes egress and ENI placement. The invoke path is still the Lambda
+      API (or URL/API Gateway). VPC Lambda cannot reach S3 without a gateway
+      endpoint or NAT. Teams “fix” that with 0.0.0.0/0 NAT and a role that
+      still has s3:*. VPC is not a substitute for the resource policy.
+  - question: Are environment variables encrypted?
+    answer: >-
+      At rest, Lambda can encrypt env with a CMK. In the console and in
+      GetFunctionConfiguration, any principal with lambda:GetFunction can read
+      them (unless you use encryption helpers the runtime decrypts). Do not put
+      long-lived secrets in env. Use Secrets Manager or SSM with the execution
+      role scoped to one secret ARN.
 ---
 
-**AWS Lambda security** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+Lambda is an IAM principal that runs your code when something invokes it. **AWS Lambda security** is who can invoke, what the **execution role** can do, and whether a **Function URL** made the function a public app. It is not SAM/CDK syntax trivia, not a cold-start guide, and not [Amazon EventBridge security](/blog/aws-eventbridge-security-guide/) (that is the bus that may invoke you). AWS reference: [Lambda security](https://docs.aws.amazon.com/lambda/latest/dg/lambda-security.html).
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+```
+Invoker (IAM / URL / API GW / event source)
+  → resource-based policy on the function
+       → execution role  —CAN_ACCESS→  S3, Secrets, RDS, STS
+            → optional VPC ENI
+```
 
-## Why AWS Lambda security matters now
+If the execution role can `s3:GetObject` on the backup bucket, every XSS-in-a-dependency is a data path. Rank that with [pod-to-cloud-admin](/blog/kubernetes-pod-to-cloud-admin-path/) thinking, even without Kubernetes.
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+## 1. Execution role is the blast radius
 
-| Challenge | Without AWS Lambda security | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+One role per function (or per blast-radius group). No `AWSLambdaFullAccess`. No `s3:*` “because the handler might grow.”
 
-Teams comparing [attack path analysis cloud security](/blog/attack-path-analysis-cloud-security/) and [azure blob storage security guide](/blog/azure-blob-storage-security-guide/) often discover that **prioritization** matters more than acquiring yet another point product.
+```json
+{
+  "Effect": "Allow",
+  "Action": ["s3:GetObject"],
+  "Resource": "arn:aws:s3:::payments-inbox/*"
+}
+```
 
-## Core controls and implementation steps
+```bash
+aws lambda get-function --function-name payments-ingest \
+  --query 'Configuration.[Role,Environment.Variables]'
+```
 
-Start with visibility, then enforcement, then continuous validation:
+**Failure modes:**
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+- Shared role across twenty functions; one function’s SSRF becomes twenty products.
+- Role has `iam:PassRole` and `lambda:CreateFunction`—the function can spawn a sibling with a better role.
+- Env still holds `DATABASE_URL` with a password. Encrypt-at-rest does not hide it from `GetFunction`.
 
-### AWS considerations
+Prefer [IAM DB auth](/blog/aws-rds-security-guide/) or Secrets Manager with a single secret ARN.
 
-On AWS, align AWS Lambda security with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+## 2. Resource-based policy is who may invoke
 
-### Azure considerations
+The execution role is outbound. The **resource policy** is inbound (`lambda:InvokeFunction`).
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+```bash
+aws lambda get-policy --function-name payments-ingest
+```
 
-### GCP considerations
+Typical statements: `events.amazonaws.com` with `AWS:SourceArn` equal to **this** rule; `apigateway.amazonaws.com` with the API ARN; a specific IAM role for partners.
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+`Principal: "*"` with no `aws:SourceAccount` / `SourceArn` is a public invoke API. S3 event notifications that omit the source ARN let another account’s bucket trigger you (confused deputy). Always condition on the event source ARN.
 
-### Kubernetes considerations
+## 3. Function URLs
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce AWS Lambda security at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+```bash
+aws lambda get-function-url-config --function-name payments-ingest
+```
 
-## Avoiding toxic combinations
+| `AuthType` | Meaning |
+| --- | --- |
+| `NONE` | Anyone who knows the URL (or scans `lambda-url.*.on.aws`) can invoke |
+| `AWS_IAM` | SigV4; still internet-reachable; lock with resource policy + IAM |
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+`NONE` is a public app. Put CloudFront + WAF in front and **lock the URL** the same way you lock an ALB origin ([Amazon CloudFront security](/blog/aws-cloudfront-security-guide/)), or do not use Function URLs for prod.
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+CORS `AllowOrigins: *` on a `NONE` URL is a browser-callable endpoint for every site.
 
-## Metrics that prove progress
+## 4. Layers, images, and /tmp
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+- **Layers:** you execute someone else’s zip. Pin layer version ARNs; do not use `:latest`. Treat a public layer as supply chain ([image provenance](/blog/kubernetes-image-provenance-slsa/) is the same idea for containers).
+- **Container images:** pull by digest from a repo your account owns; scan in CI ([Trivy CI vs operator](/blog/trivy-operator-vs-ci-scanning/)).
+- **`/tmp`:** 512–10 GB, shared across invokes on the same freeze. Do not write secrets there and assume the next customer is isolated; they are not across warm invokes of the **same** function, but you still should not persist credentials on disk.
 
-Executives care about trend lines, not raw finding counts—a mature AWS Lambda security program ** reduces reachable risk**, not merely closes tickets.
+## 5. Public invoke vs VPC
 
-## Open-source and self-hosted options
+VPC attachment is for **reaching** private RDS, not for hiding invoke. Combine:
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+- Resource policy + no Function URL `NONE`
+- RDS in private subnets, SG from the function SG ([Amazon RDS security](/blog/aws-rds-security-guide/))
+- S3/STS interface or gateway endpoints so the function does not need `0.0.0.0/0` NAT ([VPC endpoints vs NAT](/blog/aws-vpc-endpoints-vs-nat-security/))
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+## Checklist
 
-## Operational cadence
+- [ ] Execution role: named resources, no `*` on data services, no PassRole to arbitrary roles
+- [ ] No secrets in env; CMK on env if you still have non-secrets config
+- [ ] Resource policy: every event source ARN-conditioned; no `Principal:*` without a hard condition
+- [ ] Function URL: not `NONE` in prod, or fronted and origin-locked
+- [ ] Layers pinned; images by digest
+- [ ] CloudWatch logs group retained and not public via resource policy
+- [ ] Reserved concurrency on the functions that can stampede downstream IAM/RDS
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
+A `NONE` Function URL plus `s3:*` is an **internet-to-data** path. Put it at the top of [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/).
 
-## Key takeaways
-
-- **AWS Lambda security** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
-
----
-**Related:** [Attack path analysis](/blog/attack-path-analysis-cloud-security/) · [azure-blob-storage-security-guide](/blog/azure-blob-storage-security-guide/)
+**Related:** [Amazon RDS security](/blog/aws-rds-security-guide/) · [Amazon CloudFront security](/blog/aws-cloudfront-security-guide/) · [Amazon EventBridge security](/blog/aws-eventbridge-security-guide/)

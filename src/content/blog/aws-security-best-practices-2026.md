@@ -2,7 +2,7 @@
 title: "AWS Security Best Practices: A Practitioner Checklist for 2026"
 description: "Org-first AWS hardening: Identity Center over access keys, SCPs that actually deny, org CloudTrail, S3 Block Public Access, and the failure modes that keep those controls from working."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
 tags:
   - AWS
@@ -148,4 +148,4 @@ When the org layer is in place, leftover findings belong in [prioritization](/bl
 - **Public access blocks** are cheaper than any graph query on a public bucket.
 
 ---
-**Related:** [Toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/)
+**Related:** [Toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/) · [Amazon RDS security](/blog/aws-rds-security-guide/) · [AWS Lambda security](/blog/aws-lambda-security-guide/)
