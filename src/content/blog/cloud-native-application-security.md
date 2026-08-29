@@ -2,7 +2,7 @@
 title: "Cloud-Native Application Security: Design Patterns for Secure Apps"
 description: "Seven design patterns for securing cloud-native apps on Kubernetes and serverless—supply chain, identity, network, secrets, APIs, runtime, and attack-path context."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
 tags:
   - application security
@@ -54,7 +54,7 @@ Threats that actually matter here:
 | Dump the database | Over-privileged IRSA role | Identity + path context |
 | Persist after exploit | Reverse shell in the container | Runtime |
 
-CSPM still matters—[public buckets](/blog/aws-s3-bucket-security-hardening/) and [toxic combinations](/blog/toxic-combinations-aws-azure/) will ruin this design—but they are inputs to the graph, not a substitute for application controls. For how scanners and CNAPP differ, see [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/).
+CSPM still matters—public buckets, [public EBS snapshots](/blog/aws-ebs-snapshot-public-exposure/), and [toxic combinations](/blog/toxic-combinations-aws-azure/) will ruin this design—but they are inputs to the graph, not a substitute for application controls. For how scanners and CNAPP differ, see [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/).
 
 ## Pattern 1 — Immutable supply chain
 
@@ -95,7 +95,7 @@ spec:
                       -----END PUBLIC KEY-----
 ```
 
-Pair this with [container image scanning in CI](/blog/container-image-scanning-cicd/) and [admission controllers](/blog/kubernetes-admission-controllers-security/). Supply-chain attestation is useless if anyone can `kubectl apply` around GitOps; lock that down with [Argo CD hardening](/blog/kubernetes-argo-cd-hardening-guide/).
+Pair this with [Trivy in CI vs the operator](/blog/trivy-operator-vs-ci-scanning/) and [Validating Admission Policy](/blog/kubernetes-validating-admission-policy/). Supply-chain attestation is useless if anyone can `kubectl apply` around GitOps; lock the digest at admission with [image provenance and SLSA](/blog/kubernetes-image-provenance-slsa/).
 
 ## Pattern 2 — Workload identity, not keys in pods
 
@@ -132,7 +132,7 @@ Pair this with [container image scanning in CI](/blog/container-image-scanning-c
 }
 ```
 
-If a pod is compromised, the attacker gets **that** role, not the node’s. Graph that as `Workload —ASSUMES→ Identity —CAN_ACCESS→ Datastore` and you can ask “what does this identity reach?” instead of reading IAM JSON by hand. See [Workload Identity Federation](/blog/gcp-workload-identity-federation/) and [CIEM](/blog/ciem-explained-for-cloud-teams/).
+If a pod is compromised, the attacker gets **that** role, not the node’s. Graph that as `Workload —ASSUMES→ Identity —CAN_ACCESS→ Datastore` and you can ask “what does this identity reach?” instead of reading IAM JSON by hand. See [GitLab Workload Identity Federation on GCP](/blog/gitlab-ci-workload-identity-gcp/), [GitHub Actions OIDC to AWS](/blog/github-actions-oidc-aws-iam/), and [CIEM](/blog/ciem-explained-for-cloud-teams/).
 
 ## Pattern 3 — Default-deny east-west
 
@@ -181,7 +181,7 @@ spec:
           protocol: UDP
 ```
 
-Details: [NetworkPolicies](/blog/kubernetes-network-policies-practical-guide/), [Cilium](/blog/kubernetes-cilium-network-guide/), [service mesh mTLS](/blog/kubernetes-service-mesh-mtls-guide/).
+Treat NetworkPolicy as cluster posture ([KSPM](/blog/kspm-explained-kubernetes-posture/)), not a mesh-only problem. East-west encryption without segmentation still fails [zero trust](/blog/zero-trust-cloud-architecture-guide/).
 
 ## Pattern 4 — Secrets stay off the image and off disk
 
@@ -191,7 +191,7 @@ Details: [NetworkPolicies](/blog/kubernetes-network-policies-practical-guide/), 
 
 **Implement:** External Secrets Operator or CSI secret store → AWS Secrets Manager, Azure Key Vault, or GCP Secret Manager. Mount as a file with mode `0400` or inject via the SDK. Rotate on a schedule; the app must tolerate refresh.
 
-Do not grant the node role `secretsmanager:GetSecretValue` on `*`. Bind it to the workload identity and to named secret ARNs. See [cloud secrets management](/blog/cloud-secrets-management-best-practices/) and [External Secrets](/blog/kubernetes-external-secrets-guide/).
+Do not grant the node role `secretsmanager:GetSecretValue` on `*`. Bind it to the workload identity and to named secret ARNs. On the cluster side, prefer [projected service-account tokens](/blog/kubernetes-projected-service-account-tokens/); on the cloud side, check what that identity can reach with [blast-radius analysis](/blog/blast-radius-analysis-cloud-iam/).
 
 ## Pattern 5 — Authenticate at the edge, authorize in the app
 
@@ -201,9 +201,9 @@ Do not grant the node role `secretsmanager:GetSecretValue` on `*`. Bind it to th
 
 **Implement:**
 
-1. Terminate TLS at the load balancer or ingress. Put a WAF in front ([Cloud Armor](/blog/gcp-cloud-armor-security-guide/), [AWS WAF](/blog/aws-waf-web-application-firewall-guide/), [Application Gateway](/blog/azure-application-gateway-waf/)). Attachment, rule sets, and preview mode live in those guides—not here.
+1. Terminate TLS at the load balancer or ingress. Put a WAF in front ([Cloud Armor](/blog/gcp-cloud-armor-security-guide/), [AWS WAF](https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html), [Azure Application Gateway WAF](https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview)). Attachment, rule sets, and preview mode belong in the WAF product docs—not here.
 2. Authenticate with OIDC / IAP / Cognito / Entra at the gateway for human traffic; mTLS or signed tokens for service traffic.
-3. Rate-limit unauthenticated endpoints. See [API rate limiting](/blog/cloud-api-security-rate-limiting/).
+3. Rate-limit unauthenticated endpoints at the gateway (Cloud Armor’s throttle rules are the GCP example) so anonymous floods never reach application code.
 4. The app still enforces authorization (RBAC, tenancy). A gateway is not your object-level ACL.
 
 ## Pattern 6 — Runtime is the last control, not the first
@@ -218,7 +218,7 @@ Do not grant the node role `secretsmanager:GetSecretValue` on `*`. Bind it to th
 - Unexpected outbound to non-mesh CIDRs
 - Reads of `/var/run/secrets/kubernetes.io` from a process that is not the app
 
-Wire the alert to the **workload node** in your security graph so identity blast radius is one click away. See [Falco](/blog/kubernetes-falco-runtime-guide/) and [runtime threat detection](/blog/kubernetes-runtime-threat-detection-guide/).
+Wire the alert to the **workload node** in your security graph so identity blast radius is one click away. See [cloud detection and response](/blog/cdr-cloud-detection-response/) and [pod-to-cloud-admin paths](/blog/kubernetes-pod-to-cloud-admin-path/).
 
 ## Pattern 7 — Prioritize by attack path, not by CVSS
 
@@ -250,7 +250,7 @@ That is the same idea as commercial CNAPP path analysis, in code you can run in 
 | Weekly | Identity: unused roles, new `CAN_ACCESS` to production data |
 | Quarterly | Tabletop: stolen IRSA token + public ingress without WAF |
 
-[Pod Security Standards](/blog/kubernetes-pod-security-standards/) belong in admission from day one (`restricted` for this app). Do not wait for a “hardening sprint.”
+[Validating Admission Policy](/blog/kubernetes-validating-admission-policy/) and [seccomp/AppArmor](/blog/kubernetes-seccomp-and-apparmor/) belong in admission from day one (`restricted` PSS for this app). Do not wait for a “hardening sprint.”
 
 ## What not to copy from vendor slides
 

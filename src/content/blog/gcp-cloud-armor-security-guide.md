@@ -2,7 +2,7 @@
 title: "Google Cloud Armor WAF Rules and DDoS Protection"
 description: "Set up Cloud Armor on a Google Cloud load balancer: L3/L4 DDoS, preconfigured OWASP WAF rules, rate limiting, Adaptive Protection, Terraform, and preview mode."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-08-29
 author: OpenSourceOM Team
 tags:
   - GCP
@@ -22,7 +22,7 @@ faq:
     answer: Create a BackendConfig with spec.securityPolicy.name pointing at the policy, then annotate the Service that backs the Ingress. The Ingress must use a Google Cloud HTTP(S) load balancer (GCE Ingress or Gateway). A Network Load Balancer Service will not evaluate the policy.
 ---
 
-**GCP Cloud Armor** is Google’s edge WAF and DDoS layer for applications behind Google Cloud load balancers. It is not a CSPM product, not an IAM review, and not a substitute for [VPC Service Controls](/blog/gcp-vpc-service-controls-explained/). How the app behind the proxy should be built is covered in [cloud-native application security](/blog/cloud-native-application-security/). If you came here for “how do I put OWASP rules and rate limits in front of GKE or Cloud Run,” this is the working path.
+**GCP Cloud Armor** is Google’s edge WAF and DDoS layer for applications behind Google Cloud load balancers. It is not a CSPM product, not an IAM review, and not a substitute for [VPC Service Controls](/blog/gcp-vpc-sc-dry-run-enforced/). How the app behind the proxy should be built is covered in [cloud-native application security](/blog/cloud-native-application-security/). If you came here for “how do I put OWASP rules and rate limits in front of GKE or Cloud Run,” this is the working path.
 
 Official product docs remain the source of truth for quotas and rule-set names: [Cloud Armor overview](https://docs.cloud.google.com/armor/docs/cloud-armor-overview). This guide is the operator sequence—what to create, what to attach, how to tune false positives, and how a missing policy shows up as **internet-reachable risk**.
 
@@ -156,7 +156,7 @@ gcloud compute security-policies rules create 800 \
   --enforce-on-key IP
 ```
 
-For GraphQL, match on path `/graphql` and a stricter count. Combine with [API rate-limiting design](/blog/cloud-api-security-rate-limiting/) inside the app so a distributed attacker that rotates IPs still hits application quotas.
+For GraphQL, match on path `/graphql` and a stricter count. Combine with application-level quotas so a distributed attacker that rotates IPs still hits a limit inside the app, not only at Armor.
 
 ## 4. Adaptive Protection (L7 DDoS)
 
@@ -219,7 +219,7 @@ resource "google_compute_backend_service" "payments" {
 
 **IaC pitfall:** some `google_compute_security_policy` provider versions hash nested rules by priority and action only. Changing `evaluatePreconfiguredWaf('sqli-v33-stable')` to `sqli-v422-stable` can produce an empty plan while production still runs v33. If `terraform plan` is quiet after a rule-set migration, update in place with `gcloud compute security-policies rules update`, then `terraform apply -refresh-only`. Prefer `google_compute_security_policy_rule` resources if your provider version treats expressions as first-class.
 
-Keep policies in Git next to the load balancer, not in a console-only click-ops folder. Same discipline as [Terraform scanning](/blog/terraform-security-scanning-iac-drift/).
+Keep policies in Git next to the load balancer, not in a console-only click-ops folder. Same discipline as locking down [Terraform state](/blog/terraform-state-security-s3-backend/).
 
 ## 6. Preview, logs, then enforce
 
@@ -243,7 +243,7 @@ Armor only evaluates traffic that hits a **supported proxy**. Teams often report
 | Wrong load balancer | GKE `type: LoadBalancer` with a passthrough Network LB | Front the app with GCE Ingress / Gateway HTTP(S) |
 | Edge vs backend mix-up | `CLOUD_ARMOR_EDGE` on a GKE API | Use `CLOUD_ARMOR` on the backend service |
 
-App design (identity, NetworkPolicy, signed images) belongs in [cloud-native application security](/blog/cloud-native-application-security/), not in this policy. Pair Armor with [GKE hardening](/blog/gcp-gke-security-guide/) and [load balancing](/blog/gcp-cloud-load-balancing-security-guide/).
+App design (identity, NetworkPolicy, signed images) belongs in [cloud-native application security](/blog/cloud-native-application-security/), not in this policy. Pair Armor with [GKE Autopilot security tradeoffs](/blog/gke-autopilot-security-tradeoffs/) and Google’s [HTTP(S) load balancing docs](https://cloud.google.com/load-balancing/docs/https).
 
 If you model internet-facing backends in a graph, “HTTP(S) backend with no security policy” is an **exposure** finding—the same class as an open firewall rule—not a CVE. OpenSourceOM does not ingest Armor policies as first-class nodes yet; track attachment in inventory until a collector lands.
 
@@ -267,4 +267,4 @@ If you model internet-facing backends in a graph, “HTTP(S) backend with no sec
 - Adaptive Protection auto-mitigation is an **Enterprise** feature—do not assume Standard includes it.
 - Edge WAF does not replace identity, NetworkPolicy, or datastore IAM. It only inspects the first hop; a policy that is not attached still leaves the backend open.
 
-**Related:** [Cloud-native application security](/blog/cloud-native-application-security/) · [GCP load balancing security](/blog/gcp-cloud-load-balancing-security-guide/) · [AWS WAF](/blog/aws-waf-web-application-firewall-guide/)
+**Related:** [Cloud-native application security](/blog/cloud-native-application-security/) · [VPC-SC dry-run to enforce](/blog/gcp-vpc-sc-dry-run-enforced/) · [GKE Autopilot security tradeoffs](/blog/gke-autopilot-security-tradeoffs/)
