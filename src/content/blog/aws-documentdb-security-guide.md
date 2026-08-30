@@ -1,107 +1,131 @@
 ---
-title: "Amazon DocumentDB Security Hardening Checklist"
-description: "Amazon DocumentDB Security Hardening Checklist — expert guide to AWS DocumentDB security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and attack pat..."
+title: "Amazon DocumentDB Security Hardening: TLS, IAM, and No Public 27017"
+description: "Harden Amazon DocumentDB with TLS 1.2, encryption at rest, no public access, scoped IAM or secrets, audit logs, and snapshot controls—then verify no internet path to the cluster."
+pubDate: 2026-08-24
+updatedDate: 2026-08-30
 author: OpenSourceOM Team
-noindex: true
 tags:
   - AWS
   - DocumentDB
+  - database security
+  - IAM
   - cloud security
-  - CSPM
-  - CNAPP
 focusKeyword: AWS DocumentDB security
 faq:
-  - question: Why does AWS DocumentDB security matter for cloud teams?
-    answer: AWS DocumentDB security reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does AWS DocumentDB security relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether AWS DocumentDB security gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support AWS DocumentDB security?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize AWS DocumentDB security without proprietary black boxes.
+  - question: Should Amazon DocumentDB be publicly accessible?
+    answer: No. Set PubliclyAccessible = false, place instances in private subnets, and allow TCP 27017 only from app security groups. A 0.0.0.0/0 rule on 27017 is an internet-to-data path even with a strong password.
+  - question: Does DocumentDB support IAM authentication?
+    answer: >-
+      Yes for many workloads. IAM database authentication works with Mongo-compatible
+      drivers. Prefer IAM over a long-lived master password in Secrets Manager shared
+      by every microservice. If you use passwords, rotate them and never put them in
+      Git or AMI userdata.
+  - question: Is TLS optional on DocumentDB?
+    answer: >-
+      Treat it as required. Use tls=true and tlsCAFile with the Amazon RDS CA.
+      Parameter groups should not leave TLS disabled. In-transit encryption is the
+      difference between a sniffed VPC span and a stolen password on the wire.
+  - question: How do I prioritize DocumentDB findings?
+    answer: >-
+      Graph Internet to app to identity to DocumentDB. Close public SG and
+      over-broad IAM first. CVEs on a bastion wait. A private cluster whose task
+      role can still dump collections from an internet-facing API is a live path.
 ---
 
-**AWS DocumentDB security** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+**AWS DocumentDB security** is the same story as any datastore: **no public listener**, **encryption**, **least-privilege identities**, **audit**, **locked snapshots**. DocumentDB speaks the MongoDB wire protocol on **27017**. Attackers do not need a novel CVE if that port is open to the internet or if an app role can `find()` every database.
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+This is the production checklist. S3 next to the cluster follows [S3 hardening](/blog/aws-s3-bucket-security-hardening/). Paths: [attack path analysis](/blog/attack-path-analysis-cloud-security/).
 
-## Why AWS DocumentDB security matters now
+## The DocumentDB path
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+```
+Internet ──SG 0.0.0.0/0:27017──▶ DocumentDB   (do not allow)
 
-| Challenge | Without AWS DocumentDB security | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+App / Lambda / pod ──SG + TLS──▶ DocumentDB
+         └──ASSUMES──▶ task role ──(IAM auth or secret)──▶ cluster
+```
 
-Teams comparing [azure cspm implementation guide](/blog/azure-cspm-implementation-guide/) and [multi cloud security governance](/blog/multi-cloud-security-governance/) often discover that **prioritization** matters more than acquiring yet another point product.
+| Control | Fail | Pass |
+| ------- | ---- | ---- |
+| Network | `PubliclyAccessible=true` or SG `0.0.0.0/0` | Private subnets, SG source = app SG only |
+| TLS | Client `tls=false` | `tls=true`, Amazon CA bundle, parameter `tls` enabled |
+| Auth | Master password in the app image | IAM auth or Secrets Manager + rotation; no shared admin |
+| Encryption at rest | AWS managed default with no key policy story | CMK, snapshot copy encrypted |
+| Audit | None | Profiler / audit logs to CloudWatch, alarms on auth failures |
 
-## Core controls and implementation steps
+DocumentDB is **not** a drop-in for every MongoDB feature. Do not copy Atlas “IP allowlist 0.0.0.0/0 for convenience” into AWS.
 
-Start with visibility, then enforcement, then continuous validation:
+## 1. Network: private cluster, tight SG
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+- `PubliclyAccessible = false` on instances.
+- Subnets: private, no IGW route. Apps reach DocumentDB in-VPC or via **PrivateLink** (if you use the pattern for cross-VPC).
+- Security group inbound: **27017 from the application SG** (and a bastion SG if you still use one). Not from `0.0.0.0/0`, not from the whole VPC CIDR if you can avoid it.
+- NACL: optional defense in depth; SG is the control you page on.
+- Prefer **IAM authentication** so compromised pods do not reuse a cluster password that also works from a laptop.
 
-### AWS considerations
+Config / Security Hub controls for public RDS-family instances apply in spirit: DocumentDB public access should be a P1, not a weekly backlog item.
 
-On AWS, align AWS DocumentDB security with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+## 2. TLS and parameters
 
-### Azure considerations
+Require TLS on the cluster parameter group. Clients:
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+```
+mongodb://docdb-cluster:27017/?tls=true&tlsCAFile=global-bundle.pem&retryWrites=false
+```
 
-### GCP considerations
+(`retryWrites` is a Mongo compatibility detail—set what DocumentDB supports; do not cargo-cult Atlas URI flags.)
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+Disable deprecated TLS versions in the parameter group. Rotate to the current Amazon RDS CA before expiry; leftover `rds-ca-2019` in AMIs is a silent outage *and* a finding.
 
-### Kubernetes considerations
+## 3. Identity: IAM first, secrets second
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce AWS DocumentDB security at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+**IAM database authentication:** the app’s IRSA / instance role is the principal. Scope the IAM policy to this cluster ARN. Do not attach `docdb:*` or `rds:*` on `*` to a web task.
 
-## Avoiding toxic combinations
+**Password auth:** store the password in Secrets Manager, rotate, inject at runtime ([cloud-native secrets pattern](/blog/cloud-native-application-security/)). Never:
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+- Master user in Terraform state plaintext without encryption and tight state IAM ([state security](/blog/terraform-state-security-s3-backend/))
+- One password for read-only reporting and the write path
+- `root` from BI tools on the public internet
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+Create application users with the least Mongo roles you need (`readWrite` on one database, not `root`).
 
-## Metrics that prove progress
+## 4. Encryption, backups, snapshots
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+- Storage encryption: **CMK** you control. Snapshot copies inherit encryption; do not copy snapshots to a public account.
+- Backup window and retention per RPO; backup SG and IAM so restore does not require a human with `*`.
+- **Deletion protection** on production clusters.
+- Export / copy snapshot to S3 only into a BPA + KMS bucket from the S3 guide.
 
-Executives care about trend lines, not raw finding counts—a mature AWS DocumentDB security program ** reduces reachable risk**, not merely closes tickets.
+A public **snapshot** is a data breach without touching 27017. Include snapshots in the same graph as the cluster ([public EBS-style exposure](/blog/aws-ebs-snapshot-public-exposure/) is the sibling failure mode).
 
-## Open-source and self-hosted options
+## 5. Logging and operations
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+- Enable **audit logs** and **profiler** to CloudWatch (auth, slow ops). Retain in a log account.
+- Alarm: surge of authentication failures; change of SG; `ModifyDBCluster` by unexpected role.
+- Patch the engine version on a published cadence; DocumentDB lags Mongo community versions—track AWS’s supported versions, not “whatever Mongo 8 does.”
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+## Prove there is no internet-to-collection walk
 
-## Operational cadence
+1. `DescribeDBClusters` / instances: `PubliclyAccessible=false`.
+2. SG: no `0.0.0.0/0` on 27017.
+3. `simulate-principal-policy` for the app role: cannot `rds:ModifyDBCluster` or dump via over-broad data-plane IAM.
+4. Graph: no `Internet --REACHABLE--> DocumentDB`; app `CAN_ACCESS` only the intended cluster.
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
+Connect collectors and run that MATCH in OpenSourceOM ([getting started](/docs/getting-started/), [the graph](/docs/the-graph/)).
+
+## Cadence
+
+| When | What |
+| ---- | ---- |
+| Create | Private, TLS, CMK, deletion protection, audit logs |
+| App deploy | IAM auth or rotated secret; SG from app only |
+| Weekly | Public flag, SG diffs, unused admin users |
+| Quarterly | CA rotation, engine upgrade, snapshot copy policy |
 
 ## Key takeaways
 
-- **AWS DocumentDB security** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
+- **No public 27017** is non-negotiable; password strength does not offset `0.0.0.0/0`.
+- Prefer **IAM auth** and **CMK**; treat snapshots as copies of the database.
+- Rank DocumentDB tickets by **reachability and identity**, not by whether the engine version is one behind.
 
----
-**Related:** [azure-cspm-implementation-guide](/blog/azure-cspm-implementation-guide/) · [multi-cloud-security-governance](/blog/multi-cloud-security-governance/)
+**Related:** [AWS S3 security](/blog/aws-s3-bucket-security-hardening/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/) · [Cloud-native application security](/blog/cloud-native-application-security/)

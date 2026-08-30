@@ -2,7 +2,7 @@
 title: "Cloud-Native Application Security: Design Patterns for Secure Apps"
 description: "Seven design patterns for securing cloud-native apps on Kubernetes and serverless—supply chain, identity, network, secrets, APIs, runtime, and attack-path context."
 pubDate: 2026-08-27
-updatedDate: 2026-08-29
+updatedDate: 2026-08-30
 author: OpenSourceOM Team
 tags:
   - application security
@@ -20,6 +20,10 @@ faq:
     answer: Start with identity and exposure. Remove long-lived keys in favor of IRSA or Workload Identity, and keep internet-facing services behind an authenticated ingress. Those two changes shrink the blast radius of every other class of bug.
   - question: Can open-source tools cover cloud-native application security?
     answer: Yes. Trivy, Cosign, Kyverno or Gatekeeper, NetworkPolicies, Falco, and a graph like OpenSourceOM cover most of the pattern set without a proprietary CNAPP. Buy commercial tools where you need managed scale, not to replace the patterns.
+  - question: What is cloud-native application security testing?
+    answer: It is a pipeline and runtime test set mapped to the same patterns—SCA and image scan at build, signed-digest admission tests, API auth and contract tests at the edge, NetworkPolicy reachability tests, and graph queries that fail if Internet can still walk to the datastore. DAST against a public URL without those checks is only one slice.
+  - question: How do I start mapping my app onto a security graph?
+    answer: Install OpenSourceOM in your environment, connect a read-only cloud account, and run the getting-started path queries against this reference architecture (API, worker, datastore). The docs walk through clone, compose, and the first collector.
 ---
 
 Cloud-native application security is not “run a scanner on the cluster.” It is a small set of **design patterns** that stay true while services scale, nodes recycle, and Terraform reapplies twice a day.
@@ -201,7 +205,7 @@ Do not grant the node role `secretsmanager:GetSecretValue` on `*`. Bind it to th
 
 **Implement:**
 
-1. Terminate TLS at the load balancer or ingress. Put a WAF in front ([Cloud Armor](/blog/gcp-cloud-armor-security-guide/), [AWS WAF](https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html), [Azure Application Gateway WAF](https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/ag-overview)). Attachment, rule sets, and preview mode belong in the WAF product docs—not here.
+1. Terminate TLS at the load balancer or ingress. Put a WAF in front ([Cloud Armor](/blog/gcp-cloud-armor-security-guide/), [AWS WAF](https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html), [Azure Application Gateway WAF](/blog/azure-application-gateway-waf/)). Attachment, rule sets, and preview vs Prevention belong in those operator guides—not as a substitute for auth.
 2. Authenticate with OIDC / IAP / Cognito / Entra at the gateway for human traffic; mTLS or signed tokens for service traffic.
 3. Rate-limit unauthenticated endpoints at the gateway (Cloud Armor’s throttle rules are the GCP example) so anonymous floods never reach application code.
 4. The app still enforces authorization (RBAC, tenancy). A gateway is not your object-level ACL.
@@ -240,6 +244,30 @@ Edges: `REACHABLE`, `ASSUMES`, `CAN_ACCESS`, `AFFECTS`. Named queries such as `i
 
 That is the same idea as commercial CNAPP path analysis, in code you can run in your VPC ([core repo](https://github.com/OpenSourceOM/core)). Use it to feed [vulnerability prioritization](/blog/how-to-prioritize-cloud-vulnerabilities/) rather than as another dashboard.
 
+To run those queries on **your** API, worker, and datastore: [install OpenSourceOM and connect the first account](/docs/getting-started/), then read [how the graph is modeled](/docs/the-graph/). Getting started is clone, Compose, and a read-only collector—not a new scanner product.
+
+## Cloud-native application security testing
+
+**Intent:** Every pattern above has a test you can fail in CI or after deploy. “We ran a DAST scan last quarter” is not a program.
+
+Cloud-native application security testing is **mapped to the architecture**, not a single scanner SKU.
+
+| Pattern | Test that must fail the pipeline or the gate | Too weak |
+| ------- | --------------------------------------------- | -------- |
+| Supply chain | Unsigned image or floating tag rejected at admission; SCA/CVE gate on the **digest you deploy** | Scan in CI, deploy a different tag |
+| Identity | Policy unit test or `simulate-principal-policy`: task role cannot `s3:GetObject` / `*` on prod data | IAM review in a wiki |
+| Network | NetworkPolicy integration test: worker has no Ingress from `Internet`/frontend except allowed ports | “We enabled the mesh” |
+| Secrets | Test that the image has no `AKIA` / PEM / `.env`; runtime fetch works after rotation | Secrets in CI masked logs |
+| Edge / API | Authn contract tests: unauthenticated `/admin` is 401; WAF Prevention blocks a known SQLi fixture | ZAP against prod only |
+| Runtime | Falco rule fires in staging when a shell is exec’d in the API image | Slack channel with no owner |
+| Path context | Graph assertion: `internet-to-datastore` returns **zero** rows for this app’s ids after deploy | CVSS sort in Jira |
+
+**SAST** still belongs on the API repo (injection, authz bugs). **SCA** belongs on the lockfile and the image. **DAST / IAST** belong against an environment that uses the same ingress and identity as production, or you are testing a different app. **Admission tests** (Kyverno/Gatekeeper/VAP in a kind cluster in CI) catch the `:latest` footgun before it lands.
+
+The missing piece in most AppSec programs is the last row: treat **reachability** as a test. After collectors sync, the same MATCH OpenSourceOM uses in [attack path analysis](/blog/attack-path-analysis-cloud-security/) is an automated check. If a PR opens `0.0.0.0/0` or widens IRSA, the test fails even when SAST is green.
+
+Start that loop from [getting started](/docs/getting-started/) so the graph is populated before you invent a custom CI plugin.
+
 ## Putting the patterns on a cadence
 
 | When | What |
@@ -264,4 +292,4 @@ That is the same idea as commercial CNAPP path analysis, in code you can run in 
 - Implement identity and exposure first; they shrink every other incident.
 - Open-source pieces (Cosign, Kyverno, IRSA/WIF, NetworkPolicy, Falco, OpenSourceOM) compose into this design without a black-box CNAPP—buy products to operate the patterns at scale, not to invent them.
 
-**Related:** [GCP Cloud Armor](/blog/gcp-cloud-armor-security-guide/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/) · [Kubernetes RBAC](/blog/kubernetes-rbac-security-best-practices/)
+**Related:** [Getting started](/docs/getting-started/) · [The graph](/docs/the-graph/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/) · [Azure Application Gateway WAF](/blog/azure-application-gateway-waf/)

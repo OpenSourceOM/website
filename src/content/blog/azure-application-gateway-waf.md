@@ -1,107 +1,121 @@
 ---
-title: "Azure Application Gateway WAF: OWASP Rules and Tuning"
-description: "Azure Application Gateway WAF—practical guidance on Azure Application Gateway WAF for AWS, Azure, GCP, and Kubernetes teams using CSPM, CNAPP, and attack pat..."
+title: "Azure Application Gateway WAF: OWASP Rules, Tuning, and What WAF Cannot Do"
+description: "Run Application Gateway WAF_v2 in Prevention with OWASP CRS, custom rules, and Log Analytics—without treating WAF as authentication or network segmentation."
+pubDate: 2026-08-24
+updatedDate: 2026-08-30
 author: OpenSourceOM Team
-noindex: true
 tags:
   - Azure
   - WAF
-  - application security
-  - cloud security
+  - Application Gateway
   - OWASP
+  - application security
 focusKeyword: Azure Application Gateway WAF
 faq:
-  - question: Why does Azure Application Gateway WAF matter for cloud teams?
-    answer: Azure Application Gateway WAF reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does Azure Application Gateway WAF relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether Azure Application Gateway WAF gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support Azure Application Gateway WAF?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize Azure Application Gateway WAF without proprietary black boxes.
+  - question: Should Azure Application Gateway WAF start in Detection or Prevention?
+    answer: Detection (preview) for a measured window while you collect false positives, then Prevention. Leaving Detection on for months is a dashboard, not a control. Pair Prevention with a change window and exclusions you can name.
+  - question: Is OWASP CRS enough for Application Gateway WAF?
+    answer: CRS is the baseline for injection and protocol abuse. You still need custom rules for your app (block admin paths from the internet, geo or rate limits) and Bot Manager if you buy that SKU. CRS will not authenticate users or stop a stolen cookie.
+  - question: Can WAF replace Network Security Groups or Private Link?
+    answer: No. WAF inspects HTTP(S) at the gateway. A backend with a public IP, an open NSG, or a management plane reachable off the WAF path is a bypass. Put backends on Private Link or a private IP; NSGs still deny non-gateway subnets.
+  - question: How does WAF show up in attack path analysis?
+    answer: >-
+      WAF is a control on the Internet-to-app REACHABLE edge. If the rule set is
+      Detection-only, or a listener is HTTP, or a second public IP hits the app,
+      the graph still shows REACHABLE. Tune WAF, then re-query the path.
 ---
 
-**Azure Application Gateway WAF** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+**Azure Application Gateway WAF** is an HTTP inspection layer on Application Gateway **WAF_v2**. It is the right place for OWASP Core Rule Set (CRS), bot filters, and a few custom denies. It is the wrong place to hide a missing Entra login, an open backend NSG, or a public storage account the app can read.
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+This is the operator setup. Application patterns around the edge are in [cloud-native application security](/blog/cloud-native-application-security/). Path cuts are in [how to break a cloud attack path](/blog/how-to-break-cloud-attack-paths/).
 
-## Why Azure Application Gateway WAF matters now
+## Where WAF sits on the path
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+```
+Internet ──TLS──▶ Application Gateway (WAF policy)
+                      └──private IP / Private Link──▶ App (App Service, AKS ingress, VM)
 
-| Challenge | Without Azure Application Gateway WAF | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+Bypass if: public IP on the app, management port 22/3389, second listener without WAF
+```
 
-Teams comparing [aws s3 bucket security hardening](/blog/aws-s3-bucket-security-hardening/) and [gcp cloud storage access control](/blog/gcp-cloud-storage-access-control/) often discover that **prioritization** matters more than acquiring yet another point product.
+| Control | WAF does | WAF does not |
+| ------- | -------- | ------------ |
+| SQLi / XSS / protocol | CRS managed rules | Object-level auth in the API |
+| Rate / bot | Custom rules, Bot Manager | Stop a valid session stealing data |
+| TLS | Gateway HTTPS listeners | mTLS to every pod (that is mesh / ingress) |
+| Logging | WAF log to Log Analytics | Tell you the pod’s Managed Identity can read Key Vault |
 
-## Core controls and implementation steps
+If the app is reachable **around** the gateway, you do not have a WAF; you have a decoration.
 
-Start with visibility, then enforcement, then continuous validation:
+## 1. SKU, policy, and Prevention
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+Use **WAF_v2**. Associate a **WAF policy** (global or per-listener / per-path). Policy at path level lets `/health` stay loose and `/api` stay strict.
 
-### AWS considerations
+Mode:
 
-On AWS, align Azure Application Gateway WAF with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+1. **Detection** for days, not quarters. Watch `Action == Detected` in Log Analytics.
+2. Flip **Prevention** once you have exclusions for known false positives (CMS query strings, JSON bodies CRS hates).
+3. Never run **Prevention** on one listener and a **raw public IP** on the same app.
 
-### Azure considerations
+OWASP **CRS 3.2** (or the current managed set Microsoft ships) is the default managed rule set. Turn **paranoia** up only after you can staff the false-positive queue. Paranoia 3 with nobody watching exclusions = engineers bypass the gateway.
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+## 2. Custom rules that actually pay
 
-### GCP considerations
+Managed CRS will not know your admin panel. Add custom rules **before** you tune CRS exclusions into Swiss cheese.
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+Examples worth implementing:
 
-### Kubernetes considerations
+- Block `/admin`, `/debug`, `/actuator` from the internet (allow from a named source IP group for break-glass).
+- Rate-limit unauthenticated `POST /login` and `POST /graphql`.
+- Geo or IP allowlists only for apps that are not a global product.
+- Deny HTTP/1.0 oddities and empty `User-Agent` if that matches your threat model—and verify you do not break health probes (use a separate probe path excluded from that rule).
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce Azure Application Gateway WAF at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+Order: **custom rules evaluate first**, then managed. A custom *allow* can skip CRS for a path; use that sparingly (file upload endpoints) and log it.
 
-## Avoiding toxic combinations
+## 3. Tuning without turning WAF off
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+False positives are normal. The wrong fix is Detection forever or `Microsoft_DefaultRuleSet` disabled.
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+Process:
 
-## Metrics that prove progress
+1. Query WAF logs: `ruleId`, `requestUri`, `action`, `policy`.
+2. Prefer **exclusion** on a specific rule ID + match variable (e.g. `RequestArgNames` contains `timestamp`) over disabling the rule globally.
+3. File a ticket with the app team if the body format is hostile to CRS; change the API if cheaper than a permanent exclusion.
+4. Re-test with a known payload (SQLi in a query param) in a non-prod slot after every policy change.
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+Send logs to **Log Analytics** with WAF log = on. Diagnostic setting to a locked workspace. Alert on `action == Blocked` spikes *and* on `policyMode == Detection` if you expected Prevention.
 
-Executives care about trend lines, not raw finding counts—a mature Azure Application Gateway WAF program ** reduces reachable risk**, not merely closes tickets.
+## 4. Backend and identity (the bypass list)
 
-## Open-source and self-hosted options
+- Backends: **private IP** or App Service with **private endpoint**. NSG: only the gateway subnet (and Azure load balancer probe) inbound.
+- Listeners: HTTPS only in production. HTTP listener should redirect.
+- **End-to-end TLS** if you need it; do not disable backend TLS “because the VNet is safe.”
+- Front Door vs Application Gateway: Front Door WAF is a different policy object. Do not assume a Front Door WAF covers a regional gateway path that users still hit.
+- Auth: Entra Easy Auth, APIM, or the app. WAF is not your IdP. See pattern 5 in [cloud-native application security](/blog/cloud-native-application-security/).
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+## 5. Prove REACHABLE is the approved edge
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+CSPM will flag “WAF not enabled.” Also check:
 
-## Operational cadence
+- No public IP on the web app / AKS `LoadBalancer` that skips the gateway.
+- No management ports on the same VMSS.
+- Graph: `Internet --REACHABLE--> App` only via the gateway subnet / Front Door.
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
+OpenSourceOM joins Azure NICs, public IPs, and the app identity’s `CAN_ACCESS` to Key Vault and Storage ([getting started](/docs/getting-started/), [the graph](/docs/the-graph/)). A green WAF policy with a public backend is still a live path.
+
+## Cadence
+
+| When | What |
+| ---- | ---- |
+| Deploy | WAF_v2 policy, HTTPS, private backend, diagnostics |
+| First 2 weeks | Detection → exclusions → Prevention |
+| Weekly | Top blocked rule IDs; unused public IPs on the app |
+| Quarterly | CRS version, Bot Manager review, tabletop WAF bypass IP |
 
 ## Key takeaways
 
-- **Azure Application Gateway WAF** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
+- **Prevention + CRS + a few custom rules** is the baseline; Detection-only is not a control.
+- Tune with **per-rule exclusions**, not by disabling the managed set.
+- WAF does not replace **private backends, NSGs, or authentication**. Rank remaining risk by whether the internet can still reach the app or its identity can still read data.
 
----
-**Related:** [aws-s3-bucket-security-hardening](/blog/aws-s3-bucket-security-hardening/) · [gcp-cloud-storage-access-control](/blog/gcp-cloud-storage-access-control/)
+**Related:** [Cloud-native application security](/blog/cloud-native-application-security/) · [Break a cloud attack path](/blog/how-to-break-cloud-attack-paths/) · [Getting started](/docs/getting-started/)
