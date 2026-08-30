@@ -1,107 +1,148 @@
 ---
 title: "Amazon SageMaker Security for ML Workloads in Production"
-description: "Amazon SageMaker Security for ML Workloads in Production — expert guide to AWS SageMaker security for AWS, Azure, GCP, and Kubernetes with CSPM, CNAPP, and a..."
+description: "Lock down SageMaker Studio, training jobs, and endpoints: VPC-only, scoped execution roles, no root on notebooks, encrypted data, and private model APIs."
+pubDate: 2026-08-24
+updatedDate: 2026-08-30
 author: OpenSourceOM Team
-noindex: true
 tags:
   - AWS
   - SageMaker
+  - ML security
+  - IAM
   - cloud security
-  - CSPM
-  - CNAPP
 focusKeyword: AWS SageMaker security
 faq:
-  - question: Why does AWS SageMaker security matter for cloud teams?
-    answer: AWS SageMaker security reduces exploitable misconfigurations and identity risk before attackers chain them into paths to sensitive data—core outcomes for CSPM and CNAPP programs.
-  - question: How does AWS SageMaker security relate to attack path analysis?
-    answer: Standalone scanners list issues in isolation; attack path analysis shows whether AWS SageMaker security gaps sit on reachable routes from ingress to crown jewels.
-  - question: Can open-source tools support AWS SageMaker security?
-    answer: Yes. Graph-native platforms like OpenSourceOM combine inventory, policy checks, and path queries so teams can operationalize AWS SageMaker security without proprietary black boxes.
+  - question: What is the highest-impact AWS SageMaker security control?
+    answer: >-
+      Put the SageMaker domain in VPC-only mode so Studio, training, and processing
+      jobs have no direct internet path. Pair that with an execution role that cannot
+      PassRole to admin and cannot use s3:* on the whole account.
+  - question: Should SageMaker notebooks have root access?
+    answer: >-
+      No for shared production domains. Disable root access on the user profile.
+      Root plus a broad execution role is a workstation-to-cloud-admin path. Use
+      lifecycle configs and a custom image instead of package installs as root.
+  - question: How do SageMaker endpoints get compromised?
+    answer: >-
+      A public or weakly authenticated inference endpoint, plus the endpoint
+      execution role that can read training buckets or invoke other models. Treat
+      the endpoint like any internet-facing API. Use private link or IAM auth, not
+      an open HTTPS URL.
+  - question: How does a security graph help SageMaker?
+    answer: >-
+      Notebooks, training jobs, and endpoints are workloads that assume execution
+      roles with access to S3, ECR, and Secrets Manager. Graph those edges and you
+      see whether a stolen notebook token reaches production data, not just whether
+      the domain is in a VPC.
 ---
 
-**AWS SageMaker security** is on every cloud security roadmap—but slides and benchmarks rarely translate into daily engineering decisions. This guide covers what practitioners implement, measure, and automate in production AWS, Azure, GCP, and Kubernetes environments.
+**AWS SageMaker security** is IAM and network design around three principals: the **Studio user**, the **training/processing job**, and the **real-time (or serverless) endpoint**. Each assumes an execution role. If that role can read production data or `iam:PassRole` to a privileged role, a notebook is as dangerous as a public EC2 instance.
 
-If you are drowning in flat findings from CSPM and vulnerability scanners, you are not alone. The fix is not another dashboard; it is **context**: identity, exposure, and whether a weakness sits on an exploitable **attack path**.
+This guide is the production baseline. Path ranking is [attack path analysis](/blog/attack-path-analysis-cloud-security/). Identity blast radius is [CIEM](/blog/ciem-explained-for-cloud-teams/).
 
-## Why AWS SageMaker security matters now
+## The SageMaker attack surface
 
-Cloud estates change hourly. Terraform applies, autoscaling adds instances, engineers open temporary security group rules—and compliance snapshots go stale before the quarter ends.
+```
+Analyst laptop → Studio (Jupyter)
+                    └──ASSUMES──▶ execution role ──CAN_ACCESS──▶ training bucket
+                                                         ──CAN_ACCESS──▶ Secrets / ECR
 
-| Challenge | Without AWS SageMaker security | With disciplined approach |
-|-----------|-------------------------|---------------------------|
-| Alert volume | Thousands of equal-priority tickets | Ranked by reachability and blast radius |
-| Identity risk | Hidden admin bindings | CIEM-style permission analytics |
-| Data exposure | Unknown public buckets | DSPM plus exposure management |
-| Tool sprawl | CSPM + scanner + IAM silos | Graph-correlated CNAPP model |
+Internet ──REACHABLE──▶ inference endpoint
+                           └──ASSUMES──▶ endpoint role ──CAN_ACCESS──▶ model artifacts
+```
 
-Teams comparing [gcp compute engine security hardening](/blog/gcp-compute-engine-security-hardening/) and [azure blob storage security guide](/blog/azure-blob-storage-security-guide/) often discover that **prioritization** matters more than acquiring yet another point product.
+| Component | Default footgun | Production cut |
+| --------- | --------------- | -------------- |
+| Domain | Public internet; user can attach any role | VPC-only; domain execution role cannot `PassRole` to `*` |
+| Notebook | Root enabled; conda installs anything | Root off; custom image; lifecycle from a signed repo |
+| Training | Job role = data-scientist-admin | Job role: specific S3 prefixes, specific ECR repos, KMS decrypt |
+| Endpoint | Public HTTPS, no IAM auth | Private API Gateway / VPC endpoint; IAM or SageMaker IAM auth |
+| JumpStart / Canvas | Pulls models and data on a wide role | Separate domain or blocked; no prod bucket access |
 
-## Core controls and implementation steps
+## 1. Domain: VPC-only and a boring execution role
 
-Start with visibility, then enforcement, then continuous validation:
+Create the domain with **VPC only**. Studio apps, training, processing, and Transform jobs get ENIs in private subnets. Egress to AWS APIs goes through **VPC endpoints** (SageMaker API, SageMaker Runtime, S3, ECR, CloudWatch, STS, KMS). Do not give the domain a NAT “so pip works.” Bake dependencies into a **custom image**.
 
-1. **Inventory** — accounts, subscriptions, projects, clusters; tag owners and data classification
-2. **Baseline** — CIS or internal policy set mapped to CSPM checks
-3. **Exposure reduction** — internet-facing resources and anonymous access first
-4. **Identity review** — eliminate standing privilege; federation over long-lived keys
-5. **Graph or path analysis** — ask which findings connect ingress to sensitive assets
-6. **Automate remediation** — safe auto-fix for well-understood misconfigurations with rollback
+Domain settings that matter:
 
-### AWS considerations
+- **AppNetworkAccessType = VpcOnly**
+- Subnets with no default route to an IGW
+- Security group: egress only to prefix lists for those endpoints (or a shared SG the endpoints allow)
+- **Execution role** for the domain: CloudWatch logs, a *domain artifact* bucket prefix, ECR pull for the allowed image repo. **No** `iam:CreateRole`, no `iam:PassRole` except the training/endpoint roles you name.
 
-On AWS, align AWS SageMaker security with Organizations SCPs, Config rules, GuardDuty, and IAM Access Analyzer. Security groups and S3 public access blocks deliver fast wins before advanced analytics.
+```json
+{
+  "Effect": "Allow",
+  "Action": "iam:PassRole",
+  "Resource": [
+    "arn:aws:iam::123456789012:role/sagemaker-training-prod",
+    "arn:aws:iam::123456789012:role/sagemaker-endpoint-prod"
+  ],
+  "Condition": {
+    "StringEquals": {
+      "iam:PassedToService": "sagemaker.amazonaws.com"
+    }
+  }
+}
+```
 
-### Azure considerations
+Disable **root access** on user profiles. Disable **Amazon SageMaker JumpStart** in prod accounts if you cannot inventory every pulled model. Canvas belongs in a sandbox account with its own buckets.
 
-Use Defender for Cloud recommendations, Azure Policy initiatives, and Entra ID Conditional Access. Private Link and NSG tiering reduce lateral movement between application tiers.
+## 2. Training and processing jobs
 
-### GCP considerations
+The job role is not the user’s identity. Scope it like a batch worker:
 
-Organization policies, VPC Service Controls, and Security Command Center findings form the native stack. Prefer Workload Identity Federation over downloaded service account keys.
+- `s3:GetObject` / `PutObject` on `s3://ml-prod/train/*` and `s3://ml-prod/output/${TrainingJobName}/*`—not `s3:*`.
+- `ecr:BatchGetImage` on one repo.
+- `kms:Decrypt` on the training CMK.
+- No `sagemaker:CreatePresignedDomainUrl` (that is a user-console permission).
+- Encrypt job volumes (`VolumeKmsKeyId`) and output (`OutputDataConfig.KmsKeyId`).
+- **NetworkIsolation** / **EnableNetworkIsolation** when the container does not need VPC egress beyond S3/ECR endpoints.
+- **InterContainerTrafficEncryption** on distributed jobs.
 
-### Kubernetes considerations
+Tag every job with `data-class` and `owner`. GuardDuty and your graph should be able to join `TrainingJob → Role → Bucket`.
 
-RBAC, Pod Security Standards, NetworkPolicies, and admission control enforce AWS SageMaker security at the cluster layer—correlate compromised pods with cloud IAM via IRSA or Workload Identity.
+## 3. Endpoints: private inference
 
-## Avoiding toxic combinations
+A SageMaker endpoint is a long-lived workload with an execution role that reads model artifacts. Treat it as production compute:
 
-Individual misconfigurations often carry medium severity. **Toxic combinations**—public exposure plus privileged identity plus unpatched workload on a path to production data—are what attackers exploit.
+1. Deploy in the same VPC-only pattern. **VpcConfig** on the model.
+2. Do not put a public Application Load Balancer in front “for the data science demo.” Use **API Gateway private** or **VPC endpoint** for `runtime.sagemaker`, plus IAM SigV4.
+3. Endpoint role: `s3:GetObject` on the model artifact prefix only. No training-bucket write. No `sts:AssumeRole` to other accounts unless that is a documented cross-account model registry.
+4. Turn on **DataCaptureConfig** only into a locked-down bucket (predictions are often PII). Encrypt with a CMK.
+5. Patch the inference image; pin a digest. Same supply-chain rules as [cloud-native application security](/blog/cloud-native-application-security/).
 
-Review [toxic combinations in AWS and Azure](/blog/toxic-combinations-aws-azure/) and [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/) alongside this playbook. Graph queries like *show internet-reachable workloads with secrets access* outperform spreadsheet sorts.
+## 4. Data, secrets, and lineage
 
-## Metrics that prove progress
+Training data in S3 follows the [S3 hardening](/blog/aws-s3-bucket-security-hardening/) baseline: BPA, KMS, no public, Access Analyzer. SageMaker Feature Store and Model Registry use the same KMS and IAM story—separate roles for write (pipeline) vs read (endpoint).
 
-| Metric | Target direction |
-|--------|------------------|
-| Internet-facing resource count | Down |
-| Critical path findings open > 7 days | Down |
-| Standing admin bindings | Down |
-| Mean time to remediate path-critical issues | Down |
-| Repeat misconfiguration rate | Down |
+Put API keys for third-party model hosts in Secrets Manager. The notebook role should not have `secretsmanager:GetSecretValue` on `*`. Bind ARNs.
 
-Executives care about trend lines, not raw finding counts—a mature AWS SageMaker security program ** reduces reachable risk**, not merely closes tickets.
+Model cards and lineage (who trained what on which prefix) are a compliance artifact. They are also how you answer “which endpoint can still decrypt last quarter’s dataset?”
 
-## Open-source and self-hosted options
+## 5. Detect the path, don’t just CIS the domain
 
-Proprietary CNAPP suites popularized unified cloud security, but regulated and cost-conscious teams often need **auditable scoring** and **data residency**. [OpenSourceOM](https://opensourceom.org) builds a **security graph** across clouds with CSPM-style policies tied to attack path context—the [core repository](https://github.com/OpenSourceOM/core) is open source for teams extending collectors and queries.
+Config rules catch `SageMaker endpoint not in VPC`. They do not catch **notebook role → prod bucket**. After a domain change:
 
-See also [open source CSPM and CNAPP tools](/blog/open-source-cspm-cnapp-tools-2026/) for a landscape view.
+1. `iam simulate-principal-policy` on each execution role against `s3:GetObject` on prod prefixes.
+2. Confirm Studio ENIs have no `0.0.0.0/0` SG egress except endpoints.
+3. Graph: `Workload (SageMaker*) --ASSUMES--> Identity --CAN_ACCESS--> Datastore` with `Internet --REACHABLE-->` on the endpoint or on the notebook via stolen SSO.
 
-## Operational cadence
+Run those queries in OpenSourceOM after collectors sync ([getting started](/docs/getting-started/), [the graph](/docs/the-graph/)).
 
-| Cadence | Activity |
-|---------|----------|
-| Continuous | CSPM scan, drift detection, GuardDuty/SCC alerts |
-| Weekly | Triage path-critical findings; IAM change review |
-| Monthly | Policy exemption audit; tabletop on credential theft |
-| Quarterly | Benchmark reassessment; red team focused on paths |
+## Cadence
+
+| When | What |
+| ---- | ---- |
+| Domain create | VPC-only, root off, PassRole allowlist, endpoints |
+| Every job / endpoint | Dedicated role, KMS, tagged prefixes |
+| Weekly | Unused Studio apps, over-broad job roles, public endpoint check |
+| Quarterly | Image rebuild, JumpStart/Canvas review, tabletop stolen notebook cookie |
 
 ## Key takeaways
 
-- **AWS SageMaker security** succeeds when tied to exposure, identity, and path context—not checkbox compliance alone
-- **Automate baselines** but keep humans on exceptions, exemptions, and attack path triage
-- **Multi-cloud** programs need portable policy intent with cloud-native enforcement mechanics
-- **Graph-native tooling** (commercial or [OpenSourceOM](https://opensourceom.org)) scales prioritization when alert volume outgrows spreadsheets
+- **VPC-only** plus **named PassRole** removes internet and privilege-escalation from the default Studio path.
+- Training jobs and endpoints need **their own roles**, not the data scientist’s.
+- Rank SageMaker findings by whether a notebook or public endpoint can still `GetObject` production data—not by whether the domain exists in a VPC.
 
----
-**Related:** [gcp-compute-engine-security-hardening](/blog/gcp-compute-engine-security-hardening/) · [azure-blob-storage-security-guide](/blog/azure-blob-storage-security-guide/)
+**Related:** [AWS S3 bucket security](/blog/aws-s3-bucket-security-hardening/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/) · [Cloud-native application security](/blog/cloud-native-application-security/)
