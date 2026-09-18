@@ -1,8 +1,8 @@
 ---
-title: "GCP IAM Deny Policies: How They Override Allows"
-description: "GCP IAM deny policies evaluate after the allow union: attachment points, a key-creation deny you can test, lockout paths, and exceptions that do not become standing admin."
+title: "GCP IAM Deny Overrides Allow: Stop Key Creation"
+description: "Deny evaluates after the allow union—even Owner. Attachment points, a key-creation deny you can test, lockout paths, and exceptions that do not become standing admin."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - GCP
@@ -84,7 +84,7 @@ gcloud iam policies create deny-sa-keys-prod \
   --policy-file=deny-sa-keys.yaml
 ```
 
-You cannot attach a deny policy to `//cloudresourcemanager.googleapis.com/projects/P/buckets/B`. If the goal is “this bucket is not publicly writable,” that is IAM on the bucket plus org policy `storage.publicAccessPrevention`, not a deny policy.
+You cannot attach a deny policy to `//cloudresourcemanager.googleapis.com/projects/P/buckets/B`. If the goal is “this bucket is not publicly writable,” that is IAM on the bucket plus org policy `storage.publicAccessPrevention`, not a deny policy. Resource-shape rules (ingress, machine series, required labels) are a [custom org policy constraint in CEL](/blog/gcp-custom-org-policy-constraints/).
 
 Failure mode: policy created on a **project** that is not the one CI uses (separate project for Cloud Build). Keys still get created in the Build project. List deny policies at org, each folder on the path, and the project.
 
@@ -160,4 +160,4 @@ When a public Cloud Run SA can still `bigquery.tables.getData`, deny did not cau
 - [ ] Nonprod folder used as the canary; org-wide deny last
 - [ ] Editor/Owner removal still done per [GCP IAM hardening](/blog/gcp-iam-security-hardening/)—deny is not a substitute
 
-**Related:** [GCP IAM security hardening](/blog/gcp-iam-security-hardening/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/)
+**Related:** [Write a GCP custom org policy constraint](/blog/gcp-custom-org-policy-constraints/) · [GCP IAM security hardening](/blog/gcp-iam-security-hardening/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/)

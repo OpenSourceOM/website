@@ -116,7 +116,7 @@ Pod / SA  --ASSUMES-->  cloud Identity  --CAN_ACCESS-->  Datastore | iam:*
          only raises rank if this join exists or if Kubernetes API is the jewel
 ```
 
-**Privileged + hostNetwork** matters when the pod can hit IMDS/WI and the **node** role is wide, or when it can take over the node and read projected tokens of other pods. If the node role is `AmazonEKSWorkerNodePolicy` plus ECR pull and IRSA is scoped, privileged is still bad (kernel) but not “cloud admin” until you prove the extra hop.
+**Privileged + hostNetwork** matters when the pod can hit IMDS/WI and the **node** role is wide, or when it can take over the node and read projected tokens of other pods. If the node role is `AmazonEKSWorkerNodePolicy` plus ECR pull and IRSA is scoped, privileged is still bad (kernel) but not “cloud admin” until you prove the extra hop. On the node, [IMDSv2 hop limit 1](/blog/aws-imdsv2-hop-limit-enforcement/) is what keeps a container from stealing the instance profile.
 
 **Public LoadBalancer + empty RBAC** matters when the Service fronts a debug image with a cloud annotation.
 
@@ -128,7 +128,7 @@ Failure mode: creating a Jira “fix CIS 5.2.1” for a privileged pod in a name
 
 ## Admission vs posture scans
 
-| | Admission (PSA, Kyverno, Gatekeeper, ValidatingAdmissionPolicy) | Posture scan (KSPM) |
+| | Admission (PSA, Kyverno, Gatekeeper, [ValidatingAdmissionPolicy](/blog/kubernetes-validating-admission-policy/)) | Posture scan (KSPM) |
 | --- | --- | --- |
 | When | Create/update/delete of a Kubernetes object | Periodically, on live objects and/or rendered manifests |
 | Sees | The request (and sometimes dry-run) | What actually runs, plus drift |
@@ -155,4 +155,4 @@ Failure mode: enabling PSA `enforce: baseline` and turning off live KSPM “beca
 - [ ] RBAC who-can on secrets is in CI (RBAC post); not confused with KSPM CIS XML
 
 ---
-**Related:** [Kubernetes RBAC security](/blog/kubernetes-rbac-security-best-practices/) · [Cloud-native application security](/blog/cloud-native-application-security/) · [Pod to cloud admin](/blog/kubernetes-pod-to-cloud-admin-path/)
+**Related:** [CEL vs webhooks: Validating Admission Policy](/blog/kubernetes-validating-admission-policy/) · [Kubernetes RBAC security](/blog/kubernetes-rbac-security-best-practices/) · [Cloud-native application security](/blog/cloud-native-application-security/) · [Pod to cloud admin](/blog/kubernetes-pod-to-cloud-admin-path/)
