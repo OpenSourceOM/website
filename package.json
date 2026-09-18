@@ -17,7 +17,7 @@
     "verify:sitemap": "node scripts/verify-sitemap-lastmod.mjs"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/sitemap": "^3.7.4",
     "@astrojs/vercel": "^11.0.10",
     "@vercel/analytics": "^2.0.1",
     "astro": "^7.3.2"
