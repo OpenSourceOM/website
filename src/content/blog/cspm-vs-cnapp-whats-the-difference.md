@@ -1,6 +1,8 @@
 ---
 title: "CSPM vs CNAPP: What's the Difference (and Why the Security Graph Matters)"
 description: "Compare CSPM vs CNAPP for cloud security. Learn how attack path analysis and security graphs help teams prioritize misconfigurations and vulnerabilities that attackers can actually reach."
+pubDate: 2026-08-24
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - CSPM

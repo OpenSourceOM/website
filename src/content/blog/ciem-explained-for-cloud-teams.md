@@ -1,6 +1,8 @@
 ---
 title: "CIEM Explained for Cloud Teams: Identity Is the Attack Path"
 description: "What is CIEM (Cloud Infrastructure Entitlement Management)? Learn how cloud identity entitlement management fits into CNAPP, CSPM, and attack path analysis."
+pubDate: 2026-08-24
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - CIEM
