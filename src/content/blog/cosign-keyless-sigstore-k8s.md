@@ -111,7 +111,7 @@ Sketch (Kyverno cluster policy idea—keep the actual CRD in git):
 - `mutateDigest: true` so the cluster stores the digest you verified
 - Fail closed: `validationFailureAction: Enforce` in prod, Audit in a bake-in namespace
 
-**ValidatingAdmissionPolicy** cannot implement Sigstore verify. CEL does not call Rekor. Use VAP for cheap checks (required labels, deny `:latest`) and Kyverno/policy-controller for signatures. Stacking both is fine; duplicating signature logic in a homemade webhook is how you drift from Cosign's verifier.
+**[Validating Admission Policy](/blog/kubernetes-validating-admission-policy/)** cannot implement Sigstore verify. CEL does not call Rekor. Use VAP for cheap checks (required labels, deny `:latest`) and Kyverno/policy-controller for signatures. Stacking both is fine; duplicating signature logic in a homemade webhook is how you drift from Cosign's verifier.
 
 RBAC: the admission controller's SA needs get on the resources it mutates, not cluster-admin. A policy-controller with `cluster-admin` is a [Kubernetes RBAC](/blog/kubernetes-rbac-security-best-practices/) incident, not a Sigstore feature.
 

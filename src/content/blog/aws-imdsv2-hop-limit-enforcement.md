@@ -1,8 +1,8 @@
 ---
-title: "Enforce IMDSv2 and Hop Limit 1 on EC2"
-description: "IMDSv2 hop limit 1 stops SSRF and container theft of instance-profile keys. CLI, launch templates, account defaults, SCPs, and the failure modes that send hop limit back to 2."
+title: "Stop EC2 SSRF: Require IMDSv2 Hop Limit 1"
+description: "Hop limit 1 blocks SSRF and container theft of instance-profile keys. CLI, launch templates, account defaults, SCPs, and the hop-limit-2 failure modes."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - AWS
@@ -190,4 +190,6 @@ Existing instances: Config rule `ec2-imdsv2-check` plus a periodic `describe-ins
 - [ ] Containers use task role / IRSA / Pod Identity, not host IMDS
 - [ ] User-data contains no long-lived secrets
 - [ ] Instance profiles are not admin; remaining exposure goes on the attack-path queue
+
+**Related:** [Toxic combinations](/blog/toxic-combinations-aws-azure/) · [Projected service account tokens](/blog/kubernetes-projected-service-account-tokens/) · [Identity threat detection](/blog/itdr-identity-threat-detection-cloud/)
 ---

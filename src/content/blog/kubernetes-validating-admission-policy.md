@@ -1,8 +1,8 @@
 ---
-title: "Kubernetes Validating Admission Policy (CEL) vs Webhooks"
-description: "Native ValidatingAdmissionPolicy with CEL: built-in policies, when you still need Kyverno or Gatekeeper, parameter resources, and FailurePolicy Fail vs Ignore."
+title: "CEL vs Webhooks: Kubernetes Validating Admission Policy"
+description: "In-process CEL for deny-only checks; keep Kyverno or Gatekeeper for mutation. FailurePolicy Fail vs Ignore, parameter resources, and 1.30+ GA."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - Kubernetes
@@ -193,3 +193,5 @@ Order of admission still includes other webhooks. VAP does not replace Pod Secur
 - [ ] Break-glass namespaces listed, labeled, and reviewed; not `matchConditions: true` for everyone
 
 CEL in the apiserver is the deny path you can still evaluate when the policy-controller Deployment is unschedulable. Use it for shape. Leave provenance verification and mutation to tools that can actually do those jobs. Application design around admission is [cloud-native application security](/blog/cloud-native-application-security/).
+
+**Related:** [Kubernetes image provenance and SLSA](/blog/kubernetes-image-provenance-slsa/) · [seccomp and AppArmor](/blog/kubernetes-seccomp-and-apparmor/) · [KSPM](/blog/kspm-explained-kubernetes-posture/)
