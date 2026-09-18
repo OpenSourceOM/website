@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -31,8 +33,18 @@ jobs:
       - name: Typecheck
         run: npm run check
 
+      - name: Test lastmod helpers
+        run: npm run test:dates
+
+      - name: Require updatedDate on indexed blog edits
+        if: github.event_name == 'pull_request'
+        env:
+          BLOG_DATE_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BLOG_DATE_HEAD_SHA: ${{ github.sha }}
+        run: npm run check:blog-dates
+
       - name: Build
         run: npm run build
 
-      - name: Verify sitemap output
-        run: test -f dist/client/sitemap-index.xml
+      - name: Verify sitemap lastmod
+        run: npm run verify:sitemap

@@ -1,28 +1,13 @@
 // Copyright 2026 OpenSourceOM
 // SPDX-License-Identifier: Apache-2.0
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { defineConfig, envField } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
+import { buildLastmodByPath, lastmodForUrl, noindexBlogPathnames } from './scripts/content-dates.mjs';
 
 const SITE = 'https://opensourceom.org';
-
-function noindexBlogPathnames() {
-  const dir = join(process.cwd(), 'src/content/blog');
-  const paths = new Set();
-  for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.md')) continue;
-    const frontmatter = readFileSync(join(dir, file), 'utf8').split('---')[1] ?? '';
-    if (!/^noindex:\s*true\s*$/m.test(frontmatter)) continue;
-    const slug = file.replace(/\.md$/, '');
-    paths.add(`/blog/${slug}/`);
-    paths.add(`/blog/${slug}`);
-  }
-  return paths;
-}
-
 const noindexBlogPages = noindexBlogPathnames();
+const lastmodByPath = buildLastmodByPath();
 
 export default defineConfig({
   site: SITE,
@@ -32,10 +17,17 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         try {
-          return !noindexBlogPages.has(new URL(page).pathname);
+          const pathname = new URL(page).pathname;
+          if (pathname === '/rss.xml') return false;
+          return !noindexBlogPages.has(pathname);
         } catch {
           return true;
         }
+      },
+      serialize(item) {
+        const lastmod = lastmodForUrl(item.url, lastmodByPath);
+        if (lastmod) item.lastmod = lastmod;
+        return item;
       },
     }),
   ],
