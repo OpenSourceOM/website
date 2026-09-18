@@ -1,8 +1,8 @@
 ---
-title: "Custom Organization Policy Constraints on GCP"
-description: "Write GCP custom organization policy constraints in CEL, dry-run them, and use them when IAM cannot express a resource-shape rule. Not a generic org policy recap."
+title: "Write a GCP Custom Org Policy Constraint in CEL"
+description: "Custom CEL constraints when IAM cannot express a resource-shape rule. Dry-run, managed vs custom, and the failure modes that silently skip evaluation."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - GCP
@@ -172,7 +172,7 @@ IAM answers **who**. Custom constraints answer **what the resource is allowed to
 
 If the problem is “too many people have Editor,” fix IAM ([GCP IAM security hardening](/blog/gcp-iam-security-hardening/)). If the problem is “Owner still ships a public Cloud Run in the PCI folder,” that is a custom (or managed) constraint. Path-style ranking of leftover public services is [how to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/).
 
-Custom constraints do not graph identity. They are guardrails on mutate. Keep deny policies for permissions IAM should never grant; keep PAB for contractor ceilings; keep custom org policy for resource shape.
+Custom constraints do not graph identity. They are guardrails on mutate. Keep [IAM deny policies](/blog/gcp-iam-deny-policies-guide/) for permissions IAM should never grant; keep PAB for contractor ceilings; keep custom org policy for resource shape.
 
 ## Checklist
 
@@ -184,4 +184,4 @@ Custom constraints do not graph identity. They are guardrails on mutate. Keep de
 - [ ] IAM still least-privilege; constraint is not an excuse to leave Owner
 - [ ] Backlog of **existing** resources inventoried with Asset Search (constraint will not retrofit them)
 
-**Related:** [GCP IAM security hardening](/blog/gcp-iam-security-hardening/) · [How to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/)
+**Related:** [GCP IAM deny overrides allow](/blog/gcp-iam-deny-policies-guide/) · [GCP IAM security hardening](/blog/gcp-iam-security-hardening/) · [How to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/)

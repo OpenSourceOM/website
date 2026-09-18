@@ -76,11 +76,11 @@ Failure mode: you bound PAB to `user:ada@vendor.com` and the vendor signs in as 
 | Control | Stops | Does not stop |
 | --- | --- | --- |
 | IAM allow (roles) | Nothing by itself; it grants | Over-grant if you bind at the wrong folder |
-| IAM deny | Listed permissions (key create, setIamPolicy) | Access to resources using **other** permissions |
+| [IAM deny](/blog/gcp-iam-deny-policies-guide/) | Listed permissions (key create, setIamPolicy) | Access to resources using **other** permissions |
 | **PAB** | Access outside the resource boundary | A permission that is in-boundary (Editor inside sandbox is still Editor) |
-| Org policy (managed or custom) | Resource **configuration** (no public IPs, no keys) | Who the principal is |
+| [Org policy](/blog/gcp-custom-org-policy-constraints/) (managed or custom) | Resource **configuration** (no public IPs, no keys) | Who the principal is |
 
-Use org policy so sandbox cannot create public IPs. Use deny so nobody creates SA keys. Use PAB so the contractor principal set cannot leave `folders/contractors`. Use allow so they can actually deploy in that folder.
+Use org policy so sandbox cannot create public IPs. Use [IAM deny](/blog/gcp-iam-deny-policies-guide/) so nobody creates SA keys. Use PAB so the contractor principal set cannot leave `folders/contractors`. Use allow so they can actually deploy in that folder.
 
 PAB is a poor substitute for [CIEM](/blog/ciem-explained-for-cloud-teams/) reviews: a contractor with Editor **inside** a folder that contains a production replica is still a production admin. Boundary first, then least privilege inside it.
 

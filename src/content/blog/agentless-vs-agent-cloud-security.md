@@ -1,8 +1,8 @@
 ---
-title: "Agentless vs Agent-Based Cloud Security"
-description: "Agentless API snapshots versus runtime agents: what each sees, the blind spots of both, and a hybrid design that does not double-ticket every CVE."
+title: "Agentless vs Agent: What Snapshots Miss at Runtime"
+description: "API snapshots see IAM and exposure; agents see processes and ransomware. Blind spots of both, and a hybrid that does not double-ticket every CVE."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - agentless security
@@ -126,4 +126,4 @@ When the agent says CRITICAL CVE and CSPM says the instance is private with no p
 - [ ] Findings deduped across snapshot and agent on the same ARN
 - [ ] PaaS/serverless called out as agentless-only in the design
 
-**Related:** [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [Cloud-native application security](/blog/cloud-native-application-security/) · [How to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/)
+**Related:** [Cloud detection and response vs CSPM](/blog/cdr-cloud-detection-response/) · [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [Cloud-native application security](/blog/cloud-native-application-security/) · [How to prioritize cloud vulnerabilities](/blog/how-to-prioritize-cloud-vulnerabilities/)

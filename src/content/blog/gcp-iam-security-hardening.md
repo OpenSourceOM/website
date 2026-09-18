@@ -101,7 +101,7 @@ request.time < timestamp("2026-12-31T00:00:00Z")
 
 They do not shrink `roles/editor`. Use them for break-glass (time) and for bucket-prefix grants after the role is already tight.
 
-**IAM deny policies** are the other lever: deny `iam.serviceAccountKeys.create` or `resourcemanager.organizations.setIamPolicy` even if an allow binding says yes. Prototype on `nonprod` folder. A deny on `*` at org level is a support ticket.
+**[GCP IAM deny policies](/blog/gcp-iam-deny-policies-guide/)** are the other lever: deny `iam.serviceAccountKeys.create` or `resourcemanager.organizations.setIamPolicy` even if an allow binding says yes. Prototype on `nonprod` folder. A deny on `*` at org level is a support ticket. Resource-shape rules that IAM cannot express belong in a [custom org policy constraint](/blog/gcp-custom-org-policy-constraints/), not another role.
 
 ## 6. What to review on a cadence (GCP-specific)
 

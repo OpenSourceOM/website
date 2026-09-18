@@ -54,7 +54,7 @@ bucket not public                  GetObject 40 GB to an unknown ASN
 last_sync: 12 min                  event_time: now
 ```
 
-State tells you the door can open. Events tell you it did.
+State tells you the door can open. Events tell you it did. The same split shows up as [agentless snapshots vs runtime agents](/blog/agentless-vs-agent-cloud-security/): inventory is not ransomware detection.
 
 ## CSPM is state; CDR is events
 

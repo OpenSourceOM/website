@@ -66,7 +66,7 @@ Before enabling a detective control, read the **implementation** column in the C
 Common duplicates:
 
 - Detective “S3 bucket server-side encryption enabled” while a preventive or bucket-default + Deny already forces SSE
-- Detective “EC2 instance IMDSv2” while an SCP denies `RunInstances` without `ec2:MetadataHttpTokens=required`—**unless** you still have pre-SCP instances (then keep the detective until they die)
+- Detective “EC2 instance IMDSv2” while an SCP denies `RunInstances` without `ec2:MetadataHttpTokens=required`—**unless** you still have pre-SCP instances (then keep the detective until they die). The preventive recipe is [IMDSv2 hop limit 1](/blog/aws-imdsv2-hop-limit-enforcement/).
 - Detective “no IAM users” while an SCP denies `iam:CreateUser`—keep detective **until** leftover users are gone, then it is hygiene
 
 Keep detectives that SCPs **cannot** cover cheaply:

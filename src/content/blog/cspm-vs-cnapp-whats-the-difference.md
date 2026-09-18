@@ -33,7 +33,7 @@ This guide explains the difference, where each fits, and why modern platforms (i
 - Unencrypted databases or missing logging
 - IAM policies that violate least privilege
 
-CSPM is often **agentless**: it connects to cloud APIs (AWS, Azure, GCP) and scans inventory and policy state. That makes CSPM fast to deploy and well suited for teams that need quick wins on **misconfiguration and exposure reduction**.
+CSPM is often **[agentless](/blog/agentless-vs-agent-cloud-security/)**: it connects to cloud APIs (AWS, Azure, GCP) and scans inventory and policy state. That makes CSPM fast to deploy and well suited for teams that need quick wins on **misconfiguration and exposure reduction**. What snapshots miss at runtime is the rest of that split.
 
 ### What CSPM does well
 

@@ -50,7 +50,7 @@ Example:
 
 **Why toxic:** Remote code execution or credential theft → immediate cloud API access.
 
-**Fix:** Restrict SG, enforce IMDSv2, scope instance profile to least privilege.
+**Fix:** Restrict SG, [require IMDSv2 hop limit 1](/blog/aws-imdsv2-hop-limit-enforcement/), scope instance profile to least privilege.
 
 ### 2. Public S3 + sensitive data classification
 

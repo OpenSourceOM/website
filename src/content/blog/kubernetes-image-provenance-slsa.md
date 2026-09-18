@@ -34,7 +34,7 @@ faq:
 
 Last quarter’s incident was not “we forgot to scan.” It was a tag that moved. `payments:1.4` on Monday was your build. On Thursday it was someone else’s digest on the same tag, pulled by a Deployment that never pinned. **Kubernetes image provenance SLSA** is how you prove *which builder produced this digest*, then refuse everything else at the API server.
 
-This is not a CI scanner tutorial (which image CVE to patch first is a different queue). It is attestations, admission, and tag hygiene. App-layer context for why unsigned images matter sits in [cloud-native application security](/blog/cloud-native-application-security/).
+This is not a CI scanner tutorial (which image CVE to patch first is a different queue). It is attestations, admission, and tag hygiene. Cheap deny-only checks (no `:latest`, required digest) belong in [Validating Admission Policy](/blog/kubernetes-validating-admission-policy/); Cosign still needs a webhook. App-layer context for why unsigned images matter sits in [cloud-native application security](/blog/cloud-native-application-security/).
 
 ```
 git commit  →  isolated builder  →  digest + provenance (in-toto)
