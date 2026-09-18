@@ -9,7 +9,9 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    /** First publish date. Required for indexed posts (sitemap lastmod fallback). */
     pubDate: z.coerce.date().optional(),
+    /** Bump this (YYYY-MM-DD) when the article body or title changes — sitemap lastmod uses it. */
     updatedDate: z.coerce.date().optional(),
     author: z.string().default('OpenSourceOM Team'),
     tags: z.array(z.string()).default([]),
@@ -26,6 +28,14 @@ const blog = defineCollection({
     draft: z.boolean().default(false),
     /** When true, emit robots noindex and omit from the sitemap. */
     noindex: z.boolean().default(false),
+  }).superRefine((data, ctx) => {
+    if (!data.noindex && !data.draft && !data.pubDate) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pubDate'],
+        message: 'Indexed posts require pubDate (YYYY-MM-DD) for sitemap lastmod.',
+      });
+    }
   }),
 });
 

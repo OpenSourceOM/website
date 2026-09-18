@@ -1,6 +1,8 @@
 ---
 title: "Open Source CSPM and CNAPP Tools in 2026: What Exists Today"
 description: "Survey of open source CSPM, self-hosted CNAPP alternatives, and graph-native cloud security tools in 2026 — plus how to evaluate self-hosted options for your team."
+pubDate: 2026-08-24
+updatedDate: 2026-08-24
 author: OpenSourceOM Team
 tags:
   - open source CSPM

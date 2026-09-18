@@ -1,6 +1,8 @@
 ---
 title: "How to Prioritize Cloud Vulnerabilities When Everything Is \"Critical\""
 description: "A practitioner guide to cloud vulnerability prioritization beyond CVSS — using exposure, attack paths, and asset context to fix what attackers can actually exploit."
+pubDate: 2026-08-24
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - vulnerability prioritization

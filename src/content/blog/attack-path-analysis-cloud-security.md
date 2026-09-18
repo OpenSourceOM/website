@@ -1,6 +1,8 @@
 ---
 title: "Attack Path Analysis in Cloud Security: A Practical Guide"
 description: "Learn what attack path analysis is, how cloud attack paths are modeled in a security graph, and why graph-native CNAPP tools prioritize reachable risk over flat alert lists."
+pubDate: 2026-08-24
+updatedDate: 2026-08-27
 author: OpenSourceOM Team
 tags:
   - attack path analysis

@@ -1,6 +1,8 @@
 ---
 title: "Toxic Combinations in AWS and Azure: When Low-Risk Findings Become Critical"
 description: "Learn what toxic combination cloud security means in AWS and Azure — misconfiguration pairs that create real attack paths, and how security graphs detect them."
+pubDate: 2026-08-24
+updatedDate: 2026-09-18
 author: OpenSourceOM Team
 tags:
   - toxic combination
