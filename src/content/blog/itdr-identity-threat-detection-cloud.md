@@ -94,7 +94,7 @@ Failure mode: a detection that keys only on `errorCode = AccessDenied`. Attacker
 
 ## AssumeRole / token theft patterns
 
-**Instance metadata → API from elsewhere.** SSRF or a debug container dumps `iam/security-credentials/role-name`. The attacker calls S3 or STS from a VPS. IMDSv2 plus hop limit 1 cuts the steal; ITDR still needs the “credentials used off-box” rule for the instances you have not hardened.
+**Instance metadata → API from elsewhere.** SSRF or a debug container dumps `iam/security-credentials/role-name`. The attacker calls S3 or STS from a VPS. [IMDSv2 hop limit 1](/blog/aws-imdsv2-hop-limit-enforcement/) cuts the steal; ITDR still needs the “credentials used off-box” rule for the instances you have not hardened.
 
 **SSO / OIDC session reuse.** A stolen refresh token or a hijacked browser cookie issues `AssumeRoleWithSAML` or Identity Center role sessions from a new ASN while the laptop is asleep. Pair IdP risk (impossible *device*, not just city) with AWS `userIdentity.sessionContext`.
 

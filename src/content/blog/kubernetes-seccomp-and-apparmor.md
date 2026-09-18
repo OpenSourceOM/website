@@ -154,7 +154,7 @@ AppArmor `complain` (profile in complain mode, or a policy tool that only logs) 
 | AppArmor enforce | Deny + audit | Production on AppArmor nodes |
 | AppArmor complain | Allow + audit | Time-boxed profile build, expiry date on the ticket |
 
-Admission should fail Unconfined on app namespaces. ValidatingAdmissionPolicy or your policy engine: `seccompProfile.type != Unconfined`. Audit-only PSA is a dashboard, not a control.
+Admission should fail Unconfined on app namespaces. [Validating Admission Policy](/blog/kubernetes-validating-admission-policy/) or your policy engine: `seccompProfile.type != Unconfined`. Audit-only PSA is a dashboard, not a control.
 
 RuntimeDefault will break a surprise `mknod` or nested container builder. That is the point. Run those jobs in a dedicated namespace with a documented localhost profile, not by flipping the whole cluster to Unconfined.
 

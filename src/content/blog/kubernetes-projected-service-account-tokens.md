@@ -183,7 +183,7 @@ Failure modes:
 2. **Same SA used by twelve Deployments.** Token binding is per pod, but the cloud role is per SA name. Compromise of any pod is the full IAM role. Split SAs.
 3. **Trust policy `sub` too wide** (`system:serviceaccount:payments:*`). That is an IAM problem; the projected token is working as designed.
 
-GKE Workload Identity uses a similar projected token toward Google’s STS. The Kubernetes side is the same object: TokenRequest, audience, expiry, pod binding.
+GKE Workload Identity uses a similar projected token toward Google’s STS. The Kubernetes side is the same object: TokenRequest, audience, expiry, pod binding. On EKS nodes, still [require IMDSv2 hop limit 1](/blog/aws-imdsv2-hop-limit-enforcement/) so a container cannot skip IRSA and steal the node instance profile instead.
 
 If you graph pod → SA → cloud role, the edge is only honest if the token on disk is the projected one with the cloud audience. A leftover Secret token is a second, ungraphable credential. Correlate those paths in [attack path analysis](/blog/attack-path-analysis-cloud-security/) after the Secret inventory is empty.
 
