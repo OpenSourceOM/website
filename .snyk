@@ -14,6 +14,26 @@ ignore:
           declares unused 6.1.0 next to path-to-regexp-updated@6.3.0; there is
           no patched routing-utils that drops the 6.1.0 declaration.
         expires: 2027-08-26T00:00:00.000Z
+  SNYK-JS-HTTPCACHESEMANTICS-19964064:
+    - '*':
+        reason: >-
+          No patched http-cache-semantics release exists (latest is 4.2.0, still
+          required by astro). Astro uses it when fetching remote resources, not
+          as a shared cache; Vercel CDN serves this site.
+        expires: 2026-12-21T00:00:00.000Z
+  SNYK-JS-HTTPCACHESEMANTICS-19964068:
+    - '*':
+        reason: >-
+          Same unpatched http-cache-semantics@4.2.0. max-stale cache disclosure
+          needs a shared multi-user cache; production caching is Vercel's CDN.
+        expires: 2026-12-21T00:00:00.000Z
+  SNYK-JS-URIJS-19963963:
+    - '*':
+        reason: >-
+          No patched uri-js release exists (4.4.1, last published 2021). It is
+          only reached through ajv 6 inside @vercel/routing-utils, which
+          validates routing config at build time.
+        expires: 2026-12-21T00:00:00.000Z
   'snyk:lic:npm:@vercel/analytics:MPL-2.0':
     - '*':
         reason: MPL-2.0 is compatible with Apache-2.0 for unmodified npm dependencies.
