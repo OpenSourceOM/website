@@ -1,8 +1,8 @@
 ---
-title: "Projected Service Account Tokens in Kubernetes"
+title: "Kubernetes Projected Service Account Token Volumes"
 description: "Replace never-expiring Secret-based service account tokens with TokenRequest projected volumes: audiences, expiry, pod-bound tokens, and how IRSA consumes them."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-22
 author: OpenSourceOM Team
 tags:
   - Kubernetes

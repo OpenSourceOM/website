@@ -1,8 +1,8 @@
 ---
-title: "Entra PIM: Eligible vs Active Privileged Roles"
+title: "Azure PIM: Eligible vs Active Roles"
 description: "Standing Owner is the finding; eligible is still a path. Approval, MFA on activate, Graph/PIM APIs, and how to put eligible edges on a security graph."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-09-22
 author: OpenSourceOM Team
 tags:
   - Azure
