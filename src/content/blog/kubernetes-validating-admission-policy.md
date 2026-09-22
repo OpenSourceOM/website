@@ -1,8 +1,8 @@
 ---
-title: "CEL vs Webhooks: Kubernetes Validating Admission Policy"
+title: "Kubernetes ValidatingAdmissionPolicy: CEL vs Webhooks"
 description: "In-process CEL for deny-only checks; keep Kyverno or Gatekeeper for mutation. FailurePolicy Fail vs Ignore, parameter resources, and 1.30+ GA."
 pubDate: 2026-08-27
-updatedDate: 2026-09-18
+updatedDate: 2026-09-22
 author: OpenSourceOM Team
 tags:
   - Kubernetes
