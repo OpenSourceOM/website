@@ -33,17 +33,11 @@ Event payload:
 | `label` | `GitHub` |
 | `page` | `/blog/attack-path-analysis-cloud-security/` |
 
-## Google Analytics 4 (optional)
+## Google Analytics 4
 
-Use GA4 if you prefer Google Search Console integration or familiar GA reports.
+The Google tag for measurement ID `G-M9EMDYHBPE` is injected at the start of `<head>` on every page. Vercel Web Analytics stays in place and is not replaced.
 
-1. Create a property at [analytics.google.com](https://analytics.google.com)
-2. Copy the **Measurement ID** (`G-XXXXXXXXXX`)
-3. In Vercel: **Project → Settings → Environment Variables**
-   - Name: `PUBLIC_GA_MEASUREMENT_ID`
-   - Value: `G-XXXXXXXXXX`
-   - Environments: Production (and Preview if desired)
-4. Redeploy
+To point the site at a different property, set `PUBLIC_GA_MEASUREMENT_ID` in Vercel (**Project → Settings → Environment Variables**) and redeploy. An invalid or empty value disables the Google tag only.
 
 GitHub clicks also send a GA4 `github_click` event when GA is enabled.
 

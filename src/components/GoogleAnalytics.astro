@@ -1,0 +1,19 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import { gaMeasurementId } from '@/lib/ga';
+
+const gaId = gaMeasurementId();
+const snippet = gaId
+  ? `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${gaId}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${gaId}');
+</script>`
+  : '';
+---
+
+<Fragment set:html={snippet} />
