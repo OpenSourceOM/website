@@ -1,5 +1,6 @@
 // Copyright 2026 OpenSourceOM
 // SPDX-License-Identifier: Apache-2.0
+// Vercel deploy check for the recreated GitHub repository.
 import { defineConfig, envField } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
