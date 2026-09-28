@@ -5,13 +5,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Self-hosted CSPM architecture"
-  description="OpenSourceOM architecture: cloud collectors, a Postgres security graph, CSPM rules, a REST API, and finding exports."
+  title="OpenSourceOM component layout"
+  description="How the OpenSourceOM CLI, collectors, Postgres graph, rules engine, API, and exports fit together in one Go module."
   faq={[
     {
-      question: 'What is a self-hosted CSPM?',
+      question: 'Does om scan call the OpenSourceOM API?',
       answer:
-        'A self-hosted CSPM is posture scanning you operate. Collectors call cloud APIs, a database answers reachability, and a rules engine writes findings. OpenSourceOM is that system, under Apache-2.0.',
+        'No. The CLI opens Postgres and writes the batch itself. The API reads the same database for the console and HTTP routes. Scans work when only the Postgres container is running.',
     },
     {
       question: 'Where does OpenSourceOM store the security graph?',
@@ -25,7 +25,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     { href: '/docs/getting-started/', label: 'Install OpenSourceOM' },
   ]}
 >
-  <h1>Self-hosted CSPM architecture</h1>
+  <h1>OpenSourceOM component layout</h1>
+  <p>
+    How a self-hosted CSPM is shaped, as a category, is in
+    <a href="/blog/self-hosted-cspm-architecture/">Architecture of a self-hosted CSPM</a>. This
+    page is the layout of this repository.
+  </p>
   <p>
     Core is one Go module. The CLI and the API share <code>internal/graph</code>,
     <code>internal/rules</code>, and the collectors. PostgreSQL is the graph store. Phase 3 adds

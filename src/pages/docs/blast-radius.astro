@@ -5,13 +5,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="IAM blast radius"
-  description="See which cloud resources an identity can reach by walking CAN_ACCESS and ASSUMES edges in OpenSourceOM."
+  title="OpenSourceOM identity blast radius"
+  description="See which resources one identity can reach in OpenSourceOM by walking outgoing CAN_ACCESS and ASSUMES edges."
   faq={[
     {
-      question: 'What is IAM blast radius?',
+      question: 'What does OpenSourceOM count as an identity’s blast radius?',
       answer:
-        'Blast radius is the set of resources reachable from one identity. OpenSourceOM walks CAN_ACCESS and ASSUMES edges from that identity, up to depth 6.',
+        'The nodes reached by walking outgoing CAN_ACCESS and ASSUMES edges from that identity, up to depth 6. Other edge types are skipped.',
     },
     {
       question: 'How do I check blast radius for a role?',
@@ -24,14 +24,15 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     { href: '/blog/ciem-explained-for-cloud-teams/', label: 'CIEM explained' },
   ]}
 >
-  <h1>IAM blast radius</h1>
+  <h1>OpenSourceOM identity blast radius</h1>
   <p>
-    Blast radius answers a narrower question than an attack path: starting from one identity,
-    which nodes can you reach by following <code>CAN_ACCESS</code> and <code>ASSUMES</code>?
-    The walk is capped at depth 6. Other edge types are not followed.
+    Starting from one identity, which nodes can you reach by following <code>CAN_ACCESS</code> and
+    <code>ASSUMES</code>? The walk is capped at depth 6. Other edge types are not followed.
+    How teams use blast radius on IAM is in
+    <a href="/blog/blast-radius-analysis-cloud-iam/">Blast radius analysis for cloud IAM</a>.
   </p>
   <pre><code>{`./om identity blast-radius --name AdminRole
-./om identity blast-radius --id 'aws:123456789012:us-east-1:identity:AdminRole' --json`}</code></pre>
+./om identity blast-radius --id 'aws:123456789012:global:identity:AdminRole' --json`}</code></pre>
   <p>
     Provide <code>--id</code> or <code>--name</code>. A name lookup uses
     <code>FindIdentityByName</code>, which returns the identity node with that name. If two clouds
@@ -40,7 +41,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
   <h2>API</h2>
   <pre><code>{`GET /v1/identity/blast-radius?name=AdminRole
-GET /v1/identity/blast-radius?identity_id=aws:123456789012:us-east-1:identity:AdminRole`}</code></pre>
+GET /v1/identity/blast-radius?identity_id=aws:123456789012:global:identity:AdminRole`}</code></pre>
   <p>The JSON body:</p>
   <pre><code>{`{
   "identity": { "id": "...", "type": "Identity", "name": "AdminRole" },

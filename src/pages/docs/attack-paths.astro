@@ -5,13 +5,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Cloud attack path queries"
-  description="Named attack-path queries in OpenSourceOM, from the internet through workloads to datastores, public buckets, and admin identities."
+  title="OpenSourceOM attack path queries"
+  description="The five named queries om paths run executes, from the internet through workloads to datastores, plus public buckets and admin identities."
   faq={[
     {
-      question: 'What is an attack path in cloud security?',
+      question: 'Which attack path queries does OpenSourceOM run?',
       answer:
-        'An attack path is a walk from an entry point, usually the internet, through workloads and identities to a sensitive datastore. OpenSourceOM’s internet-to-datastore query keeps paths that include at least one workload.',
+        'om paths list prints five names. internet-to-datastore walks from the internet node and keeps paths that include a workload and end on a datastore. The other four are internet-to-workload, public-s3-buckets, admin-identities, and toxic-s3-public-with-admin-role.',
     },
     {
       question: 'How do I run an attack path query?',
@@ -25,10 +25,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     { href: '/blog/toxic-combinations-aws-azure/', label: 'Toxic combinations' },
   ]}
 >
-  <h1>Cloud attack path queries</h1>
+  <h1>OpenSourceOM attack path queries</h1>
   <p>
     Core ships five named queries. You run them from the CLI, the API, or the console’s query
-    dropdown. There is no ad-hoc graph language in this version.
+    dropdown. There is no ad-hoc graph language in this version. What attack path analysis means,
+    as a practice, is in
+    <a href="/blog/attack-path-analysis-cloud-security/">Attack path analysis</a>.
   </p>
   <pre><code>{`./om paths list
 ./om paths run internet-to-datastore`}</code></pre>

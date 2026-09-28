@@ -13,8 +13,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>om scan aws</code> uses the AWS SDK default credential chain in <code>AWS_REGION</code>
     (default <code>us-east-1</code>). It calls <code>sts:GetCallerIdentity</code> for the account
     id, then inventories that one region plus account-global IAM and the bucket list. Run it once
-    per region you care about. Node ids include the region, so two regions do not overwrite each
-    other. IAM nodes are stored with the region of the scan that wrote them.
+    per region you care about. EC2 and security group ids include the region, so two regions do
+    not overwrite each other. IAM and S3 ids use <code>global</code> instead of the scan region,
+    so a second regional scan updates the same role, user, and bucket.
   </p>
   <pre><code>{`export AWS_REGION=us-east-1
 ./om scan aws
@@ -79,11 +80,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <li><code>versioning</code> is true only when versioning status is <code>Enabled</code>. Suspended is false.</li>
   </ul>
   <p>
-    Node ids are <code>{'aws:{account}:{AWS_REGION}:{kind}:{resource}'}</code>. Instance resources
-    use the Name tag when present, otherwise the instance id. Security groups use the group id.
-    IAM resources use the role or user name. Buckets use the bucket name. IAM is global, but the
-    id still contains the region of the scan that wrote the node. Scanning a second region
-    writes a second IAM node for the same role.
+    Node ids are <code>{'aws:{account}:{scope}:{kind}:{resource}'}</code>. EC2 instances and
+    security groups use the scan region as the scope. IAM roles, IAM users, and S3 buckets use
+    <code>global</code>, and their node region is left empty. Instance resources use the Name tag
+    when present, otherwise the instance id. Security groups use the group id. IAM resources use
+    the role or user name. Buckets use the bucket name. <code>DescribeInstances</code>,
+    <code>DescribeSecurityGroups</code>, and <code>ListBuckets</code> follow pagination until the
+    API reports no further page.
   </p>
   <p>
     The collector does not inventory RDS, Lambda, EKS, VPCs, or IAM groups. Buckets are listed
