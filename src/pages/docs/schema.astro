@@ -112,7 +112,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
       <tbody>
         <tr>
           <td>AWS</td>
-          <td><code>{'aws:{account}:{region}:{kind}:{resource}'}</code></td>
+          <td><code>{'aws:{account}:{region|global}:{kind}:{resource}'}</code></td>
         </tr>
         <tr>
           <td>Azure</td>
@@ -139,8 +139,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   </div>
   <p>
     <code>kind</code> is a short word such as <code>workload</code>, <code>identity</code>, or
-    <code>datastore</code>, not the node type string. Plugins may use any unique id. Every edge
-    endpoint in a plugin batch must be a node in that same batch.
+    <code>datastore</code>, not the node type string. AWS uses the scan region for EC2 and
+    security groups, and <code>global</code> for IAM and S3. Azure’s location segment is
+    <code>AZURE_LOCATION</code>, not the resource region stored on the node. GCP instances use
+    the zone. GCS buckets and service accounts use <code>GCP_REGION</code>. Plugins may use any
+    unique id. Every edge endpoint in a plugin batch must be a node in that same batch.
   </p>
 
   <h2>Properties rules and queries read</h2>

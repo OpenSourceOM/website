@@ -5,18 +5,18 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Cloud security graph"
-  description="How OpenSourceOM models workloads, identities, and datastores so attack paths show what an outsider can reach."
+  title="How OpenSourceOM stores the security graph"
+  description="How OpenSourceOM stores workloads, identities, and datastores in Postgres so named queries can show what an outsider can reach."
   faq={[
     {
-      question: 'What is a cloud security graph?',
+      question: 'How does OpenSourceOM store the security graph?',
       answer:
-        'A security graph stores cloud assets as nodes and relationships as edges, so a finding can be ranked by whether an attacker can reach it. OpenSourceOM keeps that graph in PostgreSQL.',
+        'In PostgreSQL, in a nodes table and an edges table. Provider attributes sit in JSONB. There is no separate graph database and no ad-hoc query language.',
     },
     {
       question: 'How do I query the OpenSourceOM graph?',
       answer:
-        'Run one of five named queries, such as om paths run internet-to-datastore, or open the same query in the web console. There is no ad-hoc graph query language in this version.',
+        'Run one of five named queries, such as om paths run internet-to-datastore, or open the same query in the web console. Blast radius is a separate command.',
     },
   ]}
   related={[
@@ -25,11 +25,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     { href: '/blog/attack-path-analysis-cloud-security/', label: 'Attack path analysis' },
   ]}
 >
-  <h1>Cloud security graph</h1>
+  <h1>How OpenSourceOM stores the security graph</h1>
   <p>
     The graph is the inventory plus the relationships that make a finding matter. A public bucket
     and an admin role are separate facts. An edge between them is the question security teams
-    actually ask.
+    actually ask. What a security graph is, as a category, is in
+    <a href="/blog/security-graph-explained-cloud/">What a cloud security graph is</a>. This page
+    is how Core stores one.
   </p>
   <p>
     Storage is PostgreSQL: a <code>nodes</code> table and an <code>edges</code> table, with
