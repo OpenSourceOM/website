@@ -12,6 +12,10 @@ const lastmodByPath = buildLastmodByPath();
 export default defineConfig({
   site: SITE,
   output: 'static',
+  // Astro 7 defaults to JSX whitespace, which deletes a line break before an
+  // inline tag. "ship in\n<a>" then renders as "ship inOpenSourceOM". HTML-aware
+  // compression keeps that break, and the browser turns it into a space.
+  compressHTML: true,
   adapter: vercel(),
   integrations: [
     sitemap({
