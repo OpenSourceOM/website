@@ -40,12 +40,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td><code>Network</code>. <code>open_ingress</code> and <code>internet_facing</code> are true when a permission allows <code>0.0.0.0/0</code> or <code>::/0</code>.</td>
         </tr>
         <tr>
-          <td>IAM <code>ListRoles</code></td>
+          <td>IAM <code>ListRoles</code>, attached and inline role policies</td>
           <td><code>Identity</code> with <code>principal_type: role</code> and <code>admin_access</code>.</td>
         </tr>
         <tr>
-          <td>IAM users, MFA devices, access keys</td>
-          <td><code>Identity</code> with <code>principal_type: user</code>, <code>mfa</code>, and <code>unused_access_keys</code> (keys unused for 90 days).</td>
+          <td>IAM users, attached and inline user policies, MFA devices, access keys</td>
+          <td><code>Identity</code> with <code>principal_type: user</code>, <code>admin_access</code>, <code>mfa</code>, and <code>unused_access_keys</code> (keys unused for 90 days).</td>
         </tr>
         <tr>
           <td>S3 bucket list, public access block, encryption, versioning</td>
@@ -66,10 +66,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     S3 access reads the instance profile, attached and inline role policies, and the default
     policy version. Allow statements are interpreted. Deny statements and conditions are not, so
     an allow of <code>s3:*</code> on <code>*</code> still produces a bucket edge when a deny
-    would block it in IAM. <code>admin_access</code> is a separate label: true when the role or
-    user name or ARN contains <code>admin</code>, <code>poweruser</code>, <code>fullaccess</code>,
-    or <code>organizationaccountaccessrole</code>. A role can have <code>admin_access: false</code>
-    and still receive <code>CAN_ACCESS</code> edges from its policies.
+    would block it in IAM. <code>admin_access</code> is true when an attached or inline policy
+    allows <code>*</code> on <code>*</code>, or when the AWS-managed
+    <code>AdministratorAccess</code> policy is attached. The role or user name is not used.
+    Deny statements, conditions, permission boundaries, and group policies are not evaluated.
+    A role can have <code>admin_access: false</code> and still receive <code>CAN_ACCESS</code>
+    edges from a narrower policy.
   </p>
 
   <h2>How S3 properties are set</h2>
