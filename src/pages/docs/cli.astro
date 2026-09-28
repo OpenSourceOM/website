@@ -1,0 +1,141 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="OpenSourceOM CLI"
+  description="om CLI reference for OpenSourceOM: migrate, scan, CSPM rules, attack paths, blast radius, CVE enrichment, and exports."
+>
+  <h1>OpenSourceOM CLI</h1>
+  <p>
+    The <code>om</code> binary talks to Postgres directly. Scans, rules, queries, and exports do
+    not go through the HTTP API, so they do not send <code>OM_API_SECRET</code>. Build it from
+    the core repo with <code>go build -o om ./cmd/om</code>, or use a release archive.
+  </p>
+  <p>
+    <code>om migrate</code> walks upward from the working directory until it finds
+    <code>go.mod</code>, then applies <code>migrations/</code> beside that file. Set
+    <code>OM_REPO_ROOT</code> if the binary is not running inside a checkout. The container
+    image includes <code>go.mod</code> and <code>migrations/</code> under <code>/app</code>.
+  </p>
+
+  <h2>Commands</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>om migrate</code></td>
+          <td>Apply versioned SQL migrations.</td>
+        </tr>
+        <tr>
+          <td><code>om serve</code></td>
+          <td>Listen on <code>OM_API_PORT</code> and serve the API plus the console.</td>
+        </tr>
+        <tr>
+          <td><code>om scan demo</code></td>
+          <td>Replace the demo accounts, ingest the sample graph, run all rules, print a path and the top findings.</td>
+        </tr>
+        <tr>
+          <td><code>om scan aws</code></td>
+          <td>EC2, security groups, IAM, and S3 in <code>AWS_REGION</code>.</td>
+        </tr>
+        <tr>
+          <td><code>om scan azure</code></td>
+          <td>VMs, storage accounts, and subscription role assignments.</td>
+        </tr>
+        <tr>
+          <td><code>om scan gcp</code></td>
+          <td>GCE, GCS, and service accounts in <code>GCP_PROJECT_ID</code>.</td>
+        </tr>
+        <tr>
+          <td><code>om scan k8s</code></td>
+          <td>Pods, services, and service accounts from kubeconfig.</td>
+        </tr>
+        <tr>
+          <td><code>om scan plugin -- &lt;exe&gt; [args...]</code></td>
+          <td>Run an external collector. <code>--timeout</code> defaults to 10 minutes.</td>
+        </tr>
+        <tr>
+          <td><code>om rules list</code></td>
+          <td>Print every built-in and pack rule id.</td>
+        </tr>
+        <tr>
+          <td><code>om rules run [rule-id]</code></td>
+          <td>Evaluate one rule or the full catalog and upsert findings.</td>
+        </tr>
+        <tr>
+          <td><code>om paths list</code></td>
+          <td>Print named query names.</td>
+        </tr>
+        <tr>
+          <td><code>om paths run &lt;name&gt;</code></td>
+          <td>Run one named query and print paths.</td>
+        </tr>
+        <tr>
+          <td><code>om graph stats</code></td>
+          <td>JSON counts of nodes, edges, and nodes by type.</td>
+        </tr>
+        <tr>
+          <td><code>om identity blast-radius</code></td>
+          <td><code>--id</code> or <code>--name</code>. Add <code>--json</code> for the API shape.</td>
+        </tr>
+        <tr>
+          <td><code>om enrich cve</code></td>
+          <td>Attach CVE findings. Repeat <code>--cve</code>. <code>--internet-only</code> defaults to true.</td>
+        </tr>
+        <tr>
+          <td><code>om export findings run</code></td>
+          <td><code>--format siem|slack|jira</code>. <code>--out</code> writes SIEM JSONL to a file.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Plugin arguments</h2>
+  <p>
+    Flags after <code>--</code> belong to the plugin. Flags before <code>--</code> belong to
+    <code>om</code>.
+  </p>
+  <pre><code>{`./om scan plugin --timeout 5m -- ./my-collector --region us-east-1`}</code></pre>
+  <p>
+    Stdout must be one JSON object. Stderr is diagnostics and is capped. The process inherits
+    your environment, including cloud credentials. See <a href="/docs/collectors/plugins/">Plugins</a>.
+  </p>
+
+  <h2>Demo scan is destructive to the demo account</h2>
+  <p>
+    <code>om scan demo</code> deletes nodes whose account id belongs to the sample
+    (<code>111122223333</code> and <code>cluster-demo</code>), then inserts a fresh batch and
+    runs rules. Other accounts in the same database stay. Cloud scans upsert. They do not delete
+    resources that disappeared from the account, and they do not run rules.
+  </p>
+
+  <h2>Lines you should see</h2>
+  <p>A cloud scan prints one line and exits:</p>
+  <pre><code>{`Ingested 42 nodes and 17 edges from AWS account 123456789012 (us-east-1).`}</code></pre>
+  <p>
+    <code>om rules run</code> prints a match count and does not print each finding. Read them
+    with <code>GET /v1/findings</code> or the console. <code>om rules run</code> with an unknown
+    id exits with <code>unknown rule</code>.
+  </p>
+  <p>
+    <code>om enrich cve</code> prints
+    <code>Enrichment complete: N findings created, M updated.</code>
+    <code>om export findings run --format siem</code> writes JSON Lines to stdout and the count
+    to stderr. Slack and Jira print <code>Posted N findings to Slack.</code> or
+    <code>Created N Jira issues.</code> on stdout.
+  </p>
+  <p>
+    <code>om graph stats</code> is a JSON object with <code>nodes</code>, <code>edges</code>, and
+    <code>by_type</code>. <code>om paths run</code> prints each path as node names. The same
+    queries are documented on <a href="/docs/attack-paths/">Attack paths</a>.
+  </p>
+</DocsLayout>

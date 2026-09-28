@@ -1,0 +1,199 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Configure OpenSourceOM"
+  description="Environment variables for the OpenSourceOM CLI, API secret, Postgres, NVD, and AWS, Azure, GCP, and Kubernetes collectors."
+>
+  <h1>Configure OpenSourceOM</h1>
+  <p>
+    <code>om</code> reads process environment variables. It does not load <code>.env</code>.
+    Docker Compose interpolates <code>.env</code> for the API service. Copy
+    <code>.env.example</code> in the core repository and export only the variables you need in the
+    shell that runs the CLI.
+  </p>
+  <p>
+    A database URL is built from the <code>POSTGRES_*</code> variables unless <code>DATABASE_URL</code>
+    is set. The default URL is
+    <code>postgres://opensourceom:opensourceom@localhost:5432/opensourceom?sslmode=disable</code>.
+  </p>
+
+  <h2>Process</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Used by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>OM_ENV</code></td>
+          <td><code>development</code></td>
+          <td>API container label. The CLI stores it and does not branch on it.</td>
+        </tr>
+        <tr>
+          <td><code>OM_LOG_LEVEL</code></td>
+          <td><code>info</code></td>
+          <td>Reserved. The API logger is the standard library logger.</td>
+        </tr>
+        <tr>
+          <td><code>OM_PUBLIC_URL</code></td>
+          <td><code>http://localhost:8080</code></td>
+          <td>Public URL hint. Requests use the listen address.</td>
+        </tr>
+        <tr>
+          <td><code>OM_API_PORT</code></td>
+          <td><code>8080</code></td>
+          <td><code>om serve</code></td>
+        </tr>
+        <tr>
+          <td><code>OM_API_SECRET</code></td>
+          <td><code>change-me-in-production</code></td>
+          <td>Write authentication. See <a href="/docs/security/">Security</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Database</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>DATABASE_URL</code></td>
+          <td>Built from the fields below</td>
+        </tr>
+        <tr>
+          <td><code>POSTGRES_USER</code></td>
+          <td><code>opensourceom</code></td>
+        </tr>
+        <tr>
+          <td><code>POSTGRES_PASSWORD</code></td>
+          <td><code>opensourceom</code></td>
+        </tr>
+        <tr>
+          <td><code>POSTGRES_DB</code></td>
+          <td><code>opensourceom</code></td>
+        </tr>
+        <tr>
+          <td><code>POSTGRES_HOST</code></td>
+          <td><code>localhost</code></td>
+        </tr>
+        <tr>
+          <td><code>POSTGRES_PORT</code></td>
+          <td><code>5432</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Inside Compose, the API service sets <code>POSTGRES_HOST=postgres</code>. On your laptop, keep
+    the CLI default of <code>localhost</code>.
+  </p>
+
+  <h2>Collectors</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Default</th>
+          <th>Required for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>AWS_REGION</code></td>
+          <td><code>us-east-1</code></td>
+          <td><code>om scan aws</code> (one region per run)</td>
+        </tr>
+        <tr>
+          <td><code>AZURE_SUBSCRIPTION_ID</code></td>
+          <td>empty</td>
+          <td><code>om scan azure</code></td>
+        </tr>
+        <tr>
+          <td><code>AZURE_LOCATION</code></td>
+          <td><code>eastus</code></td>
+          <td>Fallback region on Azure node IDs</td>
+        </tr>
+        <tr>
+          <td><code>GCP_PROJECT_ID</code></td>
+          <td>empty</td>
+          <td><code>om scan gcp</code></td>
+        </tr>
+        <tr>
+          <td><code>GCP_REGION</code></td>
+          <td><code>us-central1</code></td>
+          <td>Region segment on GCP identity and bucket IDs</td>
+        </tr>
+        <tr>
+          <td><code>K8S_CLUSTER</code></td>
+          <td><code>default</code></td>
+          <td>Account id, and kubeconfig context when it is not <code>default</code></td>
+        </tr>
+        <tr>
+          <td><code>K8S_NAMESPACE</code></td>
+          <td>empty (all namespaces)</td>
+          <td>Limit <code>om scan k8s</code> to one namespace</td>
+        </tr>
+        <tr>
+          <td><code>NVD_API_KEY</code></td>
+          <td>empty</td>
+          <td>Higher NVD rate limits for <code>om enrich cve</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    AWS, Azure, and GCP credentials themselves come from each SDK’s default chain
+    (<code>AWS_ACCESS_KEY_ID</code>, <code>az login</code>, <code>GOOGLE_APPLICATION_CREDENTIALS</code>,
+    instance metadata, and so on). Core does not have its own credential store.
+  </p>
+
+  <h2>Exports</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Used when</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SLACK_WEBHOOK_URL</code></td>
+          <td><code>om export findings run --format slack</code></td>
+        </tr>
+        <tr>
+          <td><code>JIRA_URL</code></td>
+          <td>Jira site base URL</td>
+        </tr>
+        <tr>
+          <td><code>JIRA_EMAIL</code></td>
+          <td>Jira account email</td>
+        </tr>
+        <tr>
+          <td><code>JIRA_API_TOKEN</code></td>
+          <td>Jira API token</td>
+        </tr>
+        <tr>
+          <td><code>JIRA_PROJECT</code></td>
+          <td>Project key for created issues</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</DocsLayout>

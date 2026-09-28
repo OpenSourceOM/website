@@ -5,45 +5,119 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Architecture"
-  description="OpenSourceOM architecture — collectors, graph engine, API, and deployment patterns."
+  title="Self-hosted CSPM architecture"
+  description="OpenSourceOM architecture: cloud collectors, a Postgres security graph, CSPM rules, a REST API, and finding exports."
+  faq={[
+    {
+      question: 'What is a self-hosted CSPM?',
+      answer:
+        'A self-hosted CSPM is posture scanning you operate. Collectors call cloud APIs, a database answers reachability, and a rules engine writes findings. OpenSourceOM is that system, under Apache-2.0.',
+    },
+    {
+      question: 'Where does OpenSourceOM store the security graph?',
+      answer:
+        'In PostgreSQL, in nodes and edges tables. The om CLI and the API share that database. Path queries are named SQL walks, not a separate graph database.',
+    },
+  ]}
+  related={[
+    { href: '/blog/self-hosted-cspm-architecture/', label: 'Self-hosted CSPM architecture' },
+    { href: '/blog/cspm-vs-cnapp-whats-the-difference/', label: 'CSPM vs CNAPP' },
+    { href: '/docs/getting-started/', label: 'Install OpenSourceOM' },
+  ]}
 >
-  <h1>Architecture</h1>
+  <h1>Self-hosted CSPM architecture</h1>
   <p>
-    OpenSourceOM is designed as modular, cloud-native components you can run on Kubernetes or Docker Compose.
+    Core is one Go module. The CLI and the API share <code>internal/graph</code>,
+    <code>internal/rules</code>, and the collectors. PostgreSQL is the graph store. Phase 3 adds
+    the plugin SDK, the embedded rule pack, and a Helm chart on top of the Phase 2 feature set.
   </p>
+  <pre><code>{`Cloud / Kubernetes APIs
+        │
+        ▼
+   Collectors (in-process or plugin stdout)
+        │
+        ▼
+   Postgres nodes + edges
+        │
+        ├── named path queries and blast radius
+        ├── CSPM rules + NVD enrichment → Finding nodes
+        └── API + console, and SIEM / Slack / Jira export`}</code></pre>
 
   <h2>Components</h2>
-  <ul>
-    <li><strong>Collectors</strong> — pull inventory, IAM, network, and vulnerability data from cloud APIs</li>
-    <li><strong>Normalizer</strong> — map provider-specific resources into a unified graph schema</li>
-    <li><strong>Graph store</strong> — persist nodes/edges and run path queries (Planned: open graph DB backend)</li>
-    <li><strong>Rules engine</strong> — CSPM policies and custom detections tied to graph context</li>
-    <li><strong>API & UI</strong> — GraphQL/REST API and web console for exploration and remediation</li>
-  </ul>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Piece</th>
+          <th>Where it lives</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CLI</td>
+          <td><code>cmd/om</code>, <code>internal/cmd</code></td>
+        </tr>
+        <tr>
+          <td>Collectors</td>
+          <td><code>internal/collectors</code> (AWS, Azure, GCP, Kubernetes, demo)</td>
+        </tr>
+        <tr>
+          <td>Plugin SDK</td>
+          <td><code>sdk/collector</code>, runner in <code>internal/plugins</code></td>
+        </tr>
+        <tr>
+          <td>Graph store and queries</td>
+          <td><code>internal/graph</code>, SQL in <code>migrations/</code></td>
+        </tr>
+        <tr>
+          <td>CSPM</td>
+          <td><code>internal/rules</code> and embedded <code>packs/*.yaml</code></td>
+        </tr>
+        <tr>
+          <td>CVE enrichment</td>
+          <td><code>internal/enrichment</code></td>
+        </tr>
+        <tr>
+          <td>Exports</td>
+          <td><code>internal/export</code></td>
+        </tr>
+        <tr>
+          <td>API and console</td>
+          <td><code>internal/api</code>, static files in <code>internal/api/web</code></td>
+        </tr>
+        <tr>
+          <td>Helm</td>
+          <td><code>deploy/helm/opensourceom</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-  <h2>Data flow</h2>
-  <pre><code>{`Cloud APIs → Collectors → Normalizer → Graph Store → API/UI
-                              ↘ Rules Engine → Findings (with path context)`}</code></pre>
-
-  <h2>Deployment options</h2>
-  <ul>
-    <li><strong>Pilot</strong> — single-node Docker Compose</li>
-    <li><strong>Production</strong> — Kubernetes with HA graph store and horizontal collectors</li>
-    <li><strong>Air-gapped</strong> — offline vulnerability feeds and private registry mirrors</li>
-  </ul>
-
-  <h2>Extensibility</h2>
+  <h2>Two ways in</h2>
   <p>
-    Connectors are plugins. Community adapters for Kubernetes, GitHub, and SIEM exports live alongside
-    core cloud providers. See the <code>core</code> repository for SDK details (coming soon).
+    The CLI opens Postgres and writes batches, findings, and export calls itself. The API opens
+    the same database. <code>POST /v1/ingest</code> is the HTTP equivalent of an upsert.
+    <code>om scan</code> does not call the API. That split is why scans work when you only start
+    the Postgres container, and why the console API key is irrelevant to the CLI.
   </p>
 
-  <h2>Open source scope</h2>
+  <h2>Deployment shapes</h2>
+  <ul>
+    <li><a href="/docs/docker/">Docker Compose</a> — Postgres 16 and the API image for a laptop or a single VM.</li>
+    <li><a href="/docs/kubernetes/">Helm</a> — API Deployment, an init container that migrates, and an optional Postgres StatefulSet with a PVC.</li>
+  </ul>
   <p>
-    The Apache-2.0 core targets <strong>external attack defense</strong> — attack paths, graph-context
-    CSPM, and exposure-aware prioritization. Internal-threat analysis, SAML/SSO, and multi-tenant RBAC
-    are planned outside the free OSS core.
-    <a href="/docs/open-source/">Read the full OSS vs. commercial split</a>.
+    Collectors are not a long-running Deployment in the chart. You run <code>om scan</code> from
+    a job, a laptop, or CI, using credentials that can read the accounts and reach Postgres.
+  </p>
+
+  <h2>What this version leaves out</h2>
+  <p>
+    Multi-tenant RBAC, SAML, and platform audit logs of who clicked what in the console are
+    outside the open source core. See <a href="/docs/open-source/">Open source scope</a>.
+    Recursive path SQL is capped. Collector edges for Azure and GCP include heuristics documented
+    on those pages. The design notes in the core repo
+    (<a href="https://github.com/OpenSourceOM/core/blob/main/docs/ARCHITECTURE.md">ARCHITECTURE.md</a>
+    and the ADRs) are the engineering record behind this page.
   </p>
 </DocsLayout>

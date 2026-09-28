@@ -5,19 +5,80 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Documentation"
-  description="OpenSourceOM documentation — getting started, architecture, and the security graph."
+  title="Open-source cloud security docs"
+  description="Self-hosted docs for OpenSourceOM: install the security graph, scan AWS, Azure, GCP, and Kubernetes, and query attack paths."
+  faq={[
+    {
+      question: 'What is OpenSourceOM?',
+      answer:
+        'OpenSourceOM is a self-hosted, Apache-2.0 cloud security platform. Collectors inventory AWS, Azure, GCP, and Kubernetes into a Postgres graph so you can query attack paths and rank CSPM findings by what an outsider can reach.',
+    },
+    {
+      question: 'Is OpenSourceOM a CNAPP?',
+      answer:
+        'It covers the security-graph, attack-path, and CSPM parts of a CNAPP, and you run it in your own environment. SAML, multi-tenant RBAC, and a commercial SaaS console are not part of the open-source core.',
+    },
+    {
+      question: 'Where do I start?',
+      answer:
+        'Install with Docker Compose, run om migrate, then om scan demo. That loads a sample graph with no cloud credentials. Real AWS, Azure, GCP, and Kubernetes scans use each provider’s default read-only credentials.',
+    },
+  ]}
+  related={[
+    { href: '/blog/open-source-cspm-cnapp-tools-2026/', label: 'Open-source CSPM and CNAPP tools' },
+    { href: '/blog/security-graph-explained-cloud/', label: 'What a cloud security graph is' },
+    { href: '/blog/attack-path-analysis-cloud-security/', label: 'Attack path analysis' },
+    { href: '/blog/self-hosted-cspm-architecture/', label: 'Self-hosted CSPM architecture' },
+    { href: '/blog/cspm-vs-cnapp-whats-the-difference/', label: 'CSPM vs CNAPP' },
+  ]}
 >
-  <h1>Documentation</h1>
+  <h1>Open-source cloud security docs</h1>
   <p>
-    Welcome to OpenSourceOM — an open-source cloud security platform focused on graph-native risk
-    analysis. These docs cover concepts, deployment, and how to extend the platform.
+    OpenSourceOM Core is a self-hosted security graph. Collectors pull cloud and Kubernetes inventory
+    into PostgreSQL. Named path queries, CSPM rules, and CVE enrichment rank what an outsider can
+    reach. These pages describe the <code>om</code> CLI, REST API, and collectors as they ship in
+    <a href="https://github.com/OpenSourceOM/core">OpenSourceOM/core</a> (Phase 3).
   </p>
-  <h2>Start here</h2>
+
+  <h2>Start</h2>
   <ul>
-    <li><a href="/docs/getting-started/">Getting started</a> — install and connect your first cloud account</li>
-    <li><a href="/docs/the-graph/">The graph</a> — how attack paths and prioritization work</li>
-    <li><a href="/docs/architecture/">Architecture</a> — collectors, graph store, and API overview</li>
-    <li><a href="/docs/open-source/">Open source scope</a> — what is free in Core vs. planned commercial features</li>
+    <li><a href="/docs/getting-started/">Getting started</a> — Compose, migrations, the demo graph, and a first scan</li>
+    <li><a href="/docs/configuration/">Configuration</a> — environment variables for the CLI and API</li>
+  </ul>
+
+  <h2>Graph</h2>
+  <ul>
+    <li><a href="/docs/the-graph/">The graph</a> — nodes, edges, and how findings attach</li>
+    <li><a href="/docs/schema/">Schema</a> — node types, edge types, and ID format</li>
+    <li><a href="/docs/attack-paths/">Attack paths</a> — the five named queries</li>
+    <li><a href="/docs/blast-radius/">Blast radius</a> — what an identity can reach</li>
+    <li><a href="/docs/prioritization/">Prioritization</a> — how graph context changes a score</li>
+  </ul>
+
+  <h2>Platform</h2>
+  <ul>
+    <li><a href="/docs/cli/">CLI</a> — <code>om</code> command reference</li>
+    <li><a href="/docs/api/">API</a> — REST endpoints under <code>/v1</code></li>
+    <li><a href="/docs/console/">Console</a> — the embedded graph explorer</li>
+    <li><a href="/docs/rules/">CSPM rules</a> — built-in checks and how findings are written</li>
+    <li><a href="/docs/rule-packs/">Rule packs</a> — YAML packs compiled into the binary</li>
+    <li><a href="/docs/enrichment/">CVE enrichment</a> — NVD lookup and exposure findings</li>
+    <li><a href="/docs/exports/">Exports</a> — SIEM JSONL, Slack, and Jira</li>
+  </ul>
+
+  <h2>Collectors</h2>
+  <ul>
+    <li><a href="/docs/collectors/">Overview</a> — what a scan writes, and what it does not</li>
+    <li><a href="/docs/collectors/aws/">AWS</a>, <a href="/docs/collectors/azure/">Azure</a>, <a href="/docs/collectors/gcp/">GCP</a>, <a href="/docs/collectors/kubernetes/">Kubernetes</a></li>
+    <li><a href="/docs/collectors/plugins/">Plugins</a> — external collectors via <code>om scan plugin</code></li>
+  </ul>
+
+  <h2>Operate</h2>
+  <ul>
+    <li><a href="/docs/architecture/">Architecture</a> — components and data flow</li>
+    <li><a href="/docs/docker/">Docker Compose</a> — local Postgres and API</li>
+    <li><a href="/docs/kubernetes/">Kubernetes</a> — Helm chart</li>
+    <li><a href="/docs/security/">Security</a> — API secret, read-only collectors, vulnerability reports</li>
+    <li><a href="/docs/open-source/">Open source scope</a> — what stays in Core versus planned commercial work</li>
   </ul>
 </DocsLayout>

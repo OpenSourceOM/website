@@ -1,0 +1,70 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="OpenSourceOM security model"
+  description="How the OpenSourceOM API secret protects writes, why graph reads belong on a private network, and how to report bugs."
+>
+  <h1>OpenSourceOM security model</h1>
+  <p>
+    Core assumes it runs in a network you control. The database holds a copy of your inventory,
+    IAM relationships, and findings. Protect Postgres and the API the way you protect that data.
+  </p>
+
+  <h2>API secret</h2>
+  <p>
+    <code>OM_API_SECRET</code> defaults to <code>change-me-in-production</code> when the variable
+    is unset. These routes require <code>Authorization: Bearer &lt;secret&gt;</code> or
+    <code>X-API-Key: &lt;secret&gt;</code>:
+  </p>
+  <ul>
+    <li><code>POST /v1/ingest</code></li>
+    <li><code>POST /v1/rules/run</code></li>
+    <li><code>POST /v1/export/slack</code></li>
+  </ul>
+  <p>
+    Change the secret before anyone else can reach the port. Helm refuses to install until
+    <code>api.secret</code> is set. The CLI never sends this header. Anyone who can open a local
+    shell as a user with database credentials can scan and export without it.
+  </p>
+
+  <h2>Reads are open</h2>
+  <p>
+    <code>GET</code> routes — health, graph snapshot, findings, rules list, blast radius, path
+    queries — do not check the secret. A process that can reach port 8080 can read the graph.
+    Do not publish the Service to the internet. Put it on a private network or behind an
+    authenticating proxy you operate.
+  </p>
+
+  <h2>Collectors</h2>
+  <p>
+    Built-in collectors call read APIs. Give them a role that cannot change infrastructure.
+    Plugins run with your user privileges and are not sandboxed. Review plugin binaries the way
+    you review any other code that holds cloud credentials.
+  </p>
+  <p>
+    <code>POST /v1/export/slack</code> reads the webhook from the JSON body
+    (<code>{`{"webhook":"..."}`}</code>) and rejects a <code>webhook</code> query parameter so
+    the URL is less likely to land in access logs. The body is still a credential. Prefer
+    <code>om export findings run --format slack</code> with <code>SLACK_WEBHOOK_URL</code> in
+    the environment.
+  </p>
+
+  <h2>Console script</h2>
+  <p>
+    The graph view loads vis-network from unpkg. That is a browser dependency, not an outbound
+    call from the API. Block it in locked-down browsers if you need to, and use the findings list
+    and the CLI.
+  </p>
+
+  <h2>Reporting a vulnerability</h2>
+  <p>
+    Email <a href="mailto:security@opensourceom.org">security@opensourceom.org</a>. Do not open a
+    public GitHub issue for a security bug. The core repository’s
+    <a href="https://github.com/OpenSourceOM/core/blob/main/SECURITY.md">SECURITY.md</a> is the
+    project policy.
+  </p>
+</DocsLayout>

@@ -5,40 +5,121 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Getting started"
-  description="Install OpenSourceOM and connect your first cloud account to start building your security graph."
+  title="Install a self-hosted security graph"
+  description="Install OpenSourceOM with Docker Compose, apply migrations, load the demo graph, and scan AWS, Azure, GCP, or Kubernetes."
+  faq={[
+    {
+      question: 'How do I install OpenSourceOM?',
+      answer:
+        'Clone the OpenSourceOM/core repository, start Postgres and the API with Docker Compose, build the om CLI, and run om migrate. Then om scan demo loads a sample graph at http://localhost:8080.',
+    },
+    {
+      question: 'Can I try OpenSourceOM without cloud credentials?',
+      answer:
+        'Yes. om scan demo loads a sample environment and runs the CSPM rules. AWS, Azure, GCP, and Kubernetes scans are separate commands and use each cloud’s default credential chain.',
+    },
+  ]}
+  related={[
+    { href: '/blog/open-source-cspm-cnapp-tools-2026/', label: 'Open-source CSPM and CNAPP tools' },
+    { href: '/blog/self-hosted-cspm-architecture/', label: 'Self-hosted CSPM architecture' },
+    { href: '/docs/the-graph/', label: 'How the security graph works' },
+  ]}
 >
-  <h1>Getting started</h1>
+  <h1>Install a self-hosted security graph</h1>
   <p>
-    OpenSourceOM runs as a self-hosted stack. You will deploy collectors in your environment, ingest
-    cloud inventory and security signals, and explore findings in the security graph UI.
+    Core runs as two processes that share one Postgres database: the <code>om</code> CLI (scans,
+    rules, queries) and the API (console and HTTP). Docker Compose starts Postgres and the API.
+    You build or download the CLI and point it at the published database port.
   </p>
 
   <h2>Prerequisites</h2>
   <ul>
-    <li>Docker 24+ and Docker Compose</li>
-    <li>Read-only cloud credentials for AWS, Azure, or GCP</li>
-    <li>4 vCPU / 8 GB RAM minimum for a small pilot</li>
+    <li>Docker with Compose</li>
+    <li>Go 1.27.1 if you build <code>om</code> from source (or a release archive from <a href="https://github.com/OpenSourceOM/core/releases">GitHub Releases</a>)</li>
+    <li>Cloud credentials only when you scan a real account. The demo graph needs none.</li>
   </ul>
 
-  <h2>Quick start</h2>
+  <h2>Start Postgres and the API</h2>
   <pre><code>{`git clone https://github.com/OpenSourceOM/core.git
 cd core
 cp .env.example .env
-docker compose up -d
-
-# Open the UI (default)
-open http://localhost:8080`}</code></pre>
-
-  <h2>Connect a cloud account</h2>
+docker compose up -d`}</code></pre>
   <p>
-    Create a read-only IAM role (AWS), service principal (Azure), or workload identity (GCP) and
-    paste the credentials into the setup wizard. Collectors begin syncing assets within minutes.
+    Compose publishes Postgres on <code>localhost:5432</code> and the API on
+    <a href="http://localhost:8080">http://localhost:8080</a>. The API container does not apply
+    schema migrations. The CLI does.
+  </p>
+  <p>
+    Compose reads <code>.env</code> for the API container. The CLI does not. It defaults to
+    <code>POSTGRES_HOST=localhost</code>, which matches the published port. Leave
+    <code>POSTGRES_HOST=postgres</code> inside <code>.env</code> for the container, and do not
+    export that value into the shell you use for <code>om</code>.
   </p>
 
-  <h2>Next steps</h2>
+  <h2>Build the CLI and migrate</h2>
+  <pre><code>{`go build -o om ./cmd/om
+./om migrate`}</code></pre>
+  <p>
+    <code>om migrate</code> applies the SQL files in <code>migrations/</code>. Run it from the
+    repository root so the CLI can find that directory.
+  </p>
+
+  <h2>Load the sample graph</h2>
+  <pre><code>{`./om scan demo
+./om paths list
+./om paths run internet-to-datastore
+./om graph stats`}</code></pre>
+  <p>
+    <code>om scan demo</code> replaces the previous demo account, upserts a small AWS-and-Kubernetes
+    sample, runs every CSPM rule, and prints one attack path.
+  </p>
+
+  <h2>What the demo shows</h2>
+  <p>
+    The command replaces account ids <code>111122223333</code> and <code>cluster-demo</code>,
+    then prints an attack path and up to eight findings from those accounts. The path is
+    Internet → sg-web → web-1 → AdminRole → prod-db. <code>worker-1</code> has no public IP and
+    only reaches the private bucket <code>acme-assets</code> through <code>AppRole</code>.
+    <code>acme-logs-public</code> is a public bucket that is not on the web-1 path. The
+    Kubernetes sample is a workload named <code>frontend</code> with
+    <code>k8s_service_type: LoadBalancer</code>, reachable from the internet and not connected
+    to <code>prod-db</code>.
+  </p>
+  <p>
+    Open <a href="http://localhost:8080">http://localhost:8080</a>. The console opens on
+    <code>internet-to-datastore</code>, which should draw that path. Stats should be non-zero,
+    and the findings list should include the public datastore and the internet-exposed workload.
+    If the page is empty, the CLI and the API are pointed at different databases. See
+    <a href="/docs/docker/">Docker Compose</a>.
+  </p>
+
+  <h2>Scan a cloud account</h2>
+  <p>
+    Collectors use each cloud’s default credential chain. They are read-only toward the account.
+    Export variables in the shell, then scan. Details and IAM scope are on the collector pages.
+  </p>
+  <pre><code>{`export AWS_REGION=us-east-1
+./om scan aws
+
+export AZURE_SUBSCRIPTION_ID=00000000-0000-0000-0000-000000000000
+./om scan azure
+
+export GCP_PROJECT_ID=my-project
+./om scan gcp
+
+./om scan k8s`}</code></pre>
+  <p>
+    After a scan, evaluate rules and optionally attach CVEs:
+  </p>
+  <pre><code>{`./om rules run
+./om enrich cve --cve CVE-2021-44228
+./om identity blast-radius --name AdminRole`}</code></pre>
+
+  <h2>Next</h2>
   <ul>
-    <li>Read about <a href="/docs/the-graph/">the security graph</a></li>
-    <li>Review the <a href="/docs/architecture/">architecture</a> before scaling to production</li>
+    <li><a href="/docs/configuration/">Configuration</a> for every variable the CLI reads</li>
+    <li><a href="/docs/the-graph/">The graph</a> for how nodes and edges are used</li>
+    <li><a href="/docs/cli/">CLI</a> for the full command list</li>
+    <li><a href="/docs/kubernetes/">Kubernetes</a> when you leave Compose</li>
   </ul>
 </DocsLayout>

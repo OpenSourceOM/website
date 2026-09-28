@@ -5,44 +5,112 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="The graph"
-  description="Learn how OpenSourceOM models cloud assets, identities, and exposures in a queryable security graph."
+  title="Cloud security graph"
+  description="How OpenSourceOM models workloads, identities, and datastores so attack paths show what an outsider can reach."
+  faq={[
+    {
+      question: 'What is a cloud security graph?',
+      answer:
+        'A security graph stores cloud assets as nodes and relationships as edges, so a finding can be ranked by whether an attacker can reach it. OpenSourceOM keeps that graph in PostgreSQL.',
+    },
+    {
+      question: 'How do I query the OpenSourceOM graph?',
+      answer:
+        'Run one of five named queries, such as om paths run internet-to-datastore, or open the same query in the web console. There is no ad-hoc graph query language in this version.',
+    },
+  ]}
+  related={[
+    { href: '/blog/security-graph-explained-cloud/', label: 'What a cloud security graph is' },
+    { href: '/blog/cloud-security-graph-vs-cmdb/', label: 'Security graph vs CMDB' },
+    { href: '/blog/attack-path-analysis-cloud-security/', label: 'Attack path analysis' },
+  ]}
 >
-  <h1>The security graph</h1>
+  <h1>Cloud security graph</h1>
   <p>
-    The graph is the core of OpenSourceOM. Instead of treating every CVE or misconfiguration as equal,
-    we model <strong>relationships</strong>: what can reach what, through which identities and network paths.
+    The graph is the inventory plus the relationships that make a finding matter. A public bucket
+    and an admin role are separate facts. An edge between them is the question security teams
+    actually ask.
+  </p>
+  <p>
+    Storage is PostgreSQL: a <code>nodes</code> table and an <code>edges</code> table, with
+    provider-specific attributes in <code>JSONB</code>. There is no open query language. You run
+    <a href="/docs/attack-paths/">named path queries</a>, <a href="/docs/blast-radius/">blast radius</a>,
+    and <a href="/docs/rules/">CSPM rules</a> that the engine already knows how to evaluate.
   </p>
 
-  <h2>Nodes and edges</h2>
+  <h2>What a scan writes</h2>
+  <p>
+    Each collector emits a batch of nodes and edges and upserts it. Node ids are stable and
+    provider-scoped, so a later scan updates the same row. Edge ids are
+    <code>source|target|type</code>. See <a href="/docs/schema/">Schema</a> for the closed set of
+    types.
+  </p>
   <ul>
-    <li><strong>Nodes</strong> — workloads, containers, identities, data stores, network interfaces, findings</li>
-    <li><strong>Edges</strong> — network reachability, IAM permissions, data access, vulnerability presence</li>
+    <li><strong>Internet</strong> — one synthetic node, <code>internet:global</code>, used as the start of external reachability.</li>
+    <li><strong>Workload</strong> — EC2, GCE, Azure VM, or Kubernetes pod.</li>
+    <li><strong>Network</strong> — security group, namespace, or Service.</li>
+    <li><strong>Identity</strong> — IAM role or user, service account, or Azure principal.</li>
+    <li><strong>Datastore</strong> — S3, GCS, or Azure Storage.</li>
+    <li><strong>Finding</strong> — written by rules and CVE enrichment, linked with <code>VIOLATES</code>.</li>
   </ul>
 
-  <h2>Attack path queries</h2>
-  <p>
-    Security teams ask graph questions to cut through noise. Examples:
-  </p>
-  <pre><code>{`# Critical CVEs on internet-exposed paths to production data
-MATCH (i:Internet)-[*..5]->(v:Vulnerability {severity:'critical'})-[:AFFECTS]->(w:Workload)-[:CAN_REACH]->(d:Datastore {env:'prod'})
-RETURN v, w, d
+  <h2>Edges that queries walk</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Edge</th>
+          <th>Meaning in Core</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>REACHABLE</code></td>
+          <td>Internet can reach a workload. AWS requires a public IPv4 address and an open security group. Azure and GCP use a public or NAT IP and do not read firewalls. Kubernetes uses a LoadBalancer or NodePort that selects the pod.</td>
+        </tr>
+        <tr>
+          <td><code>ASSUMES</code></td>
+          <td>An identity is in use. On AWS the instance is the source and the role is the target. On Kubernetes the service account is the source and the pod is the target.</td>
+        </tr>
+        <tr>
+          <td><code>CAN_ACCESS</code></td>
+          <td>An identity or workload can reach a datastore. AWS derives this from instance-profile allow statements. Azure and GCP use a same-account heuristic.</td>
+        </tr>
+        <tr>
+          <td><code>AFFECTS</code></td>
+          <td>A workload is attached to a network control (security group or namespace).</td>
+        </tr>
+        <tr>
+          <td><code>VIOLATES</code></td>
+          <td>A finding applies to a resource. The finding is the source.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-# Over-privileged roles reachable from a compromised VM
-MATCH (vm:VM {compromised:true})-[:ASSUMES|CAN_ASSUME*1..3]->(r:Role)
-WHERE r.admin = true
-RETURN r`}</code></pre>
-
-  <h2>Prioritization</h2>
+  <h2>How a path becomes a priority</h2>
   <p>
-    Findings inherit risk from graph context: exposure, path length, asset sensitivity, and exploit
-    intelligence. A critical CVE on an isolated dev box ranks lower than a high CVE on a path to prod.
+    <code>internet-to-datastore</code> walks outward from <code>internet:global</code> and keeps
+    paths that end on a datastore and pass through at least one workload. CSPM rules then ask
+    three yes/no questions about a matched resource: is it reachable from the internet, does it
+    sit on an internet-to-datastore path, and can an admin identity access it? Those answers add
+    points to the rule’s base score. The arithmetic is on
+    <a href="/docs/prioritization/">Prioritization</a>.
   </p>
 
-  <h2>Compared to traditional CNAPP</h2>
-  <p>
-    Proprietary platforms like Wiz popularized graph-native cloud security. OpenSourceOM brings similar
-    <em>concepts</em> — attack paths, toxic combinations, identity blast radius — to an auditable,
-    self-hosted, Apache-2.0 codebase you can extend.
-  </p>
+  <h2>Limits you should plan for</h2>
+  <ul>
+    <li>Path walks are recursive SQL with a depth cap and a row limit. They are built for a pilot graph, not an unbounded enterprise crawl. Named queries follow every edge type, so a <code>VIOLATES</code> edge can extend a path if it points onward from the current node.</li>
+    <li>Azure and GCP <code>CAN_ACCESS</code> edges are heuristics: admin-labeled identities and internet-facing workloads are linked to public datastores in the same subscription or project. AWS <code>CAN_ACCESS</code> evaluates allow statements on the instance profile’s role. Deny statements and conditions are not evaluated.</li>
+    <li>GCP <code>public_access</code> means the bucket IAM policy grants <code>allUsers</code> or <code>allAuthenticatedUsers</code> an object-read role. Azure <code>public_access</code> means blob public access is allowed and a container is set to blob or container access.</li>
+    <li>Pack rules and the public-datastore check list at most 500 nodes of the target type, ordered by name. A larger account is only partly evaluated.</li>
+    <li>Findings are nodes in the same database. Deleting a resource cascades its edges, including <code>VIOLATES</code>.</li>
+  </ul>
+
+  <h2>Where to go next</h2>
+  <ul>
+    <li><a href="/docs/schema/">Schema</a> — ids and property bags</li>
+    <li><a href="/docs/attack-paths/">Attack paths</a> — each named query</li>
+    <li><a href="/docs/collectors/">Collectors</a> — which APIs produce which edges</li>
+  </ul>
 </DocsLayout>

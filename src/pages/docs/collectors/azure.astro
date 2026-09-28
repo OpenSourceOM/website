@@ -1,0 +1,113 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Azure security collector"
+  description="What om scan azure collects from virtual machines, storage accounts, and subscription role assignments, and how public IPs become REACHABLE edges."
+>
+  <h1>Azure security collector</h1>
+  <p>
+    <code>om scan azure</code> requires <code>AZURE_SUBSCRIPTION_ID</code>. Authentication is
+    <code>DefaultAzureCredential</code>: Azure CLI (<code>az login</code>), environment variables
+    (<code>AZURE_TENANT_ID</code>, <code>AZURE_CLIENT_ID</code>, <code>AZURE_CLIENT_SECRET</code>),
+    or a managed identity. The scan covers one subscription. Network security groups, Key Vault,
+    SQL, and resource-group role assignments are not inventoried.
+  </p>
+  <pre><code>{`export AZURE_SUBSCRIPTION_ID=00000000-0000-0000-0000-000000000000
+az login
+./om scan azure
+./om rules run`}</code></pre>
+  <p>
+    <code>AZURE_LOCATION</code> (default <code>eastus</code>) is the location segment in every
+    node id, and the fallback region when a resource has none. A VM’s own location is stored on
+    the node’s <code>region</code> field, but it does not change the id. Two scans with different
+    <code>AZURE_LOCATION</code> values write different ids for the same VM.
+  </p>
+
+  <h2>Resources</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>API</th>
+          <th>Graph</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Resource groups, then virtual machines in each group</td>
+          <td><code>Workload</code>. Properties: <code>resource_id</code> (ARM id) and <code>public_ip</code> (the address string, or empty).</td>
+        </tr>
+        <tr>
+          <td>NIC and public IP address reads for each VM</td>
+          <td>Used only to fill <code>public_ip</code>. A non-empty address adds <code>REACHABLE</code> from <code>internet:global</code>. NSGs are not read, so a public IP is treated as internet-facing even when a security rule would block it.</td>
+        </tr>
+        <tr>
+          <td>Storage accounts and blob containers</td>
+          <td><code>Datastore</code> with <code>resource_id</code> and <code>public_access</code>.</td>
+        </tr>
+        <tr>
+          <td>Role assignments on the subscription</td>
+          <td><code>Identity</code> named by principal id, with <code>role_definition_id</code> and <code>admin_access</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Node ids are <code>{'azure:{subscription}:{AZURE_LOCATION}:{kind}:{name}'}</code>.
+    <code>kind</code> is <code>workload</code>, <code>datastore</code>, or <code>identity</code>.
+    The identity resource is the principal id, so two assignments for the same principal collapse
+    to one node. The last assignment the scan sees wins, including its <code>admin_access</code>
+    flag. A principal that is both Reader and Owner can be stored as non-admin if the Reader
+    assignment is processed later.
+  </p>
+
+  <h2>When storage is public</h2>
+  <p>
+    <code>public_access</code> is true only when both of these hold:
+  </p>
+  <ul>
+    <li><code>allowBlobPublicAccess</code> is unset or true. An explicit false stops the check. The account is not public.</li>
+    <li>At least one blob container has public access <code>blob</code> or <code>container</code>.</li>
+  </ul>
+  <p>
+    An account that allows public blobs but has no container set to blob or container access is
+    stored with <code>public_access: false</code>. A missing resource group on the storage account
+    id fails the scan.
+  </p>
+
+  <h2>Admin identities</h2>
+  <p>
+    <code>admin_access</code> is true when the role definition id contains <code>owner</code>,
+    <code>contributor</code>, <code>admin</code>, or <code>useraccessadministrator</code>, compared
+    case-insensitively. Built-in Owner, Contributor, and User Access Administrator match because
+    those words appear in the definition id. A custom role whose id does not contain those
+    substrings does not, even if the role can do the same thing.
+  </p>
+
+  <h2>Heuristic edges</h2>
+  <p>After the lists return, the collector adds <code>CAN_ACCESS</code> edges:</p>
+  <ul>
+    <li>From every identity with <code>admin_access: true</code> to every datastore with <code>public_access: true</code>.</li>
+    <li>From every workload that already has a <code>REACHABLE</code> edge to those same public datastores.</li>
+  </ul>
+  <p>
+    These edges are not an evaluation of RBAC on the storage account. A Contributor on the
+    subscription is linked to every public storage account in that subscription, and an
+    internet-facing VM is linked to those accounts even when the VM’s identity cannot read them.
+    Blast radius and <code>cspm-admin-datastore-access</code> repeat that link. Private storage
+    accounts get no <code>CAN_ACCESS</code> edge from this collector.
+  </p>
+
+  <h2>Read access</h2>
+  <p>
+    The scan lists resource groups, virtual machines, storage accounts, blob containers, and
+    subscription role assignments, and it reads network interfaces and public IP addresses. A
+    subscription Reader covers the ARM calls. Listing containers also needs
+    <code>Microsoft.Storage/storageAccounts/blobServices/containers/read</code>. The collector
+    does not call mutating APIs.
+  </p>
+</DocsLayout>

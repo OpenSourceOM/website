@@ -1,0 +1,167 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Security graph REST API"
+  description="OpenSourceOM REST API for health, ingest, graph snapshots, attack-path queries, findings, CSPM rules, and blast radius."
+>
+  <h1>Security graph REST API</h1>
+  <p>
+    The API is plain HTTP JSON, served by <code>om serve</code> and by the Compose or Helm
+    container. The console is the same process at <code>/</code> and <code>/ui/</code>. There is
+    no GraphQL endpoint.
+  </p>
+  <p>
+    Write routes check <code>OM_API_SECRET</code>. Send it as <code>Authorization: Bearer …</code>
+    or <code>X-API-Key</code>. Read routes do not check the secret. Treat the API as an internal
+    service. Details are on <a href="/docs/security/">Security</a>.
+  </p>
+
+  <h2>Reads</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Method and path</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>GET /v1/health</code></td>
+          <td><code>{`{"status":"ok","service":"opensourceom-api"}`}</code>. Helm probes this path.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/graph/stats</code></td>
+          <td><code>nodes</code>, <code>edges</code>, and <code>by_type</code>.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/graph/queries</code></td>
+          <td>Named queries and their descriptions.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/graph/query?name=</code></td>
+          <td>Run one named query. Unknown names return 400.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/graph/nodes?type=&amp;limit=</code></td>
+          <td>Nodes. <code>type</code> filters by node type. Default limit 500.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/graph/edges?limit=</code></td>
+          <td>Edges. Default limit 2000.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/graph/snapshot?limit=</code></td>
+          <td>Nodes (default 500) and edges (default 2000) together.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/findings?limit=</code></td>
+          <td>Finding views with the affected resource. Default limit 200.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/rules</code></td>
+          <td>Rule id, name, and description.</td>
+        </tr>
+        <tr>
+          <td><code>GET /v1/identity/blast-radius</code></td>
+          <td><code>identity_id</code> or <code>name</code>. See <a href="/docs/blast-radius/">Blast radius</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <code>limit</code> falls back to the default when it is missing, zero, or not an integer.
+    There is no server-side maximum above the number you pass.
+  </p>
+
+  <h2>Writes</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Method and path</th>
+          <th>Body</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>POST /v1/ingest</code></td>
+          <td>A graph batch: <code>{`{"nodes":[],"edges":[]}`}</code>. Response 202 with counts.</td>
+        </tr>
+        <tr>
+          <td><code>POST /v1/rules/run</code></td>
+          <td>No body. Optional <code>?id=rule-id</code> runs one rule. Response includes <code>matches</code> and <code>findings_created</code>.</td>
+        </tr>
+        <tr>
+          <td><code>POST /v1/export/slack</code></td>
+          <td>JSON body <code>{`{"webhook":"https://hooks.slack.com/..."}`}</code>. A <code>webhook</code> query parameter is rejected. Response <code>{`{"exported":N}`}</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>{`curl -s http://localhost:8080/v1/health
+curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
+  -H 'Content-Type: application/json' \\
+  -d '{"nodes":[],"edges":[]}' \\
+  http://localhost:8080/v1/ingest`}</code></pre>
+  <p>
+    Ingest upserts by node and edge id. It does not run plugin validation, so callers are
+    responsible for type strings and for edges whose endpoints already exist or are in the same
+    body. The CLI plugin path does validate. Prefer <code>om scan plugin</code> for external
+    collectors.
+  </p>
+
+  <h2>Response shapes</h2>
+  <p><code>GET /v1/graph/stats</code>:</p>
+  <pre><code>{`{
+  "nodes": 12,
+  "edges": 9,
+  "by_type": { "Workload": 3, "Datastore": 2, "Identity": 2 }
+}`}</code></pre>
+  <p>
+    <code>GET /v1/graph/query?name=internet-to-datastore</code> returns <code>query</code>,
+    <code>summary</code>, and <code>paths</code>. Each path is an array of nodes. Unknown names
+    are 400. The five names are listed by <code>GET /v1/graph/queries</code> as
+    <code>{`{"queries":[{"name":"...","description":"..."}]}`}</code>. See
+    <a href="/docs/attack-paths/">Attack paths</a> for depth and row limits.
+  </p>
+  <p>
+    <code>GET /v1/findings</code> returns an array. Each item has <code>finding</code> (the node)
+    plus <code>affected_resource_id</code>, <code>affected_resource_name</code>, and
+    <code>affected_resource_type</code> from the <code>VIOLATES</code> edge. Rows are ordered by
+    <code>normalized_score</code> descending. Default limit 200.
+  </p>
+  <p>
+    <code>POST /v1/rules/run</code> returns <code>matches</code> and <code>findings_created</code>.
+    <code>findings_created</code> counts upserts, including updates of a finding that already
+    existed for that rule and resource. An unknown <code>id</code> is 400.
+  </p>
+  <p>
+    <code>GET /v1/identity/blast-radius</code> returns the identity, <code>reachable</code>
+    (at most 200 nodes), <code>max_depth</code> (6), and <code>summary</code>. Pass
+    <code>identity_id</code> or <code>name</code>. A name that matches no identity is 400.
+    This read does not require the API secret.
+  </p>
+  <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  -H 'Content-Type: application/json' \\
+  -d '{"webhook":"https://hooks.slack.com/services/..."}' \\
+  http://localhost:8080/v1/export/slack`}</code></pre>
+  <p>
+    Slack export loads up to 500 findings and posts the same digest as
+    <code>om export findings run --format slack</code>. Put the webhook in the JSON body.
+    Query strings are rejected so the URL does not land in access logs.
+  </p>
+
+  <h2>Errors</h2>
+  <p>
+    Failures are JSON <code>{`{"error":"..."}`}</code> with 400, 401, or 500. A missing or wrong
+    secret on a write is 401 <code>unauthorized</code>. Invalid JSON on ingest is 400
+    <code>invalid json body</code>. There is no request id and no pagination cursor. Raise
+    <code>limit</code> when a list is truncated. There is no server-side maximum above the
+    number you pass, except the fixed caps inside path queries, blast radius, and exports.
+  </p>
+</DocsLayout>

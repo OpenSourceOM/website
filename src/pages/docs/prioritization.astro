@@ -1,0 +1,119 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Prioritize cloud risk by attack path"
+  description="How OpenSourceOM scores CSPM findings using internet exposure and paths to datastores, then maps the score to severity."
+  faq={[
+    {
+      question: 'How does OpenSourceOM prioritize findings?',
+      answer:
+        'Each CSPM rule starts with a base score. Internet reachability adds 10, a path from the internet to a datastore adds 25, and admin access adds 5. The total is capped at 100.',
+    },
+    {
+      question: 'Does a critical CVE always rank first?',
+      answer:
+        'CVE findings store an NVD-normalized score and do not add attack-path points. CSPM findings do. A public datastore on a path to data can outrank a critical CVE that was attached without graph context.',
+    },
+  ]}
+  related={[
+    { href: '/blog/how-to-prioritize-cloud-vulnerabilities/', label: 'How to prioritize cloud vulnerabilities' },
+    { href: '/blog/exposure-management-cloud-security/', label: 'Exposure management' },
+  ]}
+>
+  <h1>Prioritize cloud risk by attack path</h1>
+  <p>
+    A rule starts with a base score from 0 to 100. Graph context adds points, then the total is
+    capped at 100 and mapped to a severity label. CVE enrichment uses CVSS from NVD and stores a
+    normalized severity on the finding. The two paths share the <code>Finding</code> node type.
+  </p>
+
+  <h2>Graph context</h2>
+  <p>
+    For each matched resource the engine computes:
+  </p>
+  <ul>
+    <li><code>internet_reachable</code> — a walk from <code>internet:global</code> can reach the node</li>
+    <li><code>path_to_datastore</code> — the node sits on an internet → workload → datastore path</li>
+    <li><code>admin_can_access</code> — set by the built-in admin-datastore rule when an admin identity has <code>CAN_ACCESS</code></li>
+  </ul>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Signal</th>
+          <th>Added to base score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Internet reachable</td>
+          <td>+10</td>
+        </tr>
+        <tr>
+          <td>On a path to a datastore</td>
+          <td>+25</td>
+        </tr>
+        <tr>
+          <td>Admin can access</td>
+          <td>+5</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    A public datastore rule with base 70 that also sits on an internet-to-datastore path scores
+    70 + 25 = 95 and is labeled critical. If that node is also internet-reachable, the same rule
+    scores 70 + 10 + 25 = 105, then the cap brings it back to 100. The same rule on an isolated
+    bucket stays at 70 (high). The admin-datastore rule adds its +5 on top of whatever the walk
+    already found.
+  </p>
+  <p>
+    The finding description appends a short reason when a path or internet signal is present.
+    A path to a datastore replaces the internet-only sentence. <code>admin_can_access</code>
+    changes the score and does not add its own sentence.
+  </p>
+  <p>
+    CVE enrichment does not use this table. It stores the NVD-normalized score unchanged, so a
+    critical CVE on a private workload ranks the same as the same CVE on an exposed one. Use
+    CSPM rules, or the path queries, when the question is whether an outsider can reach the
+    resource. See <a href="/docs/enrichment/">CVE enrichment</a>.
+  </p>
+
+  <h2>Severity bands</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Score</th>
+          <th>Severity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>90–100</td><td>critical</td></tr>
+        <tr><td>70–89</td><td>high</td></tr>
+        <tr><td>50–69</td><td>medium</td></tr>
+        <tr><td>30–49</td><td>low</td></tr>
+        <tr><td>0–29</td><td>info</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>What gets stored</h2>
+  <p>
+    Each match upserts a finding node <code>{'finding:{rule-id}:{resource-id}'}</code> and a
+    <code>VIOLATES</code> edge to the resource. Properties include <code>finding_type</code>
+    (<code>cspm</code>), <code>rule_id</code>, <code>title</code>, <code>description</code>,
+    <code>severity</code>, <code>normalized_score</code>, <code>graph_context</code>, and
+    <code>affected_resource</code>. Re-running a rule updates that row. It does not append a
+    second finding for the same rule and resource.
+  </p>
+  <p>
+    The console and <code>GET /v1/findings</code> list findings with the affected resource’s name
+    and type. The API orders them by <code>normalized_score</code>, highest first, and the console
+    shows that order.
+  </p>
+</DocsLayout>

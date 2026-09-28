@@ -1,0 +1,78 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="IAM blast radius"
+  description="See which cloud resources an identity can reach by walking CAN_ACCESS and ASSUMES edges in OpenSourceOM."
+  faq={[
+    {
+      question: 'What is IAM blast radius?',
+      answer:
+        'Blast radius is the set of resources reachable from one identity. OpenSourceOM walks CAN_ACCESS and ASSUMES edges from that identity, up to depth 6.',
+    },
+    {
+      question: 'How do I check blast radius for a role?',
+      answer:
+        'Run om identity blast-radius --name RoleName, or select the identity in the web console. Pass --id when two identities share a display name.',
+    },
+  ]}
+  related={[
+    { href: '/blog/blast-radius-analysis-cloud-iam/', label: 'Blast radius analysis for cloud IAM' },
+    { href: '/blog/ciem-explained-for-cloud-teams/', label: 'CIEM explained' },
+  ]}
+>
+  <h1>IAM blast radius</h1>
+  <p>
+    Blast radius answers a narrower question than an attack path: starting from one identity,
+    which nodes can you reach by following <code>CAN_ACCESS</code> and <code>ASSUMES</code>?
+    The walk is capped at depth 6. Other edge types are not followed.
+  </p>
+  <pre><code>{`./om identity blast-radius --name AdminRole
+./om identity blast-radius --id 'aws:123456789012:us-east-1:identity:AdminRole' --json`}</code></pre>
+  <p>
+    Provide <code>--id</code> or <code>--name</code>. A name lookup uses
+    <code>FindIdentityByName</code>, which returns the identity node with that name. If two clouds
+    reuse a display name, pass the node id.
+  </p>
+
+  <h2>API</h2>
+  <pre><code>{`GET /v1/identity/blast-radius?name=AdminRole
+GET /v1/identity/blast-radius?identity_id=aws:123456789012:us-east-1:identity:AdminRole`}</code></pre>
+  <p>The JSON body:</p>
+  <pre><code>{`{
+  "identity": { "id": "...", "type": "Identity", "name": "AdminRole" },
+  "reachable": [],
+  "edge_count": 0,
+  "max_depth": 6,
+  "summary": "..."
+}`}</code></pre>
+  <p>
+    <code>reachable</code> is the set of nodes discovered, not a single path. The console loads
+    this when you select an identity in the graph explorer.
+  </p>
+
+  <h2>What the walk includes</h2>
+  <p>
+    The walk is outgoing only. It does not follow an edge backward to its source. Depth starts
+    at 1 on the identity’s direct targets and stops before the next hop once depth reaches 6.
+    At most 200 distinct nodes are returned, ordered by type then name. The identity itself is
+    not listed in <code>reachable</code>. <code>edge_count</code> is present in the JSON and is
+    not filled by this version.
+  </p>
+  <p>
+    On AWS, <code>ASSUMES</code> points from the instance to the role, and <code>CAN_ACCESS</code>
+    points from the role to a bucket. Starting at the role therefore reaches buckets the
+    allow-statement analysis linked, and does not walk backward to the instance. Starting at a
+    Kubernetes service account follows <code>ASSUMES</code> toward the pods that reference it,
+    because that collector stores the service account as the source.
+  </p>
+  <p>
+    Azure and GCP <code>CAN_ACCESS</code> edges are heuristics: admin identities are linked to
+    public datastores in the same subscription or project, and internet-facing workloads are
+    linked to those datastores. Blast radius will echo that heuristic. It is not an IAM policy
+    simulator.
+  </p>
+</DocsLayout>

@@ -1,0 +1,123 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Custom security graph collectors"
+  description="Build an OpenSourceOM collector plugin in any language. Emit a graph batch on stdout and ingest it with om scan plugin."
+>
+  <h1>Custom security graph collectors</h1>
+  <p>
+    Built-in collectors cover AWS, Azure, GCP, Kubernetes, and the demo graph. Anything else
+    enters through an external executable. In-process Go plugins are not supported. The contract
+    is one JSON object on stdout, so the collector can be written in any language.
+  </p>
+  <p>
+    Plugins are trusted code. They run as the user who invokes <code>om</code>, inherit that
+    environment and working directory, and should stay read-only toward the systems they
+    inventory. <code>om</code> does not sandbox the process.
+  </p>
+
+  <h2>Run</h2>
+  <pre><code>{`go build -o example-collector ./examples/collector
+./om scan plugin -- ./example-collector
+./om scan plugin --timeout 5m -- ./my-collector --region us-east-1`}</code></pre>
+  <p>
+    <code>--timeout</code> defaults to 10 minutes and cancels the process. Arguments after
+    <code>--</code> belong to the plugin. Flags before <code>--</code> belong to <code>om</code>.
+    Exit 0 means the batch was produced. <code>om</code> validates it, then upserts. A non-zero
+    exit fails the scan and includes stderr when the plugin wrote any.
+  </p>
+  <ul>
+    <li>Stdout is capped at 32 MiB. Larger output is rejected and the process is killed.</li>
+    <li>Stderr is capped at 64 KiB and is the place for logs. Do not print the batch there.</li>
+    <li>Stdout must be exactly one JSON object. A second value, or log lines mixed into stdout, fails decode.</li>
+  </ul>
+  <p>
+    A successful plugin scan prints the same line as a cloud scan:
+    <code>Ingested N nodes and M edges from plugin &lt;basename&gt;.</code>
+    It does not run CSPM rules. Follow it with <code>om rules run</code>.
+  </p>
+
+  <h2>Stdout document</h2>
+  <p>
+    Field names match <code>sdk/collector</code>. Schema version is the constant
+    <code>SchemaVersion = 1</code>. The JSON itself has no version field.
+  </p>
+  <pre><code>{`{
+  "nodes": [
+    {
+      "id": "internet:global",
+      "type": "Internet",
+      "name": "Internet",
+      "provider": "plugin"
+    },
+    {
+      "id": "plugin:host:edge-1",
+      "type": "Workload",
+      "name": "edge-1",
+      "provider": "plugin",
+      "account_id": "lab",
+      "properties": { "public_ip": true }
+    },
+    {
+      "id": "plugin:bucket:logs",
+      "type": "Datastore",
+      "name": "logs",
+      "provider": "plugin",
+      "account_id": "lab",
+      "properties": { "public_access": true, "service": "s3" }
+    }
+  ],
+  "edges": [
+    {
+      "source_id": "internet:global",
+      "target_id": "plugin:host:edge-1",
+      "type": "REACHABLE"
+    },
+    {
+      "source_id": "plugin:host:edge-1",
+      "target_id": "plugin:bucket:logs",
+      "type": "CAN_ACCESS"
+    }
+  ]
+}`}</code></pre>
+  <p>Validation, after empty edge ids are filled:</p>
+  <ul>
+    <li>Node <code>id</code>, <code>type</code>, and <code>name</code> are required. Duplicate node ids fail.</li>
+    <li>Types must be <code>Internet</code>, <code>Network</code>, <code>Workload</code>, <code>Identity</code>, <code>Datastore</code>, <code>Finding</code>, or <code>Control</code>.</li>
+    <li>Edge types must be <code>REACHABLE</code>, <code>ASSUMES</code>, <code>CAN_ACCESS</code>, <code>AFFECTS</code>, or <code>VIOLATES</code>.</li>
+    <li>An empty edge id becomes <code>source|target|type</code>. Duplicate edge ids fail.</li>
+    <li>Both endpoints must be nodes in the same batch. An edge to a node already in Postgres, but missing from this document, is rejected.</li>
+  </ul>
+  <p>
+    <code>POST /v1/ingest</code> does not run this validation. Prefer <code>om scan plugin</code>
+    for external collectors. Include <code>internet:global</code> when the batch should show up
+    in <a href="/docs/attack-paths/">attack path</a> queries. Set <code>public_access</code>,
+    <code>admin_access</code>, and the other keys on
+    <a href="/docs/schema/">Schema</a> when you want pack rules to match.
+  </p>
+
+  <h2>Go SDK</h2>
+  <p>
+    Implement <code>collector.Collector</code> (<code>Collect(ctx) (Batch, error)</code>) and call
+    <code>collector.Run</code> from <code>main</code>. <code>Run</code> writes the batch to stdout
+    and exits non-zero on error. <code>examples/collector</code> is the reference: an
+    internet-reachable host with <code>CAN_ACCESS</code> to a public datastore. Use
+    <code>collector.InternetNodeID</code> (<code>internet:global</code>) and the type constants
+    rather than string literals.
+  </p>
+  <p>
+    Upserts keep the last batch’s properties for a given id. A plugin that omits
+    <code>internet:global</code> on a later run does not delete the internet node another scan
+    wrote. Resources you stop emitting stay in the graph. Delete them yourself, or scope them
+    with <code>account_id</code> and remove that account the way <code>om scan demo</code> does
+    for its sample accounts.
+  </p>
+  <p>
+    The design record is
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/adr/004-collector-plugin-sdk.md">ADR 004</a>.
+  </p>
+</DocsLayout>
