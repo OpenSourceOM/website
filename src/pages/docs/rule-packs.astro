@@ -1,0 +1,168 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="CSPM rule packs"
+  description="YAML CSPM rule packs embedded in OpenSourceOM, including CIS AWS-inspired checks against security graph properties."
+>
+  <h1>CSPM rule packs</h1>
+  <p>
+    Packs are YAML files in <code>packs/</code>. The Go embed loads every <code>*.yaml</code> file
+    at startup and appends those rules to the catalog. Editing a pack and restarting a previously
+    built binary does nothing until you rebuild.
+  </p>
+  <p>
+    The shipped pack is <code>cis-aws-foundations</code>. Control numbers are inspired by CIS AWS
+    Foundations and one Kubernetes check. They are not a certified CIS benchmark mapping.
+  </p>
+
+  <h2>File shape</h2>
+  <pre><code>{`pack: cis-aws-foundations
+version: "0.1"
+description: CIS AWS Foundations–inspired checks against graph properties.
+
+rules:
+  - id: cis-s3-public-access
+    name: S3 bucket allows public access
+    description: Datastore is marked publicly accessible.
+    framework: CIS AWS
+    control: "2.1.5"
+    resource_type: Datastore
+    base_score: 80
+    match:
+      properties:
+        public_access: true`}</code></pre>
+  <p>
+    The block above is the shipped <code>cis-s3-public-access</code> rule. It has no
+    <code>match.graph</code> block. <code>cis-ec2-public-ip</code> and
+    <code>k8s-public-loadbalancer</code> are the rules that add
+    <code>internet_reachable: true</code>.
+  </p>
+  <p>
+    <code>id</code> and <code>resource_type</code> are required. <code>resource_type</code> is a
+    schema node type. <code>match.properties</code> is an AND filter: every listed key must equal
+    the node’s property. Extra properties on the node are ignored. A missing key does not match.
+    Bool values compare as bools, so the string <code>"true"</code> matches a stored
+    <code>true</code>. Other values compare as strings, so <code>80</code> matches
+    <code>"80"</code>.
+  </p>
+  <p>
+    <code>match.graph</code> is optional and may set any of:
+  </p>
+  <ul>
+    <li><code>internet_reachable</code></li>
+    <li><code>path_to_datastore</code></li>
+    <li><code>admin_can_access</code></li>
+  </ul>
+  <p>
+    Those three are evaluated when the rule runs. Collectors do not have to store them. A bool
+    in the pack must equal the computed value or the resource does not match. Omitting a graph
+    key does not require that signal to be false. Base score then receives the usual graph
+    boosts, including signals you did not put in <code>match.graph</code>. A rule that matches
+    only when <code>internet_reachable</code> is false still gains +25 if the node sits on a
+    path to a datastore.
+  </p>
+  <p>
+    Each pack rule lists at most 500 nodes of <code>resource_type</code>, ordered by name. Nodes
+    past that page are not evaluated until you split the graph or the engine grows a cursor.
+    <code>framework</code> and <code>control</code> are documentation on the YAML. They are not
+    copied onto the finding.
+  </p>
+
+  <h2>Checks in the embedded pack</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Resource</th>
+          <th>Base</th>
+          <th>Property match</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>cis-s3-public-access</code></td>
+          <td>Datastore</td>
+          <td>80</td>
+          <td><code>public_access: true</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-s3-public-access-block</code></td>
+          <td>Datastore</td>
+          <td>75</td>
+          <td><code>public_access_block: disabled</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-s3-encryption</code></td>
+          <td>Datastore</td>
+          <td>70</td>
+          <td><code>encryption: false</code> and <code>service: s3</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-s3-versioning</code></td>
+          <td>Datastore</td>
+          <td>40</td>
+          <td><code>versioning: false</code> and <code>service: s3</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-sg-open-ingress</code></td>
+          <td>Network</td>
+          <td>70</td>
+          <td><code>open_ingress: true</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-iam-admin</code></td>
+          <td>Identity</td>
+          <td>60</td>
+          <td><code>admin_access: true</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-iam-no-mfa</code></td>
+          <td>Identity</td>
+          <td>55</td>
+          <td><code>mfa: false</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-iam-unused-access-keys</code></td>
+          <td>Identity</td>
+          <td>45</td>
+          <td><code>unused_access_keys: true</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-ec2-imdsv1</code></td>
+          <td>Workload</td>
+          <td>50</td>
+          <td><code>imdsv2: false</code></td>
+        </tr>
+        <tr>
+          <td><code>cis-ec2-public-ip</code></td>
+          <td>Workload</td>
+          <td>55</td>
+          <td><code>public_ip: true</code> and graph <code>internet_reachable: true</code></td>
+        </tr>
+        <tr>
+          <td><code>k8s-public-loadbalancer</code></td>
+          <td>Workload</td>
+          <td>65</td>
+          <td><code>k8s_service_type: LoadBalancer</code> and graph <code>internet_reachable: true</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The AWS collector fills the S3, security group, IAM, and EC2 properties this pack reads.
+    The Kubernetes collector records Service type on <code>Network</code> nodes as
+    <code>service_type</code>. It does not set <code>k8s_service_type</code> on pods, so
+    <code>k8s-public-loadbalancer</code> matches the demo workload and any plugin that sets that
+    property. It does not match a live <code>om scan k8s</code> batch by itself.
+  </p>
+  <p>
+    IAM user nodes include <code>mfa: false</code> when no MFA device is listed. IAM roles from
+    the AWS collector do not set <code>mfa</code>, so <code>cis-iam-no-mfa</code> does not match
+    those role nodes.
+  </p>
+</DocsLayout>

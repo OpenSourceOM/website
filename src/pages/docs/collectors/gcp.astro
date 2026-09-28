@@ -1,0 +1,101 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="GCP security collector"
+  description="What om scan gcp collects from Compute Engine, Cloud Storage IAM, and service accounts, and which edges those resources produce."
+>
+  <h1>GCP security collector</h1>
+  <p>
+    <code>om scan gcp</code> requires <code>GCP_PROJECT_ID</code>. Clients use Application Default
+    Credentials (<code>gcloud auth application-default login</code>,
+    <code>GOOGLE_APPLICATION_CREDENTIALS</code>, or the metadata server). The Compute client
+    requests the cloud-platform scope. One scan covers one project. Firewall rules, VPC networks,
+    Cloud SQL, and project IAM bindings are not inventoried.
+  </p>
+  <pre><code>{`export GCP_PROJECT_ID=my-project
+gcloud auth application-default login
+./om scan gcp
+./om rules run`}</code></pre>
+  <p>
+    <code>GCP_REGION</code> (default <code>us-central1</code>) is the region segment on service
+    account node ids and on the id of each bucket. Instance ids use the zone from the aggregated
+    list. The bucket node’s <code>region</code> field is the bucket location, which can differ
+    from the id segment.
+  </p>
+
+  <h2>Resources</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>API</th>
+          <th>Graph</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Compute <code>instances.aggregatedList</code></td>
+          <td><code>Workload</code>. Properties: <code>resource_id</code> (self link), <code>public_ip</code> (NAT IP, or empty), <code>status</code>. A NAT IP adds <code>REACHABLE</code> from <code>internet:global</code>. Firewall rules are not consulted.</td>
+        </tr>
+        <tr>
+          <td>Storage bucket list, then each bucket’s IAM policy</td>
+          <td><code>Datastore</code> with <code>resource_id</code> (bucket name) and <code>public_access</code>.</td>
+        </tr>
+        <tr>
+          <td>IAM service accounts list</td>
+          <td><code>Identity</code> named by email, with <code>email</code> and <code>admin_access</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Node ids are <code>{'gcp:{project}:{zone-or-region}:{kind}:{resource}'}</code>. Instance
+    resources use the instance name. Service account resources use <code>uniqueId</code>, so the
+    displayed name (the email) can change without a new id. A bucket IAM policy that cannot be
+    read is treated as not public. The scan continues.
+  </p>
+
+  <h2>When a bucket is public</h2>
+  <p>
+    <code>public_access</code> is true when the bucket IAM policy grants
+    <code>allUsers</code> or <code>allAuthenticatedUsers</code> one of these roles:
+  </p>
+  <ul>
+    <li><code>roles/storage.admin</code>, <code>roles/storage.objectAdmin</code>, <code>roles/storage.objectViewer</code></li>
+    <li>legacy bucket owner, legacy object owner, legacy object reader</li>
+    <li>primitive owner, editor, or viewer</li>
+  </ul>
+  <p>
+    Public access prevention is not read. A bucket can have prevention unset and still be stored
+    as private when those members are absent. <code>allUsers</code> on a role that cannot read
+    objects, such as <code>roles/storage.legacyBucketReader</code>, does not set
+    <code>public_access</code>.
+  </p>
+
+  <h2>Service accounts</h2>
+  <p>
+    <code>admin_access</code> is true when the display name or email contains <code>admin</code>,
+    case-insensitively. Project IAM bindings are not expanded, and Workload Identity is not
+    mapped onto GCE instances. A service account named <code>admin</code> looks administrative
+    even when its roles are narrow, and a highly privileged account whose email does not contain
+    <code>admin</code> does not.
+  </p>
+
+  <h2>Heuristic edges</h2>
+  <p>
+    The same post-pass as Azure applies inside this project:
+  </p>
+  <ul>
+    <li><code>CAN_ACCESS</code> from each service account with <code>admin_access: true</code> to every public bucket.</li>
+    <li><code>CAN_ACCESS</code> from each instance that has a <code>REACHABLE</code> edge to those same buckets.</li>
+  </ul>
+  <p>
+    There is no binding between an instance and the service account it runs as, so blast radius
+    from a service account does not include the VMs that use it unless some other edge says so.
+    Private buckets receive no <code>CAN_ACCESS</code> edge from this collector.
+  </p>
+</DocsLayout>

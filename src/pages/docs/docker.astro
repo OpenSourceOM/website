@@ -1,0 +1,79 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Run OpenSourceOM with Docker Compose"
+  description="Start OpenSourceOM locally with Docker Compose: Postgres, the API, schema migrations, and the om CLI."
+>
+  <h1>Run OpenSourceOM with Docker Compose</h1>
+  <p>
+    <code>docker-compose.yml</code> in the core repository starts two services: Postgres 16 and
+    an API image built from the local <code>Dockerfile</code>. The image entrypoint is
+    <code>om</code> and the command is <code>serve</code>.
+  </p>
+  <pre><code>{`cp .env.example .env
+docker compose up -d
+docker compose ps`}</code></pre>
+  <p>
+    Postgres listens on host port 5432 with user, password, and database <code>opensourceom</code>
+    unless you override <code>POSTGRES_USER</code>, <code>POSTGRES_PASSWORD</code>, and
+    <code>POSTGRES_DB</code>. The API listens on <code>OM_API_PORT</code> (default 8080) and
+    receives <code>OM_API_SECRET</code> from <code>.env</code>. A volume named
+    <code>postgres-data</code> keeps the database across restarts.
+  </p>
+
+  <h2>Migrations</h2>
+  <p>
+    The API container does not migrate on startup. From a checkout, with the CLI on the host:
+  </p>
+  <pre><code>{`go build -o om ./cmd/om
+./om migrate`}</code></pre>
+  <p>
+    The CLI’s default database host is <code>localhost</code>, which is the published port.
+    <code>.env.example</code> sets <code>POSTGRES_HOST=postgres</code>, and the API service in
+    the compose file sets that same value on the container. The CLI does not read
+    <code>.env</code>. Do not export <code>POSTGRES_HOST=postgres</code> into the shell that
+    runs <code>om</code> on your machine.
+  </p>
+
+  <h2>CLI against Compose</h2>
+  <p>
+    Build <code>om</code> on the host (or unpack a release binary) and use it for scans. The
+    container image can also run one-off commands if you point it at the Compose network:
+  </p>
+  <pre><code>{`docker compose run --rm api migrate`}</code></pre>
+  <p>
+    <code>api migrate</code> works because the image entrypoint is already <code>om</code>.
+    Cloud scans are easier on the host, where your AWS, Azure, and GCP credential files already
+    live. The API container does not mount those credentials. To scan from the container you
+    would pass the credential environment yourself, for example
+    <code>-e AWS_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY</code>, and the database
+    host inside that network is <code>postgres</code>, which the service already sets.
+  </p>
+
+  <h2>If the CLI cannot connect</h2>
+  <ul>
+    <li><code>POSTGRES_HOST=postgres</code> in the shell is the usual miss. That hostname exists only on the Compose network. Unset it, or set <code>POSTGRES_HOST=localhost</code>, for a CLI on the host.</li>
+    <li>Password, user, and database must match what Compose used to initialize the volume. Changing <code>POSTGRES_PASSWORD</code> in <code>.env</code> after the first start does not alter an existing volume.</li>
+    <li>The API waits until Postgres is healthy. <code>om migrate</code> on the host does not. If it runs before the port is open, retry it.</li>
+    <li><code>relation "nodes" does not exist</code> means migrate has not been applied to this database.</li>
+  </ul>
+  <p>
+    <code>GET http://localhost:8080/v1/health</code> returns
+    <code>{`{"status":"ok","service":"opensourceom-api"}`}</code> when the API process is up. It
+    does not check Postgres. A scan that fails on the database while health is ok means the CLI
+    and the container are not using the same connection settings.
+  </p>
+
+  <h2>Useful commands</h2>
+  <pre><code>{`docker compose logs -f api
+docker compose down
+docker compose down -v`}</code></pre>
+  <p>
+    <code>down -v</code> deletes the Postgres volume. The next start is an empty database and
+    needs <code>om migrate</code> again.
+  </p>
+</DocsLayout>

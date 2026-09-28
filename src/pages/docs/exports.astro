@@ -1,0 +1,92 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Export cloud security findings"
+  description="Export OpenSourceOM findings as SIEM JSON Lines, a Slack digest, or Jira issues."
+>
+  <h1>Export cloud security findings</h1>
+  <p>
+    Exports read findings already stored in the graph, up to 500 rows, ordered by
+    <code>normalized_score</code> descending. Run rules or CVE enrichment first. Findings that
+    exist only in a scanner and were never ingested are not included. The CLI supports three
+    formats. There is no filter by severity, rule, or account.
+  </p>
+  <pre><code>{`./om export findings run --format siem --out findings.jsonl
+./om export findings run --format slack
+./om export findings run --format jira`}</code></pre>
+  <p>
+    <code>--format</code> defaults to <code>siem</code>. Unknown formats fail with
+    <code>unsupported format</code>. SIEM output is JSON Lines on stdout unless
+    <code>--out</code> is set. <code>--out</code> creates or truncates that file. A short count
+    goes to stderr so it stays out of the JSONL stream:
+    <code>Exported N findings to SIEM JSONL.</code>
+  </p>
+
+  <h2>Record shape</h2>
+  <p>Each SIEM line is one JSON object. <code>timestamp</code> is the export time in UTC, the same value on every line in the run.</p>
+  <pre><code>{`{
+  "timestamp": "2026-09-28T18:00:00.000000Z",
+  "finding": {
+    "id": "finding:cspm-public-datastore:aws:s3:acme-logs-public",
+    "type": "Finding",
+    "name": "Public datastore",
+    "provider": "aws",
+    "properties": {
+      "finding_type": "cspm",
+      "rule_id": "cspm-public-datastore",
+      "title": "Public datastore: acme-logs-public",
+      "severity": "critical",
+      "normalized_score": 95
+    }
+  },
+  "affected_resource_id": "aws:s3:acme-logs-public",
+  "affected_resource_name": "acme-logs-public",
+  "affected_resource_type": "Datastore"
+}`}</code></pre>
+  <p>
+    <code>affected_resource_*</code> comes from the <code>VIOLATES</code> edge. A finding with
+    no such edge still exports. Those three fields are omitted.
+  </p>
+
+  <h2>Slack</h2>
+  <p>
+    <code>--format slack</code> requires <code>SLACK_WEBHOOK_URL</code>. The message is a single
+    <code>{`{"text":"..."}`}</code> payload titled <code>OpenSourceOM findings export</code>. It
+    lists up to 20 findings as <code>[SEVERITY] title — resource</code>, then
+    <code>…and N more</code> when the export is longer. An empty graph posts
+    <code>No findings to export.</code> The CLI prints <code>Posted N findings to Slack.</code>
+    using the full record count, not the 20 shown in the message. A webhook status of 300 or
+    higher fails the command and includes the response body.
+  </p>
+  <p>
+    The API posts the same digest:
+  </p>
+  <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  -H 'Content-Type: application/json' \\
+  -d '{"webhook":"https://hooks.slack.com/services/..."}' \\
+  http://localhost:8080/v1/export/slack`}</code></pre>
+  <p>
+    The route rejects <code>?webhook=</code>. The CLI does not take the URL as a flag. Keep it
+    in the environment. See <a href="/docs/security/">Security</a>.
+  </p>
+
+  <h2>Jira</h2>
+  <p>
+    <code>--format jira</code> creates one issue per finding, in order, and stops on the first
+    error. Issues created before that error remain. All four variables are required:
+    <code>JIRA_URL</code>, <code>JIRA_EMAIL</code>, <code>JIRA_API_TOKEN</code>, and
+    <code>JIRA_PROJECT</code>. The client calls <code>POST {'{JIRA_URL}'}/rest/api/3/issue</code>
+    with HTTP basic auth (email and API token). Each issue is type <code>Task</code> in
+    <code>JIRA_PROJECT</code>. The summary is <code>[SEVERITY] title</code>. The description is
+    Atlassian document format: the finding description, then
+    <code>Affected: name (type)</code>. The command prints <code>Created N Jira issues.</code>
+  </p>
+  <p>
+    A second run creates another issue per finding. There is no deduplication key. Run it when
+    you mean to open tickets.
+  </p>
+</DocsLayout>

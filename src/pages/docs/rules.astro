@@ -1,0 +1,106 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Open-source CSPM rules"
+  description="Built-in OpenSourceOM CSPM rules for public datastores, internet-exposed workloads, and admin access to data."
+  faq={[
+    {
+      question: 'What CSPM checks does OpenSourceOM include?',
+      answer:
+        'Three built-in rules flag public datastores, workloads reachable from the internet, and admin identities that can access a datastore. A YAML pack adds CIS AWS-inspired property checks.',
+    },
+    {
+      question: 'When should I run CSPM rules?',
+      answer:
+        'Cloud scans do not run rules automatically. After om scan aws, om scan azure, om scan gcp, or om scan k8s, run om rules run. om scan demo runs the catalog for you.',
+    },
+  ]}
+  related={[
+    { href: '/blog/cspm-vs-cnapp-whats-the-difference/', label: 'CSPM vs CNAPP' },
+    { href: '/docs/prioritization/', label: 'How findings are scored' },
+  ]}
+>
+  <h1>Open-source CSPM rules</h1>
+  <p>
+    The rules engine reads the graph and writes <code>Finding</code> nodes. Three checks are
+    implemented in Go. The rest come from <a href="/docs/rule-packs/">YAML packs</a> embedded in
+    the binary at compile time. <code>om rules list</code> prints the combined catalog.
+  </p>
+  <pre><code>{`./om rules list
+./om rules run
+./om rules run cspm-public-datastore`}</code></pre>
+  <p>
+    <code>om scan demo</code> runs the full catalog after it loads the sample. Cloud scans do
+    not. Run rules yourself after <code>om scan aws</code> and the other collectors.
+  </p>
+
+  <h2>Built-in rules</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Base</th>
+          <th>Match</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>cspm-public-datastore</code></td>
+          <td>70</td>
+          <td>Datastore with <code>public_access: true</code></td>
+        </tr>
+        <tr>
+          <td><code>cspm-internet-workload</code></td>
+          <td>65</td>
+          <td>Workload reachable from <code>internet:global</code></td>
+        </tr>
+        <tr>
+          <td><code>cspm-admin-datastore-access</code></td>
+          <td>60</td>
+          <td>Datastore with a <code>CAN_ACCESS</code> edge from an identity whose <code>admin_access</code> is true. The match forces <code>admin_can_access</code> in graph context.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Every match is then scored with the boosts on <a href="/docs/prioritization/">Prioritization</a>.
+    A base of 70 plus a path-to-datastore boost of 25 becomes 95, severity critical. The
+    admin-datastore rule forces <code>admin_can_access</code> before scoring, so that match also
+    receives the +5 admin boost. The other two built-in rules do not set that flag.
+    <code>internet_reachable</code> for scoring follows <code>REACHABLE</code> edges only.
+    Named path queries follow every edge type, so a node can appear on
+    <code>internet-to-datastore</code> and still score as not internet-reachable.
+  </p>
+  <p>
+    Each match upserts <code>{'finding:{rule-id}:{resource-id}'}</code> and a
+    <code>VIOLATES</code> edge from the finding to the resource. Re-running updates that row.
+    <code>findings_created</code> counts those upserts, including updates. Pack rules and
+    <code>cspm-public-datastore</code> consider at most 500 nodes of the target type, ordered by
+    name. <code>cspm-internet-workload</code> has no row cap. It uses the full
+    internet-reachable workload set.
+  </p>
+
+  <h2>HTTP</h2>
+  <pre><code>{`curl -s http://localhost:8080/v1/rules
+curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  http://localhost:8080/v1/rules/run
+curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  'http://localhost:8080/v1/rules/run?id=cspm-internet-workload'`}</code></pre>
+  <p>
+    The console button does the same POST. See <a href="/docs/console/">Console</a> for the
+    browser API key.
+  </p>
+
+  <h2>Adding a check</h2>
+  <p>
+    Property checks belong in a YAML pack under <code>packs/</code>. They are compiled into the
+    binary, so a new file requires a rebuild of <code>om</code> and of the API image. Checks that
+    need a custom traversal stay in <code>internal/rules</code> as Go rules. Packs cannot call
+    arbitrary code.
+  </p>
+</DocsLayout>

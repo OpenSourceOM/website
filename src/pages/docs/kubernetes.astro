@@ -1,0 +1,153 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Install OpenSourceOM on Kubernetes"
+  description="Install the OpenSourceOM API and Postgres on Kubernetes with the Helm chart, including the migration init container."
+>
+  <h1>Install OpenSourceOM on Kubernetes</h1>
+  <p>
+    The chart in <code>deploy/helm/opensourceom</code> installs the API Deployment and, by
+    default, a Postgres StatefulSet. Chart version and <code>appVersion</code> are
+    <code>0.2.0</code>. When bundled Postgres is enabled, an init container named
+    <code>wait-db</code> runs <code>pg_isready</code> against
+    <code>{'{{release}}-opensourceom-postgres'}</code>. A second init container runs
+    <code>om migrate</code>. The main container runs <code>om serve</code>. Readiness and
+    liveness probe <code>GET /v1/health</code>. With an external database,
+    <code>wait-db</code> is omitted and <code>migrate</code> still runs, so that host must
+    accept connections before the pod can become Ready.
+  </p>
+
+  <h2>Install</h2>
+  <p>
+    <code>api.secret</code> and <code>postgres.password</code> are required. The image repository
+    defaults to <code>ghcr.io/opensourceom/core</code>. An empty <code>image.tag</code> falls
+    back to the chart <code>appVersion</code> (<code>0.2.0</code>). Set the tag when you are not
+    running that release.
+  </p>
+  <pre><code>{`docker build -t ghcr.io/opensourceom/core:0.2.0 .
+helm install om deploy/helm/opensourceom \\
+  --set api.secret='change-me' \\
+  --set postgres.password='change-me' \\
+  --set image.tag=0.2.0`}</code></pre>
+  <p>
+    Load that image into the cluster if you are not pushing to GHCR. Published images live at
+    <a href="https://github.com/OpenSourceOM/core/pkgs/container/core">ghcr.io/opensourceom/core</a>.
+    The Service is <code>ClusterIP</code> on port 8080. The release name <code>om</code> yields a
+    Service named <code>om-opensourceom</code>:
+  </p>
+  <pre><code>{`kubectl port-forward svc/om-opensourceom 8080:8080`}</code></pre>
+
+  <h2>Values</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Value</th>
+          <th>Default</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>replicaCount</code></td>
+          <td><code>1</code></td>
+          <td>API replicas. They share one database.</td>
+        </tr>
+        <tr>
+          <td><code>image.repository</code></td>
+          <td><code>ghcr.io/opensourceom/core</code></td>
+          <td>API image.</td>
+        </tr>
+        <tr>
+          <td><code>image.tag</code></td>
+          <td>empty, then chart <code>appVersion</code> (<code>0.2.0</code>)</td>
+          <td>Image tag. Set it when the cluster should not run <code>0.2.0</code>.</td>
+        </tr>
+        <tr>
+          <td><code>service.type</code> / <code>service.port</code></td>
+          <td><code>ClusterIP</code> / <code>8080</code></td>
+          <td>How the API is reached inside the cluster.</td>
+        </tr>
+        <tr>
+          <td><code>api.env</code></td>
+          <td><code>production</code></td>
+          <td>Written to <code>OM_ENV</code>.</td>
+        </tr>
+        <tr>
+          <td><code>api.secret</code></td>
+          <td>empty, required</td>
+          <td><code>OM_API_SECRET</code>.</td>
+        </tr>
+        <tr>
+          <td><code>postgres.enabled</code></td>
+          <td><code>true</code></td>
+          <td>When false, set <code>postgres.host</code> to your own server.</td>
+        </tr>
+        <tr>
+          <td><code>postgres.persistence.size</code></td>
+          <td><code>10Gi</code></td>
+          <td>PVC for the bundled database. <code>storageClass</code> is optional.</td>
+        </tr>
+        <tr>
+          <td><code>resources</code></td>
+          <td>100m / 128Mi request, 1 CPU / 512Mi limit</td>
+          <td>API container only.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Scanning from the cluster</h2>
+  <p>
+    The chart does not deploy collectors. Run <code>om scan</code> where cloud credentials and
+    the database are both reachable. For a release named <code>om</code>, the bundled Postgres
+    Service is <code>om-opensourceom-postgres</code> on port 5432. A Job in the same namespace
+    can use the API image, which already has <code>om</code> as its entrypoint:
+  </p>
+  <pre><code>{`apiVersion: batch/v1
+kind: Job
+metadata:
+  name: om-scan-aws
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: scan
+          image: ghcr.io/opensourceom/core:0.2.0
+          args: ["scan", "aws"]
+          env:
+            - name: AWS_REGION
+              value: us-east-1
+            - name: POSTGRES_HOST
+              value: om-opensourceom-postgres
+            - name: POSTGRES_USER
+              value: opensourceom
+            - name: POSTGRES_DB
+              value: opensourceom
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: om-opensourceom
+                  key: POSTGRES_PASSWORD`}</code></pre>
+  <p>
+    Add the cloud credential env or a projected service account the same way you would for any
+    other Job. <code>args: ["scan", "aws"]</code> does not run rules. A second Job with
+    <code>args: ["rules", "run"]</code> writes findings. Kubernetes inventory still uses
+    kubeconfig on that Job, not an automatic in-cluster client. See
+    <a href="/docs/collectors/kubernetes/">the Kubernetes collector</a>.
+  </p>
+  <p>
+    Set <code>postgres.enabled=false</code> and <code>postgres.host</code> to use a database you
+    already run. <code>postgres.host</code> is required in that mode. The chart still creates
+    the API Secret. It does not create a database user on the external server.
+  </p>
+  <p>
+    Reads on the API are unauthenticated. Keep the Service off the public internet, or put your
+    own gateway in front of it. See <a href="/docs/security/">Security</a>.
+  </p>
+</DocsLayout>

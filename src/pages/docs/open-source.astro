@@ -5,10 +5,26 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 ---
 
 <DocsLayout
-  title="Open source scope"
-  description="What OpenSourceOM ships in the free Apache-2.0 core versus planned commercial capabilities for internal risk and enterprise deployment."
+  title="Open-source CSPM scope"
+  description="What OpenSourceOM includes in the Apache-2.0 core, and which enterprise controls are planned outside that core."
+  faq={[
+    {
+      question: 'Is OpenSourceOM free to use?',
+      answer:
+        'The core is Apache-2.0. You can inspect, modify, and run it without a commercial license. There is no paid SKU, pricing page, or sales contact today.',
+    },
+    {
+      question: 'What is outside the open-source core?',
+      answer:
+        'Insider-threat analysis, SAML and SSO, multi-tenant RBAC, and audit logs of who used the console are planned outside the open-source core. Attack paths, CSPM, collectors, and the self-hosted API stay in core.',
+    },
+  ]}
+  related={[
+    { href: '/blog/open-source-cspm-cnapp-tools-2026/', label: 'Open-source CSPM and CNAPP tools' },
+    { href: '/blog/cspm-vs-cnapp-whats-the-difference/', label: 'CSPM vs CNAPP' },
+  ]}
 >
-  <h1>Open source scope</h1>
+  <h1>Open-source CSPM scope</h1>
   <p>
     OpenSourceOM Core is Apache-2.0 licensed and self-hosted. The free project is designed to help
     teams defend against <strong>external attackers</strong> — mapping exposure, attack paths, and
@@ -32,8 +48,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   </ul>
 
   <h2>Open source vs. commercial (planned)</h2>
-  <div class="scope-table-wrap">
-    <table class="scope-table">
+  <div class="docs-table-wrap">
+    <table>
       <thead>
         <tr>
           <th scope="col">Open source (OSS)</th>
@@ -89,8 +105,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>Status</h2>
   <p>
     The <a href="https://github.com/OpenSourceOM/core">core repository</a> is in active development
-    (Phase 2). Commercial offerings are <strong>not available yet</strong> — there is no pricing,
-    sales contact, or enterprise SKU at this time.
+    (Phase 3). CSPM rules, blast radius, Kubernetes ingest, exports, the collector plugin SDK,
+    and the Helm chart are in the tree. How to run them is covered from
+    <a href="/docs/getting-started/">Getting started</a> through
+    <a href="/docs/collectors/plugins/">Plugins</a>. Commercial offerings are
+    <strong>not available yet</strong> — there is no pricing, sales contact, or enterprise SKU
+    at this time.
   </p>
   <p>
     For phase-level detail and upcoming work, see the
@@ -107,40 +127,3 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     modify, and deploy it without a commercial agreement.
   </p>
 </DocsLayout>
-
-<style>
-  .scope-table-wrap {
-    margin: 1.5rem 0;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-  }
-
-  .scope-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.925rem;
-  }
-
-  .scope-table th,
-  .scope-table td {
-    padding: 0.85rem 1rem;
-    text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .scope-table th {
-    color: var(--text);
-    background: var(--bg-elevated);
-    font-weight: 600;
-  }
-
-  .scope-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .scope-table td:first-child {
-    color: var(--text);
-  }
-</style>

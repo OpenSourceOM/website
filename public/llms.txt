@@ -1,0 +1,28 @@
+# OpenSourceOM
+
+> Self-hosted, Apache-2.0 cloud security graph. Collectors inventory AWS, Azure, GCP, and Kubernetes. Named queries and CSPM rules rank what an outsider can reach.
+
+OpenSourceOM is the project behind https://opensourceom.org. The product code is https://github.com/OpenSourceOM/core. These docs are the citable description of what the software does today.
+
+## Docs
+
+- [Open-source cloud security docs](https://opensourceom.org/docs/): map of the documentation.
+- [Install a self-hosted security graph](https://opensourceom.org/docs/getting-started/): Docker Compose, om migrate, and om scan demo.
+- [Cloud security graph](https://opensourceom.org/docs/the-graph/): nodes, edges, and how findings attach.
+- [Security graph schema](https://opensourceom.org/docs/schema/): node types, edge types, and ID format.
+- [Cloud attack path queries](https://opensourceom.org/docs/attack-paths/): the five named path queries.
+- [IAM blast radius](https://opensourceom.org/docs/blast-radius/): resources reachable from one identity.
+- [Prioritize cloud risk by attack path](https://opensourceom.org/docs/prioritization/): score boosts for exposure and paths to data.
+- [Open-source CSPM rules](https://opensourceom.org/docs/rules/): built-in checks and how findings are stored.
+- [Cloud security collectors](https://opensourceom.org/docs/collectors/): AWS, Azure, GCP, Kubernetes, and plugins.
+- [Self-hosted CSPM architecture](https://opensourceom.org/docs/architecture/): collectors, Postgres, API, and exports.
+- [Open-source CSPM scope](https://opensourceom.org/docs/open-source/): what is in the Apache-2.0 core.
+- [OpenSourceOM security model](https://opensourceom.org/docs/security/): API secret, private reads, vulnerability reports.
+
+## Guides
+
+- [Open-source CSPM and CNAPP tools](https://opensourceom.org/blog/open-source-cspm-cnapp-tools-2026/)
+- [What a cloud security graph is](https://opensourceom.org/blog/security-graph-explained-cloud/)
+- [Attack path analysis](https://opensourceom.org/blog/attack-path-analysis-cloud-security/)
+- [Self-hosted CSPM architecture](https://opensourceom.org/blog/self-hosted-cspm-architecture/)
+- [CSPM vs CNAPP](https://opensourceom.org/blog/cspm-vs-cnapp-whats-the-difference/)

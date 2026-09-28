@@ -1,0 +1,117 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Cloud attack path queries"
+  description="Named attack-path queries in OpenSourceOM, from the internet through workloads to datastores, public buckets, and admin identities."
+  faq={[
+    {
+      question: 'What is an attack path in cloud security?',
+      answer:
+        'An attack path is a walk from an entry point, usually the internet, through workloads and identities to a sensitive datastore. OpenSourceOM’s internet-to-datastore query keeps paths that include at least one workload.',
+    },
+    {
+      question: 'How do I run an attack path query?',
+      answer:
+        'After a scan, run om paths run internet-to-datastore. The same named queries are available from GET /v1/graph/query and from the console dropdown.',
+    },
+  ]}
+  related={[
+    { href: '/blog/attack-path-analysis-cloud-security/', label: 'Attack path analysis' },
+    { href: '/blog/how-to-break-cloud-attack-paths/', label: 'How to break a cloud attack path' },
+    { href: '/blog/toxic-combinations-aws-azure/', label: 'Toxic combinations' },
+  ]}
+>
+  <h1>Cloud attack path queries</h1>
+  <p>
+    Core ships five named queries. You run them from the CLI, the API, or the console’s query
+    dropdown. There is no ad-hoc graph language in this version.
+  </p>
+  <pre><code>{`./om paths list
+./om paths run internet-to-datastore`}</code></pre>
+  <p>
+    HTTP: <code>GET /v1/graph/queries</code> lists them.
+    <code>GET /v1/graph/query?name=internet-to-datastore</code> runs one.
+    The JSON result is <code>query</code>, <code>summary</code>, and <code>paths</code> (each path
+    is an array of nodes).
+  </p>
+
+  <h2>What a result looks like</h2>
+  <p>
+    CLI output is plain text. The HTTP body is JSON. Each path is the ordered list of nodes,
+    starting at the internet node when the walk started there:
+  </p>
+  <pre><code>{`{
+  "query": "internet-to-datastore",
+  "summary": "Attack paths from the internet through workloads to datastores",
+  "paths": [
+    [
+      { "id": "internet:global", "type": "Internet", "name": "Internet" },
+      { "id": "aws:sg:sg-web", "type": "Network", "name": "sg-web" },
+      { "id": "aws:ec2:i-web-1", "type": "Workload", "name": "web-1" },
+      { "id": "aws:iam:role/AdminRole", "type": "Identity", "name": "AdminRole" },
+      { "id": "aws:rds:prod-db", "type": "Datastore", "name": "prod-db" }
+    ]
+  ]
+}`}</code></pre>
+  <p>
+    Walks follow every edge type, not only <code>REACHABLE</code>. A cycle is cut when the next
+    node is already on the path. Depth counts edges. The demo path
+    Internet → sg-web → web-1 → AdminRole → prod-db is four edges, so it fits inside the
+    datastore walk.
+  </p>
+
+  <h2>internet-to-workload</h2>
+  <p>
+    Recursive walk from <code>internet:global</code> along any edge type. A path is kept when it
+    ends on a <code>Workload</code>. Recursion stops before depth 6. At most 50 paths are returned.
+    Shorter paths that end on a workload earlier in the walk are included, so one exposed
+    instance can appear as its own path and again as a prefix of a longer one.
+  </p>
+
+  <h2>internet-to-datastore</h2>
+  <p>
+    Same walk, ending on a <code>Datastore</code>, and the path must include at least one
+    <code>Workload</code>. Recursion stops before depth 8. At most 50 paths are returned. This is
+    the query the demo prints after <code>om scan demo</code>.
+  </p>
+
+  <h2>public-s3-buckets</h2>
+  <p>
+    Single-node results: datastores where <code>public_access</code> is true or
+    <code>public_access_block</code> is <code>disabled</code>. The name says S3 because that is
+    what the AWS collector fills in. Any datastore with those properties matches, including Azure
+    and GCP rows. Limit 100.
+  </p>
+
+  <h2>admin-identities</h2>
+  <p>
+    Single-node results: identities with <code>admin_access</code> set to true. Limit 100.
+    Collectors set that flag with provider-specific heuristics described on each collector page.
+  </p>
+
+  <h2>toxic-s3-public-with-admin-role</h2>
+  <p>
+    Pairs a public datastore (same property test as <code>public-s3-buckets</code>) with an
+    identity that has <code>admin_access</code> and a <code>CAN_ACCESS</code> edge whose target is
+    that datastore. Limit 50. The returned node list is the datastore, then the identity.
+  </p>
+
+  <h2>Reading an empty result</h2>
+  <p>
+    An empty path list means the edges are not there, not that the account is safe. The walk
+    cannot start unless some edge leaves <code>internet:global</code>. That edge is missing when
+    an AWS instance has no public IPv4 or its security groups are closed, when an Azure NIC has
+    no public IP, when a GCE instance has no NAT IP, or when a pod is selected only by
+    ClusterIP Services. Check <code>om graph stats</code> and the collector page before treating
+    zero paths as a clean bill.
+  </p>
+  <p>
+    <code>public-s3-buckets</code> and <code>admin-identities</code> do not need that edge. They
+    match properties. A public Azure storage account shows up in <code>public-s3-buckets</code>
+    even when no VM is reachable from the internet.
+  </p>
+</DocsLayout>

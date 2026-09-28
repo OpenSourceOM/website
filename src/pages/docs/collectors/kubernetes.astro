@@ -1,0 +1,93 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Kubernetes security collector"
+  description="What om scan k8s collects from pods, services, and service accounts, and how LoadBalancer and NodePort services become REACHABLE edges."
+>
+  <h1>Kubernetes security collector</h1>
+  <p>
+    <code>om scan k8s</code> loads a kubeconfig with the default client-go rules
+    (<code>KUBECONFIG</code>, then <code>~/.kube/config</code>). It does not fall back to an
+    in-cluster config. <code>K8S_CLUSTER</code> defaults to <code>default</code>. Any other value
+    is both the kubeconfig context and the account id on every node.
+    <code>K8S_NAMESPACE</code> limits the scan to one namespace. Empty means every namespace the
+    identity can list.
+  </p>
+  <pre><code>{`export K8S_CLUSTER=prod
+export K8S_NAMESPACE=payments
+./om scan k8s
+./om rules run`}</code></pre>
+  <p>
+    The identity needs list on namespaces (unless <code>K8S_NAMESPACE</code> is set), pods,
+    services, and service accounts. Ingress, Gateway, NetworkPolicy, RoleBinding, and container
+    images are not read. Deployments and ReplicaSets are not nodes. Pods are the workloads.
+  </p>
+
+  <h2>Mapping</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Object</th>
+          <th>Node</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cluster</td>
+          <td><code>Control</code> named with <code>K8S_CLUSTER</code>. Id <code>{'k8s:{cluster}:control:cluster'}</code>.</td>
+        </tr>
+        <tr>
+          <td>Namespace</td>
+          <td><code>Network</code> with <code>namespace</code>. Id <code>{'k8s:{cluster}:network:{namespace}'}</code>.</td>
+        </tr>
+        <tr>
+          <td>Pod</td>
+          <td><code>Workload</code> with <code>namespace</code>, <code>phase</code>, and <code>node</code>. Id <code>{'k8s:{cluster}:workload:{namespace}/{pod}'}</code>.</td>
+        </tr>
+        <tr>
+          <td>ServiceAccount</td>
+          <td><code>Identity</code> with <code>namespace</code>. Id <code>{'k8s:{cluster}:identity:{namespace}/{name}'}</code>.</td>
+        </tr>
+        <tr>
+          <td>Service</td>
+          <td><code>Network</code> with <code>namespace</code>, <code>service_type</code>, and <code>internet_facing</code>. Id <code>{'k8s:{cluster}:network:{namespace}/service/{name}'}</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <code>internet_facing</code> is true for <code>LoadBalancer</code> and <code>NodePort</code>.
+    <code>ClusterIP</code> and <code>ExternalName</code> are recorded and are not treated as
+    internet-facing. The collector does not check whether a load balancer actually has an
+    external address.
+  </p>
+
+  <h2>Edges</h2>
+  <ul>
+    <li><code>AFFECTS</code> from a pod to its namespace node.</li>
+    <li><code>ASSUMES</code> from the pod’s service account to the pod. The service account is the source. An empty <code>serviceAccountName</code> is treated as <code>default</code>, which is the opposite direction from the AWS instance-profile edge (workload to role).</li>
+    <li><code>AFFECTS</code> from a pod to a Service in the same namespace when the Service selector matches the pod labels. An empty selector matches nothing. The edge property <code>via</code> is <code>service selector</code>.</li>
+    <li><code>REACHABLE</code> from <code>internet:global</code> to a pod when at least one matching Service is <code>LoadBalancer</code> or <code>NodePort</code>. The edge property <code>via</code> is that Service’s name. The first public Service wins if several match.</li>
+  </ul>
+  <p>
+    A public Service with no matching pods does not create a <code>REACHABLE</code> edge. Pods
+    behind only <code>ClusterIP</code> stay off attack paths that start at the internet, even
+    when an Ingress would expose them.
+  </p>
+
+  <h2>Pack rule that does not see this scan</h2>
+  <p>
+    <code>k8s-public-loadbalancer</code> matches workloads whose property
+    <code>k8s_service_type</code> is <code>LoadBalancer</code> and that are internet-reachable.
+    This collector writes <code>service_type</code> on the Service’s <code>Network</code> node.
+    It does not copy that property onto the pod. A live <code>om scan k8s</code> therefore does
+    not fire that rule. The demo graph sets <code>k8s_service_type</code> on a workload so the
+    rule has a sample. Internet-exposed pods from a real cluster still match
+    <code>cspm-internet-workload</code>, because that rule follows <code>REACHABLE</code> edges.
+  </p>
+</DocsLayout>

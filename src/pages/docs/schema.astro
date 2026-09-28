@@ -1,0 +1,166 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Security graph schema"
+  description="OpenSourceOM graph schema v0: node types, edge types, ID formats, and the properties CSPM rules and path queries read."
+>
+  <h1>Security graph schema</h1>
+  <p>
+    Schema v0 is a closed vocabulary. Collectors, the plugin SDK, and the API all use the same
+    type strings. Unknown types are rejected when a plugin batch is validated. New attributes go
+    in <code>properties</code> so existing rows keep working.
+  </p>
+
+  <h2>Tables</h2>
+  <p>
+    <code>om migrate</code> creates <code>nodes</code> and <code>edges</code>. Both rows carry
+    <code>properties JSONB</code>. Edges reference nodes with <code>ON DELETE CASCADE</code>.
+    The unique key on an edge is <code>(source_id, target_id, type)</code>.
+  </p>
+  <p>Node columns: <code>id</code>, <code>type</code>, <code>name</code>, <code>provider</code>, <code>region</code>, <code>account_id</code>, <code>properties</code>, timestamps.</p>
+
+  <h2>Node types</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Internet</code></td>
+          <td>Synthetic entry point. Id is always <code>internet:global</code>.</td>
+        </tr>
+        <tr>
+          <td><code>Network</code></td>
+          <td>Security group, Kubernetes namespace, or Service.</td>
+        </tr>
+        <tr>
+          <td><code>Workload</code></td>
+          <td>Compute: instance, VM, or pod.</td>
+        </tr>
+        <tr>
+          <td><code>Identity</code></td>
+          <td>Principal that can be assumed or granted access.</td>
+        </tr>
+        <tr>
+          <td><code>Datastore</code></td>
+          <td>Object or account storage.</td>
+        </tr>
+        <tr>
+          <td><code>Finding</code></td>
+          <td>CSPM or CVE result. <code>finding_type</code> is <code>cspm</code> or a CVE id is set.</td>
+        </tr>
+        <tr>
+          <td><code>Control</code></td>
+          <td>Reserved guardrail node. The Kubernetes collector writes the cluster as a control.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Edge types</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Typical direction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>REACHABLE</code></td>
+          <td><code>internet:global</code> → workload</td>
+        </tr>
+        <tr>
+          <td><code>ASSUMES</code></td>
+          <td>Workload → identity on AWS. Service account → pod on Kubernetes.</td>
+        </tr>
+        <tr>
+          <td><code>CAN_ACCESS</code></td>
+          <td>Identity or workload → datastore</td>
+        </tr>
+        <tr>
+          <td><code>AFFECTS</code></td>
+          <td>Workload → network control</td>
+        </tr>
+        <tr>
+          <td><code>VIOLATES</code></td>
+          <td>Finding → affected resource</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>IDs</h2>
+  <p>Built-in collectors use these patterns:</p>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Format</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AWS</td>
+          <td><code>{'aws:{account}:{region}:{kind}:{resource}'}</code></td>
+        </tr>
+        <tr>
+          <td>Azure</td>
+          <td><code>{'azure:{subscription}:{location}:{kind}:{resource}'}</code></td>
+        </tr>
+        <tr>
+          <td>GCP</td>
+          <td><code>{'gcp:{project}:{region-or-zone}:{kind}:{resource}'}</code></td>
+        </tr>
+        <tr>
+          <td>Kubernetes</td>
+          <td><code>{'k8s:{cluster}:{kind}:{resource}'}</code></td>
+        </tr>
+        <tr>
+          <td>Finding</td>
+          <td><code>{'finding:{rule-id}:{resource-node-id}'}</code></td>
+        </tr>
+        <tr>
+          <td>Edge</td>
+          <td><code>{'{source}|{target}|{type}'}</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <code>kind</code> is a short word such as <code>workload</code>, <code>identity</code>, or
+    <code>datastore</code>, not the node type string. Plugins may use any unique id. Every edge
+    endpoint in a plugin batch must be a node in that same batch.
+  </p>
+
+  <h2>Properties rules and queries read</h2>
+  <p>
+    Anything else may be stored. These keys change rule matches and named queries:
+  </p>
+  <ul>
+    <li><code>public_access</code> (bool) — datastore is treated as public</li>
+    <li><code>public_access_block</code> — <code>disabled</code> matches the public-bucket query and a CIS-inspired rule</li>
+    <li><code>encryption</code>, <code>versioning</code>, <code>service</code> — S3 pack rules</li>
+    <li><code>open_ingress</code> — security group allows <code>0.0.0.0/0</code> or <code>::/0</code></li>
+    <li><code>admin_access</code> (bool) — identity is treated as administrative</li>
+    <li><code>mfa</code>, <code>unused_access_keys</code> — IAM user pack rules</li>
+    <li><code>public_ip</code>, <code>imdsv2</code> — workload exposure and metadata rules</li>
+    <li><code>internet_reachable</code>, <code>path_to_datastore</code>, <code>admin_can_access</code> — graph match keys on YAML rules, computed at run time, not stored by collectors</li>
+  </ul>
+
+  <p>
+    The design record is
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/adr/001-graph-schema-v0.md">ADR 001</a>.
+    Plugin authors should use the constants in <code>sdk/collector</code>.
+  </p>
+</DocsLayout>

@@ -1,0 +1,137 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Cloud security collectors"
+  description="Read-only OpenSourceOM collectors for AWS, Azure, GCP, and Kubernetes, plus plugins that write the same security graph."
+  faq={[
+    {
+      question: 'Which clouds can OpenSourceOM scan?',
+      answer:
+        'Built-in collectors cover AWS, Azure, GCP, and Kubernetes. om scan plugin ingests any other inventory that prints a graph batch to stdout.',
+    },
+    {
+      question: 'Do OpenSourceOM collectors change my cloud account?',
+      answer:
+        'They call read APIs and upsert the result into Postgres. Give them a read-only role. A later scan updates the same node ids and does not delete resources that disappeared from the account.',
+    },
+  ]}
+  related={[
+    { href: '/blog/agentless-vs-agent-cloud-security/', label: 'Agentless vs agent cloud security' },
+    { href: '/docs/collectors/aws/', label: 'AWS collector' },
+  ]}
+>
+  <h1>Cloud security collectors</h1>
+  <p>
+    A collector lists resources through a cloud or cluster API and returns a graph batch. The CLI
+    upserts that batch into Postgres. Collectors do not open security groups, change IAM, or
+    delete data. Give them read credentials.
+  </p>
+  <pre><code>{`./om scan aws
+./om scan azure
+./om scan gcp
+./om scan k8s
+./om scan plugin -- ./my-collector
+./om scan demo`}</code></pre>
+  <p>
+    Cloud and Kubernetes scans print how many nodes and edges were ingested. They do not run
+    CSPM rules. Follow a scan with <code>om rules run</code> when you want findings.
+    <code>om scan demo</code> is the exception: it runs the catalog for you.
+  </p>
+
+  <h2>Built-in coverage</h2>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Inventory</th>
+          <th>Credentials</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/docs/collectors/aws/"><code>om scan aws</code></a></td>
+          <td>EC2, security groups, IAM roles and users, S3, instance-profile access to S3</td>
+          <td>AWS default chain, one region</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/collectors/azure/"><code>om scan azure</code></a></td>
+          <td>Virtual machines, storage accounts, subscription role assignments</td>
+          <td><code>DefaultAzureCredential</code> and <code>AZURE_SUBSCRIPTION_ID</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/collectors/gcp/"><code>om scan gcp</code></a></td>
+          <td>Compute instances, GCS buckets, service accounts</td>
+          <td>Application Default Credentials and <code>GCP_PROJECT_ID</code></td>
+        </tr>
+        <tr>
+          <td><a href="/docs/collectors/kubernetes/"><code>om scan k8s</code></a></td>
+          <td>Namespaces, pods, services, service accounts</td>
+          <td>kubeconfig</td>
+        </tr>
+        <tr>
+          <td><a href="/docs/collectors/plugins/"><code>om scan plugin</code></a></td>
+          <td>Whatever the executable emits</td>
+          <td>Inherited environment</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>How each collector marks the internet</h2>
+  <p>
+    Attack-path queries start at <code>internet:global</code> and follow edges. A resource with
+    no <code>REACHABLE</code> edge is invisible to those queries even when a human would call it
+    exposed. The collectors do not agree on what “exposed” means:
+  </p>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Collector</th>
+          <th><code>REACHABLE</code> when</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AWS</td>
+          <td>Instance has a public IPv4 address and an attached security group allows <code>0.0.0.0/0</code> or <code>::/0</code>.</td>
+        </tr>
+        <tr>
+          <td>Azure</td>
+          <td>The VM’s NIC resolves to a public IP address. Network security groups are not read.</td>
+        </tr>
+        <tr>
+          <td>GCP</td>
+          <td>The instance has a NAT IP. Firewall rules are not read.</td>
+        </tr>
+        <tr>
+          <td>Kubernetes</td>
+          <td>A <code>LoadBalancer</code> or <code>NodePort</code> Service selects the pod. Ingress and Gateway API are not read.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    AWS <code>CAN_ACCESS</code> edges come from instance-profile allow statements. Azure and GCP
+    add <code>CAN_ACCESS</code> from admin-labeled identities, and from internet-facing workloads,
+    to every public datastore in that subscription or project. That is a heuristic, not an IAM
+    evaluation. Details are on each collector page.
+  </p>
+
+  <h2>Upserts, not a full reconcile</h2>
+  <p>
+    A later scan updates rows with the same id. Resources that vanished from the account stay in
+    the graph until you delete them. The demo command is the one scan that deletes first, and it
+    only deletes the demo account ids.
+  </p>
+  <p>
+    Every built-in cloud batch includes the shared <code>internet:global</code> node so path
+    queries have a start vertex. Plugins that want internet paths must include that node
+    themselves. The id constant is <code>internet:global</code> in <code>sdk/collector</code>.
+  </p>
+</DocsLayout>

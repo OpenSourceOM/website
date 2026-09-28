@@ -1,0 +1,91 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import DocsLayout from '@/layouts/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="CVE enrichment for cloud workloads"
+  description="Attach NVD CVE findings to internet-reachable workloads in the OpenSourceOM security graph with om enrich cve."
+>
+  <h1>CVE enrichment for cloud workloads</h1>
+  <p>
+    <code>om enrich cve</code> writes <code>Finding</code> nodes for workloads already in the
+    graph. It looks up CVSS at the
+    <a href="https://nvd.nist.gov/developers/vulnerabilities">NVD API 2.0</a>
+    (<code>https://services.nvd.nist.gov/rest/json/cves/2.0</code>) and stores a normalized
+    severity. This is not a vulnerability scanner. You name the CVEs, or you accept the default
+    id. Nothing in the graph is matched against installed packages.
+  </p>
+  <pre><code>{`./om enrich cve --cve CVE-2021-44228
+./om enrich cve --cve CVE-2021-44228 --cve CVE-2024-3094 --internet-only=false`}</code></pre>
+  <p>
+    <code>--internet-only</code> defaults to true. Targets are workloads reachable from
+    <code>internet:global</code> by <code>REACHABLE</code> edges only, depth under 8. Set the
+    flag to false to attach the same CVEs to every workload, up to 500 nodes. If you omit
+    <code>--cve</code>, the command uses <code>CVE-2021-44228</code>. Ids are trimmed and
+    uppercased before the request.
+  </p>
+  <p>
+    Set <code>NVD_API_KEY</code> when you enrich more than a handful of ids. The key is sent as
+    the <code>apiKey</code> header. Without it, NVD’s public rate limit applies. Each lookup
+    times out after 20 seconds. A missing CVE, or any status other than 200, fails the command.
+    Findings already written in that run stay.
+  </p>
+
+  <h2>What is written</h2>
+  <p>
+    For each target workload and each CVE, the command upserts one finding and a
+    <code>VIOLATES</code> edge. The finding id is
+    <code>{'finding:{cve-id-lower}:{workload-id}'}</code>, so a second run overwrites the same
+    row. The edge property <code>relationship</code> is <code>affects</code>.
+  </p>
+  <ul>
+    <li><code>finding_type</code> is <code>cve</code>.</li>
+    <li><code>cve_id</code>, <code>title</code>, and <code>description</code> come from NVD. The title is the English description, collapsed to a single line and cut at 120 characters. If there is no English description, the title is the CVE id.</li>
+    <li><code>cvss_score</code> is the first base score found, preferring CVSS v3.1, then v3.0, then v2.</li>
+    <li><code>severity</code> and <code>normalized_score</code> come from the table below when a score is present. A score of 0 uses the NVD label instead (<code>moderate</code> becomes <code>medium</code>).</li>
+  </ul>
+  <div class="docs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>CVSS base score</th>
+          <th>Severity</th>
+          <th>Normalized score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>9.0–10</td><td>critical</td><td>95</td></tr>
+        <tr><td>7.0–8.9</td><td>high</td><td>75</td></tr>
+        <tr><td>4.0–6.9</td><td>medium</td><td>50</td></tr>
+        <tr><td>above 0 and below 4</td><td>low</td><td>25</td></tr>
+        <tr><td>0 or missing</td><td>info, unless the NVD label maps higher</td><td>10 for info</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    CVE scores are not boosted by attack-path context. A critical CVE on an isolated workload
+    and the same CVE on a path to a datastore store the same <code>normalized_score</code>.
+    CSPM rules are the ones that add graph points. See
+    <a href="/docs/prioritization/">Prioritization</a>.
+  </p>
+  <p>
+    When the workload property <code>public_ip</code> is true, or is a non-empty string, or
+    <code>public_ip_address</code> is a non-empty string, the command also upserts
+    <code>{'finding:internet-exposed:{workload-id}'}</code>. That finding has
+    <code>finding_type: exposure</code>, severity high, and normalized score 75. It does not
+    call NVD. AWS stores <code>public_ip</code> as a bool. Azure and GCP store the address
+    string, which also counts.
+  </p>
+  <p>
+    The CLI prints <code>Enrichment complete: N findings created, M updated.</code> This version
+    counts every successful attach as created. The stable id still means the row is updated
+    rather than duplicated.
+  </p>
+  <p>
+    Package coverage, image SBOMs, and “this binary is actually installed” are out of scope.
+    Feed those from a scanner by writing findings through a
+    <a href="/docs/collectors/plugins/">plugin</a> or <code>POST /v1/ingest</code>.
+  </p>
+</DocsLayout>
