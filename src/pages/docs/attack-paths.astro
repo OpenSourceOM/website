@@ -6,12 +6,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM attack path queries"
-  description="The five named queries om paths run executes, from the internet through workloads to datastores, plus public buckets and admin identities."
+  description="The six named queries om paths run executes, from the internet through workloads to datastores, including datastores marked with sensitivity."
   faq={[
     {
       question: 'Which attack path queries does OpenSourceOM run?',
       answer:
-        'om paths list prints five names. internet-to-datastore walks from the internet node and keeps paths that include a workload and end on a datastore. The other four are internet-to-workload, public-datastore, admin-identities, and admin-to-public-datastore. public-s3-buckets and toxic-s3-public-with-admin-role still run as aliases.',
+        'om paths list prints six names. internet-to-datastore walks from the internet node and keeps paths that include a workload and end on a datastore. internet-to-sensitive-datastore is that walk limited to datastores whose sensitivity property is set. The other four are internet-to-workload, public-datastore, admin-identities, and admin-to-public-datastore. public-s3-buckets and toxic-s3-public-with-admin-role still run as aliases.',
     },
     {
       question: 'How do I run an attack path query?',
@@ -27,7 +27,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 >
   <h1>OpenSourceOM attack path queries</h1>
   <p>
-    Core ships five named queries. You run them from the CLI, the API, or the console’s query
+    Core ships six named queries. You run them from the CLI, the API, or the console’s query
     dropdown. There is no ad-hoc graph language in this version. What attack path analysis means,
     as a practice, is in
     <a href="/blog/attack-path-analysis-cloud-security/">Attack path analysis</a>.
@@ -78,7 +78,20 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     Same walk, ending on a <code>Datastore</code>, and the path must include at least one
     <code>Workload</code>. Recursion stops before depth 8. At most 50 paths are returned. This is
-    the query the demo prints after <code>om scan demo</code>.
+    the query the demo prints after <code>om scan demo</code>. It does not look at
+    <code>sensitivity</code>. A log bucket and a customer database on the same shape of path both
+    appear.
+  </p>
+
+  <h2>internet-to-sensitive-datastore</h2>
+  <p>
+    The same walk as <code>internet-to-datastore</code>, with the same depth and path caps, kept
+    only when the datastore’s <code>sensitivity</code> property is a non-empty string after
+    trimming. A missing property and a blank value stay in <code>internet-to-datastore</code> and
+    drop out of this one. The value itself is not ranked: <code>customer</code> and
+    <code>restricted</code> both count. Collectors copy it from a tag or label named
+    <code>sensitivity</code> or <code>data-class</code>. The demo marks <code>prod-db</code> and
+    leaves the log and asset buckets unmarked.
   </p>
 
   <h2>public-datastore</h2>
