@@ -91,7 +91,12 @@ docker compose up -d`}</code></pre>
   <p>
     Open <a href="http://localhost:8080">http://localhost:8080</a>. The console opens on
     <code>internet-to-datastore</code>, which should draw that path. Stats should be non-zero,
-    and the findings list should include the public datastore and the internet-exposed workload.
+    and the findings list should include attack-path rows for web-1 to prod-db, the public datastore,
+    and the internet-exposed workload. web-1 matches the internet-exposed workload rule, the
+    public-IP rule, and the IMDSv1 rule, so each of those becomes its own attack-path finding.
+    The card lists the ids <code>internet:global</code>, <code>aws:sg:sg-web</code>,
+    <code>aws:ec2:i-web-1</code>, <code>aws:iam:role/AdminRole</code>, and
+    <code>aws:rds:prod-db</code>.
     If the page is empty, the CLI and the API are pointed at different databases. See
     <a href="/docs/docker/">Docker Compose</a>.
   </p>

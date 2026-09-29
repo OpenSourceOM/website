@@ -6,12 +6,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Open-source CSPM rules"
-  description="Built-in OpenSourceOM CSPM rules for public datastores, internet-exposed workloads, and admin access to data."
+  description="Built-in OpenSourceOM CSPM rules for public datastores, internet-exposed workloads, admin access to data, and attack-path findings."
   faq={[
     {
       question: 'What CSPM checks does OpenSourceOM include?',
       answer:
-        'Three built-in rules flag public datastores, workloads reachable from the internet, and admin identities that can access a datastore. A YAML pack adds CIS AWS-inspired property checks.',
+        'Three built-in rules flag public datastores, workloads reachable from the internet, and admin identities that can access a datastore. An attack-path rule then writes one finding per workload finding that can reach a datastore. A YAML pack adds CIS AWS-inspired property checks.',
     },
     {
       question: 'When should I run CSPM rules?',
@@ -26,9 +26,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 >
   <h1>Open-source CSPM rules</h1>
   <p>
-    The rules engine reads the graph and writes <code>Finding</code> nodes. Three checks are
-    implemented in Go. The rest come from <a href="/docs/rule-packs/">YAML packs</a> embedded in
-    the binary at compile time. <code>om rules list</code> prints the combined catalog.
+    The rules engine reads the graph and writes <code>Finding</code> nodes. Three control checks
+    are implemented in Go. An attack-path pass runs after them. The other checks come from
+    <a href="/docs/rule-packs/">YAML packs</a> embedded in the binary at compile time.
+    <code>om rules list</code> prints the combined catalog. <code>attack-path</code> is last.
   </p>
   <pre><code>{`./om rules list
 ./om rules run
@@ -64,11 +65,17 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td>60</td>
           <td>Datastore with a <code>CAN_ACCESS</code> edge from an identity whose <code>admin_access</code> is true. The match forces <code>admin_can_access</code> in graph context.</td>
         </tr>
+        <tr>
+          <td><code>attack-path</code></td>
+          <td>source score, or 75</td>
+          <td>Existing finding on an internet-reachable workload that can reach a datastore. Runs after the other rules. Details are on <a href="/docs/attack-paths/">Attack paths</a>.</td>
+        </tr>
       </tbody>
     </table>
   </div>
   <p>
-    Every match is then scored with the boosts on <a href="/docs/prioritization/">Prioritization</a>.
+    Control rules and pack rules are scored with the boosts on <a href="/docs/prioritization/">Prioritization</a>.
+    The attack-path rule copies the source finding’s score and does not add those boosts again.
     A base of 70 plus a path-to-datastore boost of 25 becomes 95, severity critical. The
     admin-datastore rule forces <code>admin_can_access</code> before scoring, so that match also
     receives the +5 admin boost. The other two built-in rules do not set that flag.
@@ -77,8 +84,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>internet-to-datastore</code> and still score as not internet-reachable.
   </p>
   <p>
-    Each match upserts <code>{'finding:{rule-id}:{resource-id}'}</code> and a
-    <code>VIOLATES</code> edge from the finding to the resource. Re-running updates that row.
+    Each control-rule match upserts <code>{'finding:{rule-id}:{resource-id}'}</code> and a
+    <code>VIOLATES</code> edge from the finding to the resource. The attack-path id is
+    <code>{'finding:attack-path:{source-finding-id}:{datastore-id}'}</code>. Re-running updates that row.
     <code>findings_created</code> counts those upserts, including updates. Pack rules and
     <code>cspm-public-datastore</code> consider at most 500 nodes of the target type, ordered by
     name. <code>cspm-internet-workload</code> has no row cap. It uses the full
