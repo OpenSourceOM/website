@@ -158,6 +158,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <li><code>admin_access</code> (bool) — identity is treated as administrative</li>
     <li><code>mfa</code>, <code>unused_access_keys</code> — IAM user pack rules</li>
     <li><code>public_ip</code>, <code>imdsv2</code> — workload exposure and metadata rules</li>
+    <li><code>packages</code>, <code>image</code>, <code>images</code> — workload inventory that <code>om enrich cve</code> matches. Rules do not read these keys. See <a href="/docs/enrichment/">CVE enrichment</a>.</li>
     <li><code>internet_reachable</code>, <code>path_to_datastore</code>, <code>admin_can_access</code> — graph match keys on YAML rules, computed at run time, not stored by collectors</li>
   </ul>
 

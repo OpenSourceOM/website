@@ -97,7 +97,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     for external collectors. Include <code>internet:global</code> when the batch should show up
     in <a href="/docs/attack-paths/">attack path</a> queries. Set <code>public_access</code>,
     <code>admin_access</code>, and the other keys on
-    <a href="/docs/schema/">Schema</a> when you want pack rules to match.
+    <a href="/docs/schema/">Schema</a> when you want pack rules to match. On a workload,
+    <code>packages</code>, <code>image</code>, and <code>images</code> are what
+    <code>om enrich cve</code> matches. A package entry is a CPE 2.3 name or a versioned package
+    URL. See <a href="/docs/enrichment/">CVE enrichment</a>.
   </p>
 
   <h2>Go SDK</h2>
@@ -105,7 +108,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     Implement <code>collector.Collector</code> (<code>Collect(ctx) (Batch, error)</code>) and call
     <code>collector.Run</code> from <code>main</code>. <code>Run</code> writes the batch to stdout
     and exits non-zero on error. <code>examples/collector</code> is the reference: an
-    internet-reachable host with <code>CAN_ACCESS</code> to a public datastore. Use
+    internet-reachable host with a package URL, an image ref, and <code>CAN_ACCESS</code> to a
+    public datastore. Use
     <code>collector.InternetNodeID</code> (<code>internet:global</code>) and the type constants
     rather than string literals.
   </p>

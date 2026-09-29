@@ -152,7 +152,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td><code>NVD_API_KEY</code></td>
           <td>empty</td>
-          <td>Higher NVD rate limits for <code>om enrich cve</code></td>
+          <td>Higher NVD rate limits for <code>om enrich cve</code> when no catalog is set</td>
+        </tr>
+        <tr>
+          <td><code>OM_CVE_CATALOG</code></td>
+          <td>empty</td>
+          <td>JSON file used instead of NVD. <code>--catalog</code> overrides it.</td>
         </tr>
       </tbody>
     </table>

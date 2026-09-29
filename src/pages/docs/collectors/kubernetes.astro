@@ -24,8 +24,10 @@ export K8S_NAMESPACE=payments
 ./om rules run`}</code></pre>
   <p>
     The identity needs list on namespaces (unless <code>K8S_NAMESPACE</code> is set), pods,
-    services, and service accounts. Ingress, Gateway, NetworkPolicy, RoleBinding, and container
-    images are not read. Deployments and ReplicaSets are not nodes. Pods are the workloads.
+    services, and service accounts. Deployments and ReplicaSets are not nodes. Pods are the
+    workloads. Each pod stores <code>images</code>: the sorted, unique image refs from its init
+    containers and app containers. Ephemeral containers are omitted. An empty image list is not
+    written.
   </p>
 
   <h2>Mapping</h2>
@@ -48,7 +50,7 @@ export K8S_NAMESPACE=payments
         </tr>
         <tr>
           <td>Pod</td>
-          <td><code>Workload</code> with <code>namespace</code>, <code>phase</code>, and <code>node</code>. Id <code>{'k8s:{cluster}:workload:{namespace}/{pod}'}</code>.</td>
+          <td><code>Workload</code> with <code>namespace</code>, <code>phase</code>, <code>node</code>, and <code>images</code> when the pod has container image refs. Id <code>{'k8s:{cluster}:workload:{namespace}/{pod}'}</code>.</td>
         </tr>
         <tr>
           <td>ServiceAccount</td>
