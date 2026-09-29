@@ -11,7 +11,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     {
       question: 'Which attack path queries does OpenSourceOM run?',
       answer:
-        'om paths list prints five names. internet-to-datastore walks from the internet node and keeps paths that include a workload and end on a datastore. The other four are internet-to-workload, public-s3-buckets, admin-identities, and toxic-s3-public-with-admin-role.',
+        'om paths list prints five names. internet-to-datastore walks from the internet node and keeps paths that include a workload and end on a datastore. The other four are internet-to-workload, public-datastore, admin-identities, and admin-to-public-datastore. public-s3-buckets and toxic-s3-public-with-admin-role still run as aliases.',
     },
     {
       question: 'How do I run an attack path query?',
@@ -81,12 +81,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     the query the demo prints after <code>om scan demo</code>.
   </p>
 
-  <h2>public-s3-buckets</h2>
+  <h2>public-datastore</h2>
   <p>
     Single-node results: datastores where <code>public_access</code> is true or
-    <code>public_access_block</code> is <code>disabled</code>. The name says S3 because that is
-    what the AWS collector fills in. Any datastore with those properties matches, including Azure
-    and GCP rows. Limit 100.
+    <code>public_access_block</code> is <code>disabled</code>. The match is the node type and
+    those properties, so a public S3 bucket and a public GCS bucket both appear. Limit 100.
+    <code>public-s3-buckets</code> is an alias and is not listed.
   </p>
 
   <h2>admin-identities</h2>
@@ -95,11 +95,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     Collectors set that flag from role definitions and IAM bindings, described on each collector page.
   </p>
 
-  <h2>toxic-s3-public-with-admin-role</h2>
+  <h2>admin-to-public-datastore</h2>
   <p>
-    Pairs a public datastore (same property test as <code>public-s3-buckets</code>) with an
+    Pairs a public datastore (same property test as <code>public-datastore</code>) with an
     identity that has <code>admin_access</code> and a <code>CAN_ACCESS</code> edge whose target is
     that datastore. Limit 50. The returned node list is the datastore, then the identity.
+    <code>toxic-s3-public-with-admin-role</code> is an alias and is not listed.
   </p>
 
   <h2>Reading an empty result</h2>
@@ -112,8 +113,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     zero paths as a clean bill.
   </p>
   <p>
-    <code>public-s3-buckets</code> and <code>admin-identities</code> do not need that edge. They
-    match properties. A public Azure storage account shows up in <code>public-s3-buckets</code>
+    <code>public-datastore</code> and <code>admin-identities</code> do not need that edge. They
+    match properties. A public Azure storage account shows up in <code>public-datastore</code>
     even when no VM is reachable from the internet.
   </p>
 </DocsLayout>
