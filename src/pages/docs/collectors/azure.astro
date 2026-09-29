@@ -13,8 +13,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>om scan azure</code> requires <code>AZURE_SUBSCRIPTION_ID</code>. Authentication is
     <code>DefaultAzureCredential</code>: Azure CLI (<code>az login</code>), environment variables
     (<code>AZURE_TENANT_ID</code>, <code>AZURE_CLIENT_ID</code>, <code>AZURE_CLIENT_SECRET</code>),
-    or a managed identity. The scan covers one subscription. Network security groups, Key Vault,
-    and SQL are not inventoried.
+    or a managed identity. The scan covers one subscription. Key Vault is not inventoried.
   </p>
   <pre><code>{`export AZURE_SUBSCRIPTION_ID=00000000-0000-0000-0000-000000000000
 az login
@@ -47,7 +46,7 @@ az login
         </tr>
         <tr>
           <td>Storage accounts and blob containers</td>
-          <td><code>Datastore</code> with <code>resource_id</code> and <code>public_access</code>.</td>
+          <td><code>Datastore</code> with <code>resource_id</code>, <code>public_access</code>, and <code>sensitivity</code> when an account tag names it.</td>
         </tr>
         <tr>
           <td>Role assignments at the subscription and on each storage account</td>
@@ -76,7 +75,9 @@ az login
   <p>
     An account that allows public blobs but has no container set to blob or container access is
     stored with <code>public_access: false</code>. A missing resource group on the storage account
-    id fails the scan.
+    id fails the scan. A tag named <code>sensitivity</code> or <code>data-class</code> is stored
+    as <code>sensitivity</code>. <code>sensitivity</code> wins when both are set, and a blank
+    value is omitted. Logical SQL servers copy the same property from the server’s resource tags.
   </p>
 
   <h2>Admin identities</h2>

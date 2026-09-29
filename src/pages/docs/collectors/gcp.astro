@@ -13,8 +13,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>om scan gcp</code> requires <code>GCP_PROJECT_ID</code>. Clients use Application Default
     Credentials (<code>gcloud auth application-default login</code>,
     <code>GOOGLE_APPLICATION_CREDENTIALS</code>, or the metadata server). The Compute client
-    requests the cloud-platform scope. One scan covers one project. Firewall rules, VPC networks,
-    and Cloud SQL are not inventoried.
+    requests the cloud-platform scope. One scan covers one project.
   </p>
   <pre><code>{`export GCP_PROJECT_ID=my-project
 gcloud auth application-default login
@@ -43,7 +42,7 @@ gcloud auth application-default login
         </tr>
         <tr>
           <td>Storage bucket list, then each bucket’s IAM policy</td>
-          <td><code>Datastore</code> with <code>resource_id</code> (bucket name) and <code>public_access</code>. Bucket IAM members that can read objects get <code>CAN_ACCESS</code> to that bucket.</td>
+          <td><code>Datastore</code> with <code>resource_id</code> (bucket name), <code>public_access</code>, and <code>sensitivity</code> when a bucket label names it. Bucket IAM members that can read objects get <code>CAN_ACCESS</code> to that bucket.</td>
         </tr>
         <tr>
           <td>IAM service accounts, then the project IAM policy</td>
@@ -72,7 +71,9 @@ gcloud auth application-default login
     Public access prevention is not read. A bucket can have prevention unset and still be stored
     as private when those members are absent. <code>allUsers</code> on a role that cannot read
     objects, such as <code>roles/storage.legacyBucketReader</code>, does not set
-    <code>public_access</code>.
+    <code>public_access</code>. A label named <code>sensitivity</code> or <code>data-class</code>
+    is stored as <code>sensitivity</code>. <code>sensitivity</code> wins when both are set, and a
+    blank value is omitted. Cloud SQL copies the same property from the instance’s user labels.
   </p>
 
   <h2>Service accounts and admin</h2>

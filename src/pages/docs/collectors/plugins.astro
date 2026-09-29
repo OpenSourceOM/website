@@ -97,7 +97,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     for external collectors. Include <code>internet:global</code> when the batch should show up
     in <a href="/docs/attack-paths/">attack path</a> queries. Set <code>public_access</code>,
     <code>admin_access</code>, and the other keys on
-    <a href="/docs/schema/">Schema</a> when you want pack rules to match. On a workload,
+    <a href="/docs/schema/">Schema</a> when you want pack rules to match. On a datastore, set
+    <code>sensitivity</code> to a non-empty string to mark a crown jewel.
+    <code>internet-to-sensitive-datastore</code> keeps only those paths. Built-in collectors copy
+    that value from a tag or label named <code>sensitivity</code> or <code>data-class</code>; a
+    plugin sets the property itself. On a workload,
     <code>packages</code>, <code>image</code>, and <code>images</code> are what
     <code>om enrich cve</code> matches. A package entry is a CPE 2.3 name or a versioned package
     URL. See <a href="/docs/enrichment/">CVE enrichment</a>.

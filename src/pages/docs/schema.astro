@@ -152,6 +152,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   </p>
   <ul>
     <li><code>public_access</code> (bool) — datastore is treated as public</li>
+    <li><code>sensitivity</code> (string) — crown-jewel mark on a datastore. Any non-empty value is enough. <code>internet-to-sensitive-datastore</code> keeps those paths, and <code>internet-to-datastore</code> does not filter on it. Collectors copy a tag or label named <code>sensitivity</code> or <code>data-class</code> (<code>sensitivity</code> wins). A blank value is omitted. A plugin may set the property directly. Object contents are not read.</li>
     <li><code>public_access_block</code> — <code>disabled</code> matches the public-bucket query and a CIS-inspired rule</li>
     <li><code>encryption</code>, <code>versioning</code>, <code>service</code> — S3 pack rules</li>
     <li><code>open_ingress</code> — security group allows <code>0.0.0.0/0</code> or <code>::/0</code></li>

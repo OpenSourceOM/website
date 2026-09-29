@@ -49,7 +49,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td>S3 bucket list, public access block, encryption, versioning</td>
-          <td><code>Datastore</code> with <code>service: s3</code>, <code>public_access</code>, <code>public_access_block</code> (<code>disabled</code> or enabled), <code>encryption</code>, <code>versioning</code>.</td>
+          <td><code>Datastore</code> with <code>service: s3</code>, <code>public_access</code>, <code>public_access_block</code> (<code>disabled</code> or enabled), <code>encryption</code>, <code>versioning</code>, and <code>sensitivity</code> when a bucket tag names it.</td>
         </tr>
       </tbody>
     </table>
@@ -80,6 +80,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <li><code>public_access_block</code> is <code>enabled</code> only when Block Public ACLs, Block Public Policy, Ignore Public ACLs, and Restrict Public Buckets are all true. Any other configuration, including a missing public access block, is <code>disabled</code>.</li>
     <li><code>encryption</code> is true when default encryption has at least one rule. A missing encryption configuration is false.</li>
     <li><code>versioning</code> is true only when versioning status is <code>Enabled</code>. Suspended is false.</li>
+    <li><code>sensitivity</code> is copied from a bucket tag named <code>sensitivity</code> or <code>data-class</code>. <code>sensitivity</code> wins when both are set. A blank value is omitted, and a failed tag read leaves the bucket unmarked. The same copy runs for an RDS <code>TagList</code>.</li>
   </ul>
   <p>
     Node ids are <code>{'aws:{account}:{scope}:{kind}:{resource}'}</code>. EC2 instances and
@@ -91,7 +92,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     API reports no further page.
   </p>
   <p>
-    The collector does not inventory RDS, Lambda, EKS, VPCs, or IAM groups. Buckets are listed
+    The collector does not inventory Lambda, EKS, VPCs, or IAM groups. RDS and Aurora instances are
+    datastores, and their tags supply <code>sensitivity</code> the same way a bucket tag does.
+    Buckets are listed
     account-wide. EC2 and security groups are the one region in <code>AWS_REGION</code>.
   </p>
 
@@ -100,6 +103,6 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     A least-privilege policy for this collector needs read access for the calls above, including
     <code>iam:GetInstanceProfile</code>, <code>iam:ListAttachedRolePolicies</code>,
     <code>iam:ListRolePolicies</code>, <code>iam:GetRolePolicy</code>, <code>iam:GetPolicy</code>,
-    and <code>iam:GetPolicyVersion</code>. The scan does not call mutating APIs.
+    <code>iam:GetPolicyVersion</code>, and <code>s3:GetBucketTagging</code>. The scan does not call mutating APIs.
   </p>
 </DocsLayout>
