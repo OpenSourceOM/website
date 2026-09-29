@@ -6,45 +6,132 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="CVE enrichment for cloud workloads"
-  description="Attach NVD CVE findings to internet-reachable workloads in the OpenSourceOM security graph with om enrich cve."
+  description="Match workload package and image inventory to CVEs with om enrich cve, using NVD for CPE names or a JSON catalog for package URLs and images."
 >
   <h1>CVE enrichment for cloud workloads</h1>
   <p>
-    <code>om enrich cve</code> writes <code>Finding</code> nodes for workloads already in the
-    graph. It looks up CVSS at the
-    <a href="https://nvd.nist.gov/developers/vulnerabilities">NVD API 2.0</a>
-    (<code>https://services.nvd.nist.gov/rest/json/cves/2.0</code>) and stores a normalized
-    severity. This is not a vulnerability scanner. You name the CVEs, or you accept the default
-    id. Nothing in the graph is matched against installed packages.
+    <code>om enrich cve</code> writes a <code>Finding</code> for each CVE that matches inventory
+    already stored on a workload. Collectors and plugins set that inventory. Enrichment does not
+    read a host filesystem or a container image.
   </p>
-  <pre><code>{`./om enrich cve --cve CVE-2021-44228
-./om enrich cve --cve CVE-2021-44228 --cve CVE-2024-3094 --internet-only=false`}</code></pre>
+  <pre><code>{`./om enrich cve
+./om enrich cve --cve CVE-2021-44228 --internet-only=false
+./om enrich cve --catalog examples/cve-catalog.json`}</code></pre>
   <p>
     <code>--internet-only</code> defaults to true. Targets are workloads reachable from
     <code>internet:global</code> by <code>REACHABLE</code> edges only, depth under 8. Set the
-    flag to false to attach the same CVEs to every workload, up to 500 nodes. If you omit
-    <code>--cve</code>, the command uses <code>CVE-2021-44228</code>. Ids are trimmed and
-    uppercased before the request.
+    flag to false to consider every workload. <code>--cve</code> limits which ids are considered.
+    Each id still has to match that workload’s inventory. Ids are trimmed and uppercased, and
+    must start with <code>CVE-</code>. Omitting <code>--cve</code> does not invent a default id.
+  </p>
+
+  <h2>Inventory</h2>
+  <p>On a <code>Workload</code>, enrichment reads:</p>
+  <ul>
+    <li><code>packages</code> — a string or a list of strings. Each entry is a CPE 2.3 name (<code>cpe:2.3:a:apache:log4j:2.14.1:*:*:*:*:*:*:*</code>) or a versioned package URL (<code>pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1</code>). Other strings are skipped.</li>
+    <li><code>image</code> — one image reference.</li>
+    <li><code>images</code> — a list of image references. Duplicates of <code>image</code> are ignored.</li>
+  </ul>
+  <p>
+    The demo graph stores <code>cpe:2.3:a:apache:log4j:2.14.1:*:*:*:*:*:*:*</code> on
+    <code>web-1</code> and <code>2.17.1</code> on <code>worker-1</code>. After
+    <code>om enrich cve</code>, CVE-2021-44228 is attached to <code>web-1</code> only.
+    <code>frontend</code> stores <code>image: nginx:1.25.3</code>, which matches only when a
+    catalog lists that exact ref.
   </p>
   <p>
-    Set <code>NVD_API_KEY</code> when you enrich more than a handful of ids. The key is sent as
-    the <code>apiKey</code> header. Without it, NVD’s public rate limit applies. Each lookup
-    times out after 20 seconds. A missing CVE, or any status other than 200, fails the command.
-    Findings already written in that run stay.
+    <code>om scan k8s</code> writes <code>images</code> from init containers and app containers.
+    <code>om scan aws</code> writes <code>image</code> as the AMI id when the instance has one.
+    A plugin can set <code>packages</code> directly. See
+    <a href="/docs/collectors/plugins/">Plugins</a>.
+  </p>
+
+  <h2>NVD</h2>
+  <p>
+    With no catalog, enrichment calls the
+    <a href="https://nvd.nist.gov/developers/vulnerabilities">NVD API 2.0</a>
+    (<code>https://services.nvd.nist.gov/rest/json/cves/2.0</code>). NVD matches CPE 2.3 package
+    names. Package URLs and image refs are not sent to NVD. A workload with no concrete CPE
+    version gets no CVE finding from this path.
+  </p>
+  <p>
+    For each concrete CPE, the command requests <code>virtualMatchString</code> set to that CPE,
+    then keeps a CVE only when a vulnerable configuration criterion has the same part, vendor,
+    and product and the package version falls in range. A criterion whose vendor, product, or
+    part is <code>*</code> or <code>-</code> does not match. Negated configuration nodes and
+    criteria with <code>vulnerable: false</code> are ignored. <code>--cve</code> looks those ids
+    up with <code>cveId</code> and applies the same check. An id NVD does not know fails the
+    command. A known id that does not match inventory is skipped.
+  </p>
+  <p>
+    Versions are dotted integers. <code>2.0</code> and <code>2.0.0</code> are equal. A version
+    that is not dotted integers matches only an exact criterion string, not a range. An
+    unbounded criterion matches nothing.
+  </p>
+  <p>
+    Set <code>NVD_API_KEY</code> when you enrich more than a handful of packages. The key is sent
+    as the <code>apiKey</code> header. Without it, NVD’s public rate limit applies. Each request
+    times out after 20 seconds. Lookups and searches are cached for the process. A search that
+    reports more than 200 CVEs for one CPE fails the command. Any status other than 200 fails
+    the command. Findings already written in that run stay.
+  </p>
+
+  <h2>Catalog</h2>
+  <p>
+    <code>--catalog</code> or <code>OM_CVE_CATALOG</code> points at a JSON file and replaces NVD
+    for that run. The flag wins when both are set. The file is the whole source: CPE names,
+    package URLs, and image refs are matched locally, and CVSS is taken from the file.
+  </p>
+  <pre><code>{`{
+  "cves": [
+    {
+      "id": "CVE-2021-44228",
+      "description": "Apache Log4j2 2.0 through 2.14.1 JNDI features do not protect against attacker-controlled LDAP.",
+      "cvss_score": 10,
+      "packages": [
+        {
+          "cpe": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*",
+          "version_start_including": "2.0",
+          "version_end_including": "2.14.1"
+        },
+        {
+          "ecosystem": "maven",
+          "namespace": "org.apache.logging.log4j",
+          "name": "log4j-core",
+          "version_start_including": "2.0",
+          "version_end_including": "2.14.1"
+        }
+      ]
+    }
+  ]
+}`}</code></pre>
+  <p>
+    A package entry sets <code>cpe</code> or <code>ecosystem</code> plus <code>name</code>, not
+    both. A CPE whose version is <code>*</code> needs a version field or a
+    <code>version_start_including</code>, <code>version_start_excluding</code>,
+    <code>version_end_including</code>, or <code>version_end_excluding</code> bound. Package URL
+    rows match ecosystem, namespace, and name, then the same version rules. Image rows match the
+    full reference string. <code>examples/cve-catalog.json</code> in the core repo matches the
+    demo log4j CPE and the <code>log4j-core</code> package URL.
+    <code>cvss_score</code> from 0 to 10 drives severity. A score of 0 uses <code>severity</code>
+    when that label is set, otherwise <code>info</code>. A <code>--cve</code> id that is not in
+    the file fails the command.
   </p>
 
   <h2>What is written</h2>
   <p>
-    For each target workload and each CVE, the command upserts one finding and a
+    For each matching CVE on a target workload, the command upserts one finding and a
     <code>VIOLATES</code> edge. The finding id is
     <code>{'finding:{cve-id-lower}:{workload-id}'}</code>, so a second run overwrites the same
-    row. The edge property <code>relationship</code> is <code>affects</code>.
+    row. The edge property <code>relationship</code> is <code>affects</code>. A later run does
+    not delete a CVE finding whose package has since left the workload.
   </p>
   <ul>
     <li><code>finding_type</code> is <code>cve</code>.</li>
-    <li><code>cve_id</code>, <code>title</code>, and <code>description</code> come from NVD. The title is the English description, collapsed to a single line and cut at 120 characters. If there is no English description, the title is the CVE id.</li>
-    <li><code>cvss_score</code> is the first base score found, preferring CVSS v3.1, then v3.0, then v2.</li>
-    <li><code>severity</code> and <code>normalized_score</code> come from the table below when a score is present. A score of 0 uses the NVD label instead (<code>moderate</code> becomes <code>medium</code>).</li>
+    <li><code>matched_identifier</code> is the package string or image ref that selected the CVE.</li>
+    <li><code>cve_id</code>, <code>title</code>, and <code>description</code> come from NVD, or from the catalog. The NVD title is the English description, collapsed to a single line and cut at 120 characters. If there is no English description, the title is the CVE id. A catalog title is used as written; otherwise the description is cut the same way.</li>
+    <li><code>cvss_score</code> is the first NVD base score found, preferring CVSS v3.1, then v3.0, then v2, or the catalog’s <code>cvss_score</code>.</li>
+    <li><code>severity</code> and <code>normalized_score</code> come from the table below when a score is present. A score of 0 uses the NVD or catalog label instead (<code>moderate</code> becomes <code>medium</code>).</li>
   </ul>
   <div class="docs-table-wrap">
     <table>
@@ -75,17 +162,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>public_ip_address</code> is a non-empty string, the command also upserts
     <code>{'finding:internet-exposed:{workload-id}'}</code>. That finding has
     <code>finding_type: exposure</code>, severity high, and normalized score 75. It does not
-    call NVD. AWS stores <code>public_ip</code> as a bool. Azure and GCP store the address
-    string, which also counts.
+    require package inventory and it does not call NVD. AWS stores <code>public_ip</code> as a
+    bool. Azure and GCP store the address string, which also counts.
   </p>
   <p>
     The CLI prints <code>Enrichment complete: N findings created, M updated.</code> This version
     counts every successful attach as created. The stable id still means the row is updated
     rather than duplicated.
-  </p>
-  <p>
-    Package coverage, image SBOMs, and “this binary is actually installed” are out of scope.
-    Feed those from a scanner by writing findings through a
-    <a href="/docs/collectors/plugins/">plugin</a> or <code>POST /v1/ingest</code>.
   </p>
 </DocsLayout>

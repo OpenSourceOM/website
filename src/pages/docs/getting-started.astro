@@ -82,8 +82,11 @@ docker compose up -d`}</code></pre>
     only reaches the private bucket <code>acme-assets</code> through <code>AppRole</code>.
     <code>acme-logs-public</code> is a public bucket that is not on the web-1 path. The
     Kubernetes sample is a workload named <code>frontend</code> with
-    <code>k8s_service_type: LoadBalancer</code>, reachable from the internet and not connected
-    to <code>prod-db</code>.
+    <code>k8s_service_type: LoadBalancer</code> and image <code>nginx:1.25.3</code>, reachable
+    from the internet and not connected to <code>prod-db</code>. <code>web-1</code> lists
+    package <code>cpe:2.3:a:apache:log4j:2.14.1:*:*:*:*:*:*:*</code>. <code>worker-1</code> lists
+    the same product at <code>2.17.1</code>. <code>om enrich cve</code> attaches CVE-2021-44228
+    to <code>web-1</code> because that package matches.
   </p>
   <p>
     Open <a href="http://localhost:8080">http://localhost:8080</a>. The console opens on
@@ -109,10 +112,10 @@ export GCP_PROJECT_ID=my-project
 
 ./om scan k8s`}</code></pre>
   <p>
-    After a scan, evaluate rules and optionally attach CVEs:
+    After a scan, evaluate rules and attach CVEs that match workload inventory:
   </p>
   <pre><code>{`./om rules run
-./om enrich cve --cve CVE-2021-44228
+./om enrich cve
 ./om identity blast-radius --name AdminRole`}</code></pre>
 
   <h2>Next</h2>
