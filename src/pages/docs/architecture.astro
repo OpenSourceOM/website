@@ -120,8 +120,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     Multi-tenant RBAC, SAML, and platform audit logs of who clicked what in the console are
     outside the open source core. See <a href="/docs/open-source/">Open source scope</a>.
-    Recursive path SQL is capped. Collector edges for Azure and GCP include heuristics documented
-    on those pages. The design notes in the core repo
+    Recursive path SQL is capped. Azure and GCP <code>REACHABLE</code> edges still ignore
+    firewalls; the collector pages describe that and the IAM rules behind <code>CAN_ACCESS</code>.
+    The design notes in the core repo
     (<a href="https://github.com/OpenSourceOM/core/blob/main/docs/ARCHITECTURE.md">ARCHITECTURE.md</a>
     and the ADRs) are the engineering record behind this page.
   </p>

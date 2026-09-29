@@ -64,16 +64,15 @@ GET /v1/identity/blast-radius?identity_id=aws:123456789012:global:identity:Admin
     not filled by this version.
   </p>
   <p>
-    On AWS, <code>ASSUMES</code> points from the instance to the role, and <code>CAN_ACCESS</code>
-    points from the role to a bucket. Starting at the role therefore reaches buckets the
-    allow-statement analysis linked, and does not walk backward to the instance. Starting at a
-    Kubernetes service account follows <code>ASSUMES</code> toward the pods that reference it,
-    because that collector stores the service account as the source.
+    On AWS, Azure, and GCP, <code>ASSUMES</code> points from the workload to the identity, and
+    <code>CAN_ACCESS</code> points from the identity to a datastore. Starting at the identity
+    therefore reaches datastores the collector linked, and does not walk backward to the
+    workload. Starting at a Kubernetes service account follows <code>ASSUMES</code> toward the
+    pods that reference it, because that collector stores the service account as the source.
   </p>
   <p>
-    Azure and GCP <code>CAN_ACCESS</code> edges are heuristics: admin identities are linked to
-    public datastores in the same subscription or project, and internet-facing workloads are
-    linked to those datastores. Blast radius will echo that heuristic. It is not an IAM policy
-    simulator.
+    Azure links come from role-assignment scope. GCP links come from project and bucket IAM.
+    Conditional assignments and bindings are omitted. Blast radius repeats those edges. It is
+    not a cloud IAM policy simulator.
   </p>
 </DocsLayout>
