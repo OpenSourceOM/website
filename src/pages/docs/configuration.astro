@@ -142,7 +142,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td><code>K8S_CLUSTER</code></td>
           <td><code>default</code></td>
-          <td>Account id, and kubeconfig context when it is not <code>default</code></td>
+          <td>Account id. Also the kubeconfig context when it is not <code>default</code> and a kubeconfig is used. In a pod with no <code>KUBECONFIG</code>, it is only the account id.</td>
         </tr>
         <tr>
           <td><code>K8S_NAMESPACE</code></td>

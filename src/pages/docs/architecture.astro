@@ -109,11 +109,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>Deployment shapes</h2>
   <ul>
     <li><a href="/docs/docker/">Docker Compose</a> — Postgres 16 and the API image for a laptop or a single VM.</li>
-    <li><a href="/docs/kubernetes/">Helm</a> — API Deployment, an init container that migrates, and an optional Postgres StatefulSet with a PVC.</li>
+    <li><a href="/docs/kubernetes/">Helm</a> — API Deployment, an init container that migrates, an optional Postgres StatefulSet with a PVC, and optional collector CronJobs.</li>
   </ul>
   <p>
-    Collectors are not a long-running Deployment in the chart. You run <code>om scan</code> from
-    a job, a laptop, or CI, using credentials that can read the accounts and reach Postgres.
+    Those CronJobs stay off until a collector is enabled and credentials are set. They run
+    <code>om scan</code> on a schedule into the chart database. You can still run
+    <code>om scan</code> from a laptop or CI. <code>om scan demo</code> is not a CronJob.
   </p>
 
   <h2>What this version leaves out</h2>

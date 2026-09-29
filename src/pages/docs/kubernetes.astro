@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Install OpenSourceOM on Kubernetes"
-  description="Install the OpenSourceOM API and Postgres on Kubernetes with the Helm chart, including the migration init container."
+  description="Install the OpenSourceOM API and Postgres on Kubernetes with the Helm chart, including migrations and optional scheduled collectors."
 >
   <h1>Install OpenSourceOM on Kubernetes</h1>
   <p>
@@ -95,50 +95,46 @@ helm install om deploy/helm/opensourceom \\
         <tr>
           <td><code>resources</code></td>
           <td>100m / 128Mi request, 1 CPU / 512Mi limit</td>
-          <td>API container only.</td>
+          <td>API container. Scan CronJobs use the same limits unless <code>scan.resources</code> is set.</td>
+        </tr>
+        <tr>
+          <td><code>scan.schedule</code></td>
+          <td><code>0 */6 * * *</code></td>
+          <td>Schedule for every enabled collector. Overlapping runs of one collector are skipped.</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <h2>Scanning from the cluster</h2>
+  <h2>Scheduled scans</h2>
   <p>
-    The chart does not deploy collectors. Run <code>om scan</code> where cloud credentials and
-    the database are both reachable. For a release named <code>om</code>, the bundled Postgres
-    Service is <code>om-opensourceom-postgres</code> on port 5432. A Job in the same namespace
-    can use the API image, which already has <code>om</code> as its entrypoint:
+    Collectors stay off until you enable one and supply credentials. The chart then runs
+    <code>om scan</code> as a CronJob against the same Postgres the API reads. For a release
+    named <code>om</code>, that Service is <code>om-opensourceom-postgres</code>.
+    <code>om scan demo</code> is not scheduled. A scan does not run CSPM rules.
   </p>
-  <pre><code>{`apiVersion: batch/v1
-kind: Job
-metadata:
-  name: om-scan-aws
-spec:
-  template:
-    spec:
-      restartPolicy: Never
-      containers:
-        - name: scan
-          image: ghcr.io/opensourceom/core:0.2.1
-          args: ["scan", "aws"]
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-            - name: POSTGRES_HOST
-              value: om-opensourceom-postgres
-            - name: POSTGRES_USER
-              value: opensourceom
-            - name: POSTGRES_DB
-              value: opensourceom
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: om-opensourceom
-                  key: POSTGRES_PASSWORD`}</code></pre>
+  <pre><code>{`helm upgrade om deploy/helm/opensourceom \\
+  --reuse-values \\
+  --set scan.aws.enabled=true \\
+  --set scan.aws.existingSecret=aws-creds`}</code></pre>
   <p>
-    Add the cloud credential env or a projected service account the same way you would for any
-    other Job. <code>args: ["scan", "aws"]</code> does not run rules. A second Job with
-    <code>args: ["rules", "run"]</code> writes findings. Kubernetes inventory still uses
-    kubeconfig on that Job, not an automatic in-cluster client. See
+    <code>aws-creds</code> must contain <code>AWS_ACCESS_KEY_ID</code> and
+    <code>AWS_SECRET_ACCESS_KEY</code>. Azure needs <code>scan.azure.subscriptionId</code> and a
+    Secret with <code>AZURE_TENANT_ID</code>, <code>AZURE_CLIENT_ID</code>, and
+    <code>AZURE_CLIENT_SECRET</code>. GCP needs <code>scan.gcp.projectId</code> and a Secret key
+    named <code>credentials.json</code>. Inline key fields on <code>scan.aws</code>,
+    <code>scan.azure</code>, and <code>scan.gcp</code> work the same way and are copied into a
+    chart Secret. <code>serviceAccountAuth: true</code> skips the static key and uses the chart
+    ServiceAccount; set <code>scan.serviceAccount.annotations</code> for IRSA or workload identity.
+    Enabling a cloud collector without one of those credentials does not create a CronJob.
+  </p>
+  <p>
+    <code>scan.kubernetes.enabled=true</code> schedules <code>om scan k8s</code>. With no
+    kubeconfig Secret, the chart creates a read-only ServiceAccount for this cluster.
+    <code>scan.kubernetes.namespace</code> empty is a ClusterRole; a namespace is a Role in that
+    namespace. <code>scan.kubernetes.cluster</code> is the graph account id. Set
+    <code>scan.kubernetes.existingSecret</code> to mount a kubeconfig instead (key
+    <code>kubeconfig</code>, unless <code>kubeconfigKey</code> says otherwise). See
     <a href="/docs/collectors/kubernetes/">the Kubernetes collector</a>.
   </p>
   <p>
@@ -147,7 +143,7 @@ spec:
     the API Secret. It does not create a database user on the external server.
   </p>
   <p>
-    Reads on the API are unauthenticated. Keep the Service off the public internet, or put your
-    own gateway in front of it. See <a href="/docs/security/">Security</a>.
+    Keep the Service off the public internet, or put your own gateway in front of it. See
+    <a href="/docs/security/">Security</a> for how <code>OM_API_SECRET</code> applies.
   </p>
 </DocsLayout>
