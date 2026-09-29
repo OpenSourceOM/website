@@ -72,11 +72,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td><code>ASSUMES</code></td>
-          <td>An identity is in use. On AWS the instance is the source and the role is the target. On Kubernetes the service account is the source and the pod is the target.</td>
+          <td>An identity is in use. On AWS, Azure, and GCP the workload is the source and the role or service account is the target. On Kubernetes the service account is the source and the pod is the target.</td>
         </tr>
         <tr>
           <td><code>CAN_ACCESS</code></td>
-          <td>An identity or workload can reach a datastore. AWS derives this from instance-profile allow statements. Azure and GCP use a same-account heuristic.</td>
+          <td>An identity can reach a datastore. AWS derives this from instance-profile allow statements. Azure derives it from role-assignment scope. GCP derives it from project and bucket IAM.</td>
         </tr>
         <tr>
           <td><code>AFFECTS</code></td>
@@ -103,7 +103,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>Limits you should plan for</h2>
   <ul>
     <li>Path walks are recursive SQL with a depth cap and a row limit. They are built for a pilot graph, not an unbounded enterprise crawl. Named queries follow every edge type, so a <code>VIOLATES</code> edge can extend a path if it points onward from the current node.</li>
-    <li>Azure and GCP <code>CAN_ACCESS</code> edges are heuristics: admin-labeled identities and internet-facing workloads are linked to public datastores in the same subscription or project. AWS <code>CAN_ACCESS</code> evaluates allow statements on the instance profile’s role. Deny statements and conditions are not evaluated.</li>
+    <li>AWS <code>CAN_ACCESS</code> evaluates allow statements on the instance profile’s role and does not evaluate denies or conditions. Azure evaluates role-assignment scope and <code>NotActions</code> on the same permission entry, and skips conditional assignments. GCP evaluates project and bucket IAM and skips conditional bindings.</li>
     <li>GCP <code>public_access</code> means the bucket IAM policy grants <code>allUsers</code> or <code>allAuthenticatedUsers</code> an object-read role. Azure <code>public_access</code> means blob public access is allowed and a container is set to blob or container access.</li>
     <li>Pack rules and the public-datastore check list at most 500 nodes of the target type, ordered by name. A larger account is only partly evaluated.</li>
     <li>Findings are nodes in the same database. Deleting a resource cascades its edges, including <code>VIOLATES</code>.</li>

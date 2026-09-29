@@ -117,10 +117,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     </table>
   </div>
   <p>
-    AWS <code>CAN_ACCESS</code> edges come from instance-profile allow statements. Azure and GCP
-    add <code>CAN_ACCESS</code> from admin-labeled identities, and from internet-facing workloads,
-    to every public datastore in that subscription or project. That is a heuristic, not an IAM
-    evaluation. Details are on each collector page.
+    AWS <code>CAN_ACCESS</code> edges come from instance-profile allow statements. Azure edges
+    come from role assignments whose scope covers the storage account. GCP edges come from
+    project and bucket IAM on the service account the instance runs as. Details are on each
+    collector page.
   </p>
 
   <h2>Upserts, not a full reconcile</h2>
