@@ -38,8 +38,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     requires the API secret. Enter it in the <strong>API key</strong> field and choose
     <strong>Save API key</strong>. The page stores it in <code>localStorage.om_api_key</code> and
     sends <code>X-API-Key</code> on <code>/v1</code> calls. The key is not written into the graph.
-    Clearing the field and saving removes it. Leave it empty when the API secret is unset; the
-    demo graph still loads.
+    Clearing the field and saving removes it. The HTML page loads without a key. Stats, findings,
+    and the graph need the secret. <code>GET /v1/health</code> does not.
   </p>
   <p>
     Use the value of <code>OM_API_SECRET</code> from the environment the API process actually

@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM security model"
-  description="How the OpenSourceOM API secret protects writes, why graph reads belong on a private network, and how to report bugs."
+  description="How OM_API_SECRET protects every /v1 route except health, why the API stays on a private network, and how to report bugs."
 >
   <h1>OpenSourceOM security model</h1>
   <p>
@@ -17,26 +17,24 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>API secret</h2>
   <p>
     <code>OM_API_SECRET</code> defaults to <code>change-me-in-production</code> when the variable
-    is unset. These routes require <code>Authorization: Bearer &lt;secret&gt;</code> or
-    <code>X-API-Key: &lt;secret&gt;</code>:
+    is unset or empty. Every <code>/v1</code> route except <code>GET /v1/health</code> requires
+    <code>Authorization: Bearer &lt;secret&gt;</code> or <code>X-API-Key: &lt;secret&gt;</code>.
+    That includes graph reads, findings, the rules list, blast radius, ingest, rules run, and
+    Slack export. A missing or wrong secret is 401.
   </p>
-  <ul>
-    <li><code>POST /v1/ingest</code></li>
-    <li><code>POST /v1/rules/run</code></li>
-    <li><code>POST /v1/export/slack</code></li>
-  </ul>
+  <p>
+    <code>GET /v1/health</code> does not check the secret, so probes can call it. The console
+    HTML at <code>/</code> and <code>/ui/</code> is also unauthenticated. The page sends the key
+    from local storage on API calls. See <a href="/docs/console/">Console</a>.
+  </p>
   <p>
     Change the secret before anyone else can reach the port. Helm refuses to install until
     <code>api.secret</code> is set. The CLI never sends this header. Anyone who can open a local
     shell as a user with database credentials can scan and export without it.
   </p>
-
-  <h2>Reads are open</h2>
   <p>
-    <code>GET</code> routes — health, graph snapshot, findings, rules list, blast radius, path
-    queries — do not check the secret. A process that can reach port 8080 can read the graph.
-    Do not publish the Service to the internet. Put it on a private network or behind an
-    authenticating proxy you operate.
+    The secret is one shared key, not a user login. Do not publish the Service to the internet.
+    Put it on a private network or behind a gateway you operate.
   </p>
 
   <h2>Collectors</h2>

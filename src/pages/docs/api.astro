@@ -15,9 +15,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     no GraphQL endpoint.
   </p>
   <p>
-    Write routes check <code>OM_API_SECRET</code>. Send it as <code>Authorization: Bearer …</code>
-    or <code>X-API-Key</code>. Read routes do not check the secret. Treat the API as an internal
-    service. Details are on <a href="/docs/security/">Security</a>.
+    Every <code>/v1</code> route except <code>GET /v1/health</code> checks
+    <code>OM_API_SECRET</code>. Send it as <code>Authorization: Bearer …</code> or
+    <code>X-API-Key</code>. The console HTML does not. Treat the API as an internal service.
+    Details are on <a href="/docs/security/">Security</a>.
   </p>
 
   <h2>Reads</h2>
@@ -32,7 +33,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
       <tbody>
         <tr>
           <td><code>GET /v1/health</code></td>
-          <td><code>{`{"status":"ok","service":"opensourceom-api"}`}</code>. Helm probes this path.</td>
+          <td><code>{`{"status":"ok","service":"opensourceom-api"}`}</code>. Does not check the API secret. Helm probes this path.</td>
         </tr>
         <tr>
           <td><code>GET /v1/graph/stats</code></td>
@@ -105,6 +106,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   </div>
   <pre><code>{`curl -s http://localhost:8080/v1/health
 curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
+  http://localhost:8080/v1/graph/stats
+curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
   -H 'Content-Type: application/json' \\
   -d '{"nodes":[],"edges":[]}' \\
   http://localhost:8080/v1/ingest`}</code></pre>
@@ -144,7 +147,7 @@ curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
     <code>GET /v1/identity/blast-radius</code> returns the identity, <code>reachable</code>
     (at most 200 nodes), <code>max_depth</code> (6), and <code>summary</code>. Pass
     <code>identity_id</code> or <code>name</code>. A name that matches no identity is 400.
-    This read does not require the API secret.
+    This route requires the API secret, like the other <code>/v1</code> reads.
   </p>
   <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
   -H 'Content-Type: application/json' \\
@@ -159,7 +162,7 @@ curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
   <h2>Errors</h2>
   <p>
     Failures are JSON <code>{`{"error":"..."}`}</code> with 400, 401, or 500. A missing or wrong
-    secret on a write is 401 <code>unauthorized</code>. Invalid JSON on ingest is 400
+    secret on any <code>/v1</code> route except health is 401 <code>unauthorized</code>. Invalid JSON on ingest is 400
     <code>invalid json body</code>. There is no request id and no pagination cursor. Raise
     <code>limit</code> when a list is truncated. There is no server-side maximum above the
     number you pass, except the fixed caps inside path queries, blast radius, and exports.
