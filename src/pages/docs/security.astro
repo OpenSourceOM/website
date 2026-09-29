@@ -55,9 +55,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
   <h2>Console script</h2>
   <p>
-    The graph view loads vis-network from unpkg. That is a browser dependency, not an outbound
-    call from the API. Block it in locked-down browsers if you need to, and use the findings list
-    and the CLI.
+    The graph view loads vis-network from <code>/ui/vis-network.min.js</code> on the API. It is
+    not loaded from a CDN. The API key saved in the console stays in browser local storage and
+    is not written into the graph.
   </p>
 
   <h2>Reporting a vulnerability</h2>

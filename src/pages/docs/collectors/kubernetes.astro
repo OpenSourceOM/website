@@ -10,10 +10,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 >
   <h1>Kubernetes security collector</h1>
   <p>
-    <code>om scan k8s</code> loads a kubeconfig with the default client-go rules
-    (<code>KUBECONFIG</code>, then <code>~/.kube/config</code>). It does not fall back to an
-    in-cluster config. <code>K8S_CLUSTER</code> defaults to <code>default</code>. Any other value
-    is both the kubeconfig context and the account id on every node.
+    <code>om scan k8s</code> uses <code>KUBECONFIG</code> when that variable is set, otherwise the
+    default kubeconfig (<code>~/.kube/config</code>). In a pod, with <code>KUBECONFIG</code> unset,
+    it uses the pod service account. <code>K8S_CLUSTER</code> defaults to <code>default</code> and
+    is the account id on every node. When a kubeconfig is used, any other value is also the
+    context name. In-cluster, that value is only the account id.
     <code>K8S_NAMESPACE</code> limits the scan to one namespace. Empty means every namespace the
     identity can list.
   </p>

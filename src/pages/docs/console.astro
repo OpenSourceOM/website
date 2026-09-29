@@ -35,20 +35,21 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>Run CSPM rules from the browser</h2>
   <p>
     The <strong>Run CSPM rules</strong> button calls <code>POST /v1/rules/run</code>. That route
-    requires the API secret. The page sends <code>X-API-Key</code> from
-    <code>localStorage.om_api_key</code>. Set it once in the browser console:
+    requires the API secret. Enter it in the <strong>API key</strong> field and choose
+    <strong>Save API key</strong>. The page stores it in <code>localStorage.om_api_key</code> and
+    sends <code>X-API-Key</code> on <code>/v1</code> calls. The key is not written into the graph.
+    Clearing the field and saving removes it. Leave it empty when the API secret is unset; the
+    demo graph still loads.
   </p>
-  <pre><code>{`localStorage.setItem('om_api_key', 'change-me-in-production')`}</code></pre>
   <p>
     Use the value of <code>OM_API_SECRET</code> from the environment the API process actually
     has. Running <code>om rules run</code> on the CLI does the same work without the browser key,
     because the CLI uses Postgres directly.
   </p>
 
-  <h2>Network dependency</h2>
+  <h2>Graph script</h2>
   <p>
-    The graph canvas loads vis-network from the unpkg CDN. Stats, findings, and path text still
-    render if that script is blocked. Air-gapped browsers will not draw the network until that
-    script is available locally. The API itself does not call the CDN.
+    The graph canvas loads vis-network from <code>/ui/vis-network.min.js</code>, served with the
+    rest of the console. The API does not fetch that script from a CDN.
   </p>
 </DocsLayout>
