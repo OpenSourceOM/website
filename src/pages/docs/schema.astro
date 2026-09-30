@@ -160,6 +160,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <li><code>mfa</code>, <code>unused_access_keys</code> — IAM user pack rules</li>
     <li><code>public_ip</code>, <code>imdsv2</code> — workload exposure and metadata rules</li>
     <li><code>packages</code>, <code>image</code>, <code>images</code> — workload inventory that <code>om enrich cve</code> matches. Rules do not read these keys. See <a href="/docs/enrichment/">CVE enrichment</a>.</li>
+    <li><code>audit_events</code> — recent CloudTrail management events on an identity or resource. Each item has <code>id</code>, <code>name</code>, <code>time</code>, <code>principal</code>, <code>resource</code>, <code>principal_node_id</code>, <code>resource_node_id</code>, and optional <code>source_ip</code> and <code>read_only</code>. <code>om scan aws</code> writes at most five, newest first, and only when the resource is on an exposed path. A plugin may set the same list. Named path queries copy an event into <code>audits</code> when its resource node is on the path. Rules do not match this key.</li>
     <li><code>internet_reachable</code>, <code>path_to_datastore</code>, <code>admin_can_access</code> — graph match keys on YAML rules, computed at run time, not stored by collectors</li>
   </ul>
 
