@@ -85,10 +85,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     </table>
   </div>
   <p>
-    <code>om scan aws</code> stores CloudTrail management events, and <code>om scan azure</code>
-    stores Activity Log events, from the last 24 hours on the identity and resource they name,
-    when that resource is on an exposed path. Path queries return those events with the path.
-    GCP Cloud Audit Logs are not collected yet. <strong>Platform audit logs</strong> — operator actions in the
+    <code>om scan aws</code> stores CloudTrail management events, <code>om scan azure</code>
+    stores Activity Log events, and <code>om scan gcp</code> stores Admin Activity audit logs,
+    from the last 24 hours on the identity and resource they name, when that resource is on an
+    exposed path. Path queries return those events with the path. Data Access logs are not
+    collected. <strong>Platform audit logs</strong> — operator actions in the
     console/API, SSO identity, retention, and auditor export — belong in the commercial offering.
   </p>
 
