@@ -12,7 +12,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     The chart in <code>deploy/helm/opensourceom</code> installs the API Deployment and, by
     default, a Postgres StatefulSet. Chart version and <code>appVersion</code> are
-    <code>0.2.1</code>. When bundled Postgres is enabled, an init container named
+    <code>0.3.0</code>. When bundled Postgres is enabled, an init container named
     <code>wait-db</code> runs <code>pg_isready</code> against
     <code>{'{{release}}-opensourceom-postgres'}</code>. A second init container runs
     <code>om migrate</code>. The main container runs <code>om serve</code>. Readiness and
@@ -25,14 +25,14 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     <code>api.secret</code> and <code>postgres.password</code> are required. The image repository
     defaults to <code>ghcr.io/opensourceom/core</code>. An empty <code>image.tag</code> falls
-    back to the chart <code>appVersion</code> (<code>0.2.1</code>). Set the tag when you are not
+    back to the chart <code>appVersion</code> (<code>0.3.0</code>). Set the tag when you are not
     running that release.
   </p>
-  <pre><code>{`docker build -t ghcr.io/opensourceom/core:0.2.1 .
+  <pre><code>{`docker build -t ghcr.io/opensourceom/core:0.3.0 .
 helm install om deploy/helm/opensourceom \\
   --set api.secret='change-me' \\
   --set postgres.password='change-me' \\
-  --set image.tag=0.2.1`}</code></pre>
+  --set image.tag=0.3.0`}</code></pre>
   <p>
     Load that image into the cluster if you are not pushing to GHCR. Published images live at
     <a href="https://github.com/OpenSourceOM/core/pkgs/container/core">ghcr.io/opensourceom/core</a>.
@@ -64,8 +64,8 @@ helm install om deploy/helm/opensourceom \\
         </tr>
         <tr>
           <td><code>image.tag</code></td>
-          <td>empty, then chart <code>appVersion</code> (<code>0.2.1</code>)</td>
-          <td>Image tag. Set it when the cluster should not run <code>0.2.1</code>.</td>
+          <td>empty, then chart <code>appVersion</code> (<code>0.3.0</code>)</td>
+          <td>Image tag. Set it when the cluster should not run <code>0.3.0</code>.</td>
         </tr>
         <tr>
           <td><code>service.type</code> / <code>service.port</code></td>
