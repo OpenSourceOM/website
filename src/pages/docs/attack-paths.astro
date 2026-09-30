@@ -26,7 +26,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     {
       question: 'Where do cloud audit events show up on a path?',
       answer:
-        'om scan aws stores recent CloudTrail management events, and om scan azure stores recent Activity Log events, on the identity and resource they name. GET /v1/graph/query returns those events in audits when the resource node is on a path. om paths run prints the same lines under the path.',
+        'om scan aws stores recent CloudTrail management events, om scan azure stores recent Activity Log events, and om scan gcp stores recent Admin Activity audit logs, on the identity and resource they name. GET /v1/graph/query returns those events in audits when the resource node is on a path. om paths run prints the same lines under the path.',
     },
   ]}
   related={[
@@ -180,8 +180,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
   <h2>Audit events on a path</h2>
   <p>
-    <code>om scan aws</code> reads CloudTrail management events, and <code>om scan azure</code>
-    reads administrative Activity Log events, from the last 24 hours. A match is stored as
+    <code>om scan aws</code> reads CloudTrail management events, <code>om scan azure</code>
+    reads administrative Activity Log events, and <code>om scan gcp</code> reads Admin Activity
+    audit logs, from the last 24 hours. A match is stored as
     <code>audit_events</code> on the identity and the resource the event names. A match requires
     both nodes to already be in the scan, and the resource has to sit on an exposed path: an
     internet-reachable workload, something that workload assumes or can access, a public
@@ -194,9 +195,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>paths</code>. The same event stored on two nodes of one path is listed once.
     <code>om paths run</code> prints the time, event name, principal, and resource under that
     path. The console does the same. <code>GetObject</code> is an S3 data event and is not in
-    this slice. Entra ID sign-in logs and GCP Cloud Audit Logs are not collected. See the
-    <a href="/docs/collectors/aws/">AWS collector</a> and the
-    <a href="/docs/collectors/azure/">Azure collector</a>.
+    this slice. Entra ID sign-in logs and GCP Data Access logs are not collected. See the
+    <a href="/docs/collectors/aws/">AWS collector</a>, the
+    <a href="/docs/collectors/azure/">Azure collector</a>, and the
+    <a href="/docs/collectors/gcp/">GCP collector</a>.
   </p>
 
   <h2>Reading an empty result</h2>

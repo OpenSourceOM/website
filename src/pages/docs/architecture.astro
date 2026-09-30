@@ -34,8 +34,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     Core is one Go module. The CLI and the API share <code>internal/graph</code>,
     <code>internal/rules</code>, and the collectors. PostgreSQL is the graph store. Phase 3 adds
-    the plugin SDK, the embedded rule pack, a Helm chart, CloudTrail management events on
-    the AWS collector, and Activity Log events on the Azure collector, on top of the Phase 2 feature set.
+    the plugin SDK, the embedded rule pack, a Helm chart, and cloud audit context from
+    CloudTrail, Activity Log, and Admin Activity logs, on top of the Phase 2 feature set.
   </p>
   <pre><code>{`Cloud / Kubernetes APIs
         │

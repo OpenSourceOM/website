@@ -65,7 +65,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td><a href="/docs/collectors/gcp/"><code>om scan gcp</code></a></td>
-          <td>Compute instances, GCS buckets, service accounts</td>
+          <td>Compute instances, GCS buckets, service accounts, recent Admin Activity audit logs</td>
           <td>Application Default Credentials and <code>GCP_PROJECT_ID</code></td>
         </tr>
         <tr>
@@ -107,7 +107,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td>GCP</td>
-          <td>The instance has a NAT IP. Firewall rules are not read.</td>
+          <td>The instance has a NAT IP or sits behind a public load balancer, and a firewall allow is not covered by a higher-priority deny.</td>
         </tr>
         <tr>
           <td>Kubernetes</td>

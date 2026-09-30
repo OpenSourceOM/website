@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="GCP security collector"
-  description="What om scan gcp collects from Compute Engine, Cloud Storage, service accounts, and IAM bindings, and which edges those resources produce."
+  description="What om scan gcp collects from Compute Engine, Cloud Storage, service accounts, IAM bindings, and Admin Activity audit logs, and which edges those resources produce."
 >
   <h1>GCP security collector</h1>
   <p>
@@ -38,7 +38,7 @@ gcloud auth application-default login
       <tbody>
         <tr>
           <td>Compute <code>instances.aggregatedList</code></td>
-          <td><code>Workload</code>. Properties: <code>resource_id</code> (self link), <code>public_ip</code> (NAT IP, or empty), <code>status</code>. A NAT IP adds <code>REACHABLE</code> from <code>internet:global</code>. Firewall rules are not consulted. Each attached service account gets an <code>ASSUMES</code> edge from the instance.</td>
+          <td><code>Workload</code>. Properties: <code>resource_id</code> (self link), <code>public_ip</code> (NAT IP, or empty), <code>status</code>. A NAT IP or a public load balancer adds <code>REACHABLE</code> from <code>internet:global</code> when a firewall allow is not covered by a higher-priority deny. The firewall is a <code>Network</code> node. Each attached service account gets an <code>ASSUMES</code> edge from the instance.</td>
         </tr>
         <tr>
           <td>Storage bucket list, then each bucket’s IAM policy</td>
@@ -47,6 +47,14 @@ gcloud auth application-default login
         <tr>
           <td>IAM service accounts, then the project IAM policy</td>
           <td><code>Identity</code> named by email, with <code>email</code> and <code>admin_access</code>. Project bindings that grant object access add <code>CAN_ACCESS</code> to every bucket in the project.</td>
+        </tr>
+        <tr>
+          <td>Cloud SQL instances</td>
+          <td><code>Datastore</code> with <code>resource_id</code> (connection name), <code>service: cloudsql</code>, <code>public_access</code>, and <code>sensitivity</code> when a user label names it. A workload gets <code>CAN_ACCESS</code> when it shares the instance’s private-IP network, or its public IP is in an authorized network.</td>
+        </tr>
+        <tr>
+          <td>Logging <code>entries.list</code> for the Admin Activity log, last 24 hours</td>
+          <td>Up to five <code>audit_events</code> on the identity and the resource the event names. See below.</td>
         </tr>
       </tbody>
     </table>
@@ -105,5 +113,45 @@ gcloud auth application-default login
     account is. The bucket IAM read uses the v1 policy, so conditional bucket bindings are not
     included. A bucket policy that cannot be read is stored as not public and adds no
     <code>CAN_ACCESS</code> edges. The scan continues.
+  </p>
+
+  <h2>Cloud Audit Logs</h2>
+  <p>
+    After inventory is built, the scan lists Admin Activity log entries for the project from the
+    last 24 hours. The call is Logging <code>entries.list</code> on
+    <code>projects/GCP_PROJECT_ID</code>, filtered to
+    <code>cloudaudit.googleapis.com/activity</code>, newest first, and it stops after four pages.
+    A failed lookup omits <code>audit_events</code> and does not fail the scan.
+  </p>
+  <p>
+    An event is kept when its method is on a fixed admin list (for example
+    <code>v1.compute.instances.insert</code>, <code>storage.buckets.update</code>,
+    <code>v1.compute.firewalls.patch</code>, <code>SetIamPolicy</code>,
+    <code>cloudsql.instances.update</code>) and its principal email matches an identity already
+    in the batch. The resource has to sit on an exposed path: an internet-reachable workload, a
+    node that workload assumes or can access, a network that workload affects, a public
+    datastore, or an identity that can access a public datastore. Instance and firewall names
+    match the self link stored on the node. A bucket event uses
+    <code>projects/_/buckets/NAME</code>. A service-account key walks up to that identity. A
+    project <code>SetIamPolicy</code> event is stored on the identity, because the project is
+    not a node. The same event is stored on the identity and the resource, newest first, at
+    most five per node.
+  </p>
+  <p>
+    <code>GET /v1/graph/query</code> and <code>om paths run</code> list those events in
+    <code>audits</code> when the resource node is on the returned path. The console prints the
+    same lines under the path. Data Access logs, including object reads, are a different log, so
+    this slice does not collect them. CloudTrail events are collected by
+    <a href="/docs/collectors/aws/">om scan aws</a>. Activity Log events are collected by
+    <a href="/docs/collectors/azure/">om scan azure</a>.
+  </p>
+
+  <h2>Read access</h2>
+  <p>
+    The scan lists instances, firewalls, load-balancer pieces, buckets, bucket IAM, service
+    accounts, the project IAM policy, Cloud SQL instances, and Admin Activity log entries.
+    Listing those entries needs <code>logging.logEntries.list</code>. Logs Viewer
+    (<code>roles/logging.viewer</code>) includes it. The collector does not call mutating APIs
+    and does not request Data Access logs.
   </p>
 </DocsLayout>
