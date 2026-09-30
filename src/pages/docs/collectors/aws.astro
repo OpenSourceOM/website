@@ -122,7 +122,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     <code>GET /v1/graph/query</code> and <code>om paths run</code> list those events in
     <code>audits</code> when the resource node is on the returned path. The console prints the
-    same lines under the path. Azure Activity Log and GCP Cloud Audit Logs are not collected.
+    same lines under the path. GCP Cloud Audit Logs are not collected. Azure Activity Log events
+    are collected by <a href="/docs/collectors/azure/">om scan azure</a>.
   </p>
 
   <h2>Read-only actions</h2>

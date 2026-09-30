@@ -128,7 +128,7 @@ curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
   <p>
     <code>GET /v1/graph/query?name=internet-to-datastore</code> returns <code>query</code>,
     <code>summary</code>, and <code>paths</code>. Each path is an array of nodes. When a
-    CloudTrail management event’s resource node is on a path, <code>audits</code> lists that
+    CloudTrail or Activity Log event’s resource node is on a path, <code>audits</code> lists that
     event with <code>index</code> set to the path’s position. Unknown names
     are 400. The six names are listed by <code>GET /v1/graph/queries</code> as
     <code>{`{"queries":[{"name":"...","description":"..."}]}`}</code>. See
