@@ -45,7 +45,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td><code>om scan aws</code></td>
-          <td>EC2, security groups, IAM, and S3 in <code>AWS_REGION</code>.</td>
+          <td>EC2, security groups, IAM, and S3 in <code>AWS_REGION</code>, plus CloudTrail management events from the last 24 hours.</td>
         </tr>
         <tr>
           <td><code>om scan azure</code></td>
@@ -77,7 +77,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td><code>om paths run &lt;name&gt;</code></td>
-          <td>Run one named query and print paths.</td>
+          <td>Run one named query and print paths. A CloudTrail event whose resource is on a path is printed under that path.</td>
         </tr>
         <tr>
           <td><code>om graph stats</code></td>

@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="AWS security collector"
-  description="What om scan aws collects from EC2, IAM, S3, and security groups, and how those APIs become attack-path edges."
+  description="What om scan aws collects from EC2, IAM, S3, security groups, and CloudTrail, and how those APIs become attack-path edges."
 >
   <h1>AWS security collector</h1>
   <p>
@@ -50,6 +50,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td>S3 bucket list, public access block, encryption, versioning</td>
           <td><code>Datastore</code> with <code>service: s3</code>, <code>public_access</code>, <code>public_access_block</code> (<code>disabled</code> or enabled), <code>encryption</code>, <code>versioning</code>, and <code>sensitivity</code> when a bucket tag names it.</td>
+        </tr>
+        <tr>
+          <td>CloudTrail <code>LookupEvents</code></td>
+          <td>Up to five <code>audit_events</code> on the identity and the resource the event names. See below.</td>
         </tr>
       </tbody>
     </table>
@@ -98,11 +102,35 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     account-wide. EC2 and security groups are the one region in <code>AWS_REGION</code>.
   </p>
 
+  <h2>CloudTrail</h2>
+  <p>
+    After inventory is built, the scan calls <code>cloudtrail:LookupEvents</code> for the last 24
+    hours in <code>AWS_REGION</code>. IAM and S3 management events are recorded in
+    <code>us-east-1</code>, so a scan of another region also looks there. Each lookup stops after
+    four pages. A failed lookup omits <code>audit_events</code> and does not fail the scan.
+  </p>
+  <p>
+    An event is kept when its name is on a fixed management-event list (for example
+    <code>AssumeRole</code>, <code>PutBucketPolicy</code>, <code>AuthorizeSecurityGroupIngress</code>)
+    and it names an identity already in the batch plus a resource on an exposed path. Exposed
+    means an internet-reachable workload, a node that workload assumes or can access, a network
+    that workload affects, a public datastore, or an identity that can access a public datastore.
+    The same event is stored on both nodes, newest first, at most five per node.
+    <code>GetObject</code> is an S3 data event. <code>LookupEvents</code> does not return it, so
+    this slice does not.
+  </p>
+  <p>
+    <code>GET /v1/graph/query</code> and <code>om paths run</code> list those events in
+    <code>audits</code> when the resource node is on the returned path. The console prints the
+    same lines under the path. Azure Activity Log and GCP Cloud Audit Logs are not collected.
+  </p>
+
   <h2>Read-only actions</h2>
   <p>
     A least-privilege policy for this collector needs read access for the calls above, including
     <code>iam:GetInstanceProfile</code>, <code>iam:ListAttachedRolePolicies</code>,
     <code>iam:ListRolePolicies</code>, <code>iam:GetRolePolicy</code>, <code>iam:GetPolicy</code>,
-    <code>iam:GetPolicyVersion</code>, and <code>s3:GetBucketTagging</code>. The scan does not call mutating APIs.
+    <code>iam:GetPolicyVersion</code>, <code>s3:GetBucketTagging</code>, and
+    <code>cloudtrail:LookupEvents</code>. The scan does not call mutating APIs.
   </p>
 </DocsLayout>
