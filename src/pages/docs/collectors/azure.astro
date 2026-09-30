@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Azure security collector"
-  description="What om scan azure collects from virtual machines, storage accounts, and role assignments, and how managed identities become ASSUMES and CAN_ACCESS edges."
+  description="What om scan azure collects from virtual machines, storage accounts, role assignments, and the Activity Log, and how managed identities become ASSUMES and CAN_ACCESS edges."
 >
   <h1>Azure security collector</h1>
   <p>
@@ -41,8 +41,8 @@ az login
           <td><code>Workload</code>. Properties: <code>resource_id</code> (ARM id) and <code>public_ip</code> (the address string, or empty).</td>
         </tr>
         <tr>
-          <td>NIC and public IP address reads for each VM</td>
-          <td>Used only to fill <code>public_ip</code>. A non-empty address adds <code>REACHABLE</code> from <code>internet:global</code>. NSGs are not read, so a public IP is treated as internet-facing even when a security rule would block it.</td>
+          <td>NIC, public IP, network security group, and load balancer reads</td>
+          <td>Fills <code>public_ip</code> and decides <code>REACHABLE</code>. A public IP or a public load balancer is internet-facing when the NIC and subnet NSGs allow it. A VM with a public IP and no NSG stays reachable. The NSG is a <code>Network</code> node.</td>
         </tr>
         <tr>
           <td>Storage accounts and blob containers</td>
@@ -52,12 +52,16 @@ az login
           <td>Role assignments at the subscription and on each storage account</td>
           <td><code>Identity</code> named by principal id, with <code>role_definition_id</code> and <code>admin_access</code>. A VM’s system-assigned or user-assigned managed identity gets an <code>ASSUMES</code> edge from the workload.</td>
         </tr>
+        <tr>
+          <td>Activity Log for the last 24 hours</td>
+          <td>Up to five <code>audit_events</code> on the identity and the resource the event names. See below.</td>
+        </tr>
       </tbody>
     </table>
   </div>
   <p>
     Node ids are <code>{'azure:{subscription}:{AZURE_LOCATION}:{kind}:{name}'}</code>.
-    <code>kind</code> is <code>workload</code>, <code>datastore</code>, or <code>identity</code>.
+    <code>kind</code> is <code>workload</code>, <code>datastore</code>, <code>identity</code>, or <code>network</code>.
     The identity resource is the principal id, so every assignment for that principal is one node.
     <code>admin_access</code> is true when any unconditional assignment grants admin.
     <code>role_definition_id</code> is one of those admin roles when one exists, otherwise an
@@ -103,12 +107,42 @@ az login
     internet-facing VM is not linked to storage unless its identity is.
   </p>
 
+  <h2>Activity Log</h2>
+  <p>
+    After inventory is built, the scan lists administrative Activity Log events for the
+    subscription from the last 24 hours. The call uses the subscription time-range filter and
+    stops after four pages. A failed lookup omits <code>audit_events</code> and does not fail
+    the scan.
+  </p>
+  <p>
+    An event is kept when its operation is on a fixed management list (for example
+    <code>Microsoft.Compute/virtualMachines/write</code>,
+    <code>Microsoft.Storage/storageAccounts/write</code>,
+    <code>Microsoft.Network/networkSecurityGroups/securityRules/write</code>,
+    <code>Microsoft.Authorization/roleAssignments/write</code>) and its object id matches an
+    identity already in the batch. The resource has to sit on an exposed path: an
+    internet-reachable workload, a node that workload assumes or can access, a network that
+    workload affects, a public datastore, or an identity that can access a public datastore.
+    Resource ids are matched without regard to case. A security rule or firewall rule walks up
+    to the network or datastore node. A role assignment uses the assignment scope when the
+    assignment id is not itself a node. The same event is stored on the identity and the
+    resource, newest first, at most five per node.
+  </p>
+  <p>
+    <code>GET /v1/graph/query</code> and <code>om paths run</code> list those events in
+    <code>audits</code> when the resource node is on the returned path. The console prints the
+    same lines under the path. Entra ID sign-in logs and storage data-plane reads are not in
+    the Activity Log, so this slice does not collect them. GCP Cloud Audit Logs are not
+    collected.
+  </p>
+
   <h2>Read access</h2>
   <p>
-    The scan lists resource groups, virtual machines, storage accounts, blob containers, and role
-    assignments at the subscription and on each storage account. It reads network interfaces,
-    public IP addresses, and role definitions that are not in the built-in set above. A
-    subscription Reader covers the ARM calls. Listing containers also needs
+    The scan lists resource groups, virtual machines, storage accounts, blob containers, role
+    assignments at the subscription and on each storage account, and Activity Log events. It
+    reads network interfaces, public IP addresses, and role definitions that are not in the
+    built-in set above. A subscription Reader covers the ARM calls, including
+    <code>Microsoft.Insights/eventtypes/values/read</code>. Listing containers also needs
     <code>Microsoft.Storage/storageAccounts/blobServices/containers/read</code>. The collector
     does not call mutating APIs.
   </p>
