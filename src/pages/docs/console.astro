@@ -19,7 +19,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>What you can do</h2>
   <ul>
     <li>Read node and edge counts in the stats strip. Those numbers come from <code>GET /v1/graph/stats</code>.</li>
-    <li>Scan the findings list from <code>GET /v1/findings</code>. Each card shows severity, title, and the affected resource. Choosing a card highlights that node when it is in the current snapshot.</li>
+    <li>Scan the findings list from <code>GET /v1/findings</code>. Each card shows severity, title, and the affected resource. An attack-path card also prints the <code>path</code> node ids. Choosing a card highlights the affected resource when it is in the current snapshot.</li>
     <li>The dropdown loads every named query. On first paint it selects <code>internet-to-datastore</code> when that query exists, then draws those paths. Choose <strong>Full graph snapshot</strong> to call <code>GET /v1/graph/snapshot</code> instead (500 nodes and 2000 edges).</li>
     <li>A named query still uses the snapshot’s edge list to label each hop. If the connecting edge is past that 2000-edge cap, the hop is drawn as type <code>PATH</code> and any <code>reason</code> property is missing. The nodes themselves come from the query, not from the snapshot cap.</li>
     <li>Select an identity node to load <code>GET /v1/identity/blast-radius</code>. The panel shows the summary and the reachable nodes. See <a href="/docs/blast-radius/">Blast radius</a>. Other node types do not open that panel.</li>

@@ -55,7 +55,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td><code>Finding</code></td>
-          <td>CSPM or CVE result. <code>finding_type</code> is <code>cspm</code> or a CVE id is set.</td>
+          <td>CSPM, CVE, exposure, or attack-path result. <code>finding_type</code> is <code>cspm</code>, <code>cve</code>, <code>exposure</code>, or <code>attack_path</code>.</td>
         </tr>
         <tr>
           <td><code>Control</code></td>
@@ -128,7 +128,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         </tr>
         <tr>
           <td>Finding</td>
-          <td><code>{'finding:{rule-id}:{resource-node-id}'}</code></td>
+          <td><code>{'finding:{rule-id}:{resource-node-id}'}</code>. An attack-path finding is <code>{'finding:attack-path:{source-finding-id}:{datastore-id}'}</code>.</td>
         </tr>
         <tr>
           <td>Edge</td>

@@ -133,10 +133,12 @@ curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
     <a href="/docs/attack-paths/">Attack paths</a> for depth and row limits.
   </p>
   <p>
-    <code>GET /v1/findings</code> returns an array. Each item has <code>finding</code> (the node)
+    <code>GET /v1/findings</code> returns <code>findings</code> and, when another page remains,
+    <code>next_cursor</code>. Each item has <code>finding</code> (the node)
     plus <code>affected_resource_id</code>, <code>affected_resource_name</code>, and
-    <code>affected_resource_type</code> from the <code>VIOLATES</code> edge. Rows are ordered by
-    <code>normalized_score</code> descending. Default limit 200.
+    <code>affected_resource_type</code> from the <code>VIOLATES</code> edge. An attack-path
+    finding also includes <code>path</code>, the ordered node ids from the internet to the
+    datastore. Rows are ordered by <code>normalized_score</code> descending. Default limit 200.
   </p>
   <p>
     <code>POST /v1/rules/run</code> returns <code>matches</code> and <code>findings_created</code>.
@@ -163,7 +165,8 @@ curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
   <p>
     Failures are JSON <code>{`{"error":"..."}`}</code> with 400, 401, or 500. A missing or wrong
     secret on any <code>/v1</code> route except health is 401 <code>unauthorized</code>. Invalid JSON on ingest is 400
-    <code>invalid json body</code>. There is no request id and no pagination cursor. Raise
+    <code>invalid json body</code>. There is no request id. A list that has another page returns
+    <code>next_cursor</code>; pass it back as <code>cursor</code>. Raise
     <code>limit</code> when a list is truncated. There is no server-side maximum above the
     number you pass, except the fixed caps inside path queries, blast radius, and exports.
   </p>

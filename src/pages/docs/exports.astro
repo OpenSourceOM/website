@@ -49,7 +49,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 }`}</code></pre>
   <p>
     <code>affected_resource_*</code> comes from the <code>VIOLATES</code> edge. A finding with
-    no such edge still exports. Those three fields are omitted.
+    no such edge still exports. Those three fields are omitted. An attack-path finding also
+    includes <code>path</code>, the ordered node ids, both on the record and inside
+    <code>finding.properties</code>.
   </p>
 
   <h2>Slack</h2>

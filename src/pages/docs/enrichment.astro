@@ -124,7 +124,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>VIOLATES</code> edge. The finding id is
     <code>{'finding:{cve-id-lower}:{workload-id}'}</code>, so a second run overwrites the same
     row. The edge property <code>relationship</code> is <code>affects</code>. A later run does
-    not delete a CVE finding whose package has since left the workload.
+    not delete a CVE finding whose package has since left the workload. Enrichment does not
+    write attack-path findings. Run <code>om rules run</code> afterward so a new CVE on a
+    workload that can reach a datastore is paired with that datastore. See
+    <a href="/docs/attack-paths/">Attack paths</a>.
   </p>
   <ul>
     <li><code>finding_type</code> is <code>cve</code>.</li>

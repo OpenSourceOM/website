@@ -116,4 +116,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     and type. The API orders them by <code>normalized_score</code>, highest first, and the console
     shows that order.
   </p>
+  <p>
+    The <code>attack-path</code> rule does not use this table. It copies
+    <code>normalized_score</code> from the finding already on the workload and maps that score
+    through the bands above. A source with no score is stored as 75 (high). See
+    <a href="/docs/attack-paths/">Attack paths</a>.
+  </p>
 </DocsLayout>

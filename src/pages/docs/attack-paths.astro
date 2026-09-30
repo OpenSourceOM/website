@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM attack path queries"
-  description="The six named queries om paths run executes, from the internet through workloads to datastores, including datastores marked with sensitivity."
+  description="The six named attack-path queries, and the attack-path finding a rules run writes for a workload that can reach a datastore."
   faq={[
     {
       question: 'Which attack path queries does OpenSourceOM run?',
@@ -17,6 +17,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
       question: 'How do I run an attack path query?',
       answer:
         'After a scan, run om paths run internet-to-datastore. The same named queries are available from GET /v1/graph/query and from the console dropdown.',
+    },
+    {
+      question: 'When does a rules run write an attack-path finding?',
+      answer:
+        'After the control rules, om rules run writes one finding per existing finding on an internet-reachable workload that can reach a datastore. The finding stores the path as ordered node ids. GET /v1/findings returns that path on the row.',
     },
   ]}
   related={[
@@ -114,6 +119,58 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     identity that has <code>admin_access</code> and a <code>CAN_ACCESS</code> edge whose target is
     that datastore. Limit 50. The returned node list is the datastore, then the identity.
     <code>toxic-s3-public-with-admin-role</code> is an alias and is not listed.
+  </p>
+
+  <h2>Attack-path findings</h2>
+  <p>
+    Named queries answer a question you ask. <code>om rules run</code> and
+    <code>POST /v1/rules/run</code> also write the combination into the findings list. Control
+    rules run first. The <code>attack-path</code> rule then writes one finding for each existing
+    finding on an internet-reachable workload, paired with a datastore that workload can reach.
+  </p>
+  <p>
+    A workload is internet-reachable when a <code>REACHABLE</code> walk from
+    <code>internet:global</code> ends on it, with the same depth limit as
+    <code>internet-to-datastore</code> (recursion stops before depth 8). The source finding is a
+    <code>VIOLATES</code> edge whose target is that workload. Findings with
+    <code>finding_type: attack_path</code> are not sources, so the pass does not chain. Two
+    findings on the same workload produce two attack-path rows for the same datastore.
+  </p>
+  <p>
+    The workload reaches a datastore in either of two hops. A <code>CAN_ACCESS</code> edge from
+    the workload to the datastore is one. <code>ASSUMES</code> to an identity that itself has
+    <code>CAN_ACCESS</code> is the other. The demo path uses the second: Internet → sg-web →
+    web-1 → AdminRole → prod-db. When both hops reach the same datastore, the shorter path is
+    stored, which is the direct <code>CAN_ACCESS</code> edge. The finding description names the
+    source finding and the datastore, for example "Internet-exposed workload: web-1 is on a path
+    to prod-db."
+  </p>
+  <p>
+    <code>path</code> is that ordered list of node ids. The finding id is
+    <code>{'finding:attack-path:{source-finding-id}:{datastore-id}'}</code>.
+    <code>finding_type</code> is <code>attack_path</code>. <code>normalized_score</code> and
+    severity are copied from the source finding’s score, using the same bands as other rules. A
+    source with no score is stored as 75, severity high. The graph-context bonuses are not added
+    again. The <code>VIOLATES</code> edge points at the workload, so the findings list names that
+    workload as the affected resource. <code>datastore_id</code> and
+    <code>source_finding_id</code> are properties on the finding.
+  </p>
+  <p>
+    A reachable workload with no datastore hop does not get this finding. A hop whose workload
+    has no other finding does not either. Run <code>om rules run attack-path</code> on a graph
+    that has the edges and no findings, and the pass writes nothing.
+    <code>om rules run</code> with no id is different: <code>cspm-internet-workload</code> writes
+    a finding on every internet-reachable workload first, and the attack-path pass then pairs
+    that finding with each datastore the workload can reach. <code>sensitivity</code> does not
+    filter these rows. <code>internet-to-sensitive-datastore</code> remains the query that keeps
+    only marked datastores.
+  </p>
+  <p>
+    Re-running the rule deletes an attack-path finding whose hop or source finding is gone.
+    Other rules’ findings stay. <code>om enrich cve</code> does not write attack-path rows. Run
+    rules again after enrichment so a new CVE is paired with the datastore.
+    <code>GET /v1/findings</code> returns <code>path</code> on the row. The console prints those
+    ids on the card. SIEM export includes the same list.
   </p>
 
   <h2>Reading an empty result</h2>
