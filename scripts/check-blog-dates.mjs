@@ -6,7 +6,7 @@
  * pubDate on new posts). Sitemap lastmod is derived from those fields.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { frontmatterDate, frontmatterFlag } from './content-dates.mjs';
 
 const base = process.env.BLOG_DATE_BASE_SHA ?? '';
@@ -58,6 +58,8 @@ if (!base) {
 const problems = [];
 
 for (const path of changedBlogFiles()) {
+  // Deletions are not indexed edits. A missing file has no lastmod to bump.
+  if (!existsSync(path)) continue;
   const nextFm = readFileSync(path, 'utf8').split('---')[1] ?? '';
   if (frontmatterFlag(nextFm, 'noindex') || frontmatterFlag(nextFm, 'draft')) continue;
 
