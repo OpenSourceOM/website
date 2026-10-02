@@ -2,7 +2,7 @@
 title: "AWS Resource Control Policies (RCPs) vs SCPs"
 description: "AWS resource control policies are Organizations resource-based guardrails: they cap what any caller—including principals outside the org—can do to member-account resources. SCP vs RCP vs IAM, a public-S3 deny, sandbox OU tests."
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-10-02
 author: OpenSourceOM Team
 tags:
   - AWS
@@ -61,7 +61,7 @@ They **do not** apply to:
 - **AWS managed KMS keys**
 - `kms:RetireGrant` (special-cased)
 
-When you enable RCPs, AWS attaches `RCPFullAWSAccess` (allow all through the RCP layer) to root, OUs, and accounts. Removing that without a replacement is how you freeze S3.
+When you enable RCPs, AWS attaches `RCPFullAWSAccess` (allow all through the RCP layer) to root, OUs, and accounts, and does not let you detach it. A custom RCP Allow therefore does not narrow the account. Narrowing is a Deny, and that Deny is decided before any Allow — [SCP vs RCP evaluation order](/blog/aws-scp-rcp-evaluation-order/).
 
 ## SCP vs RCP vs IAM
 
@@ -130,7 +130,7 @@ Remaining public-or-cross-account edges after RCP belong on [attack path analysi
 
 ## Checklist
 
-- [ ] Policy type `RESOURCE_CONTROL_POLICY` enabled; `RCPFullAWSAccess` left in place
+- [ ] Policy type `RESOURCE_CONTROL_POLICY` enabled; custom statements are Deny, because `RCPFullAWSAccess` cannot be detached
 - [ ] First Deny attached to a sandbox OU/account, not the org root
 - [ ] External-account GetObject test **fails**; in-org app role GetObject **succeeds**
 - [ ] `aws:PrincipalIsAWSService` exception verified with Trail/Config

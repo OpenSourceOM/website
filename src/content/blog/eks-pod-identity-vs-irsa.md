@@ -2,7 +2,7 @@
 title: "EKS Pod Identity vs IRSA"
 description: "EKS Pod Identity binds an IAM role to a namespace and service account. Trust policy, leftover IRSA annotations, and an agent that fails closed."
 pubDate: 2026-09-25
-updatedDate: 2026-09-25
+updatedDate: 2026-10-02
 author: OpenSourceOM Team
 tags:
   - EKS
@@ -78,7 +78,7 @@ Behavior and the trust-policy shape are documented in [EKS Pod Identity](https:/
 
 The association is what EKS will attempt. The request-tag conditions are what stop a second association from reusing this role: EKS sets `kubernetes-namespace` and `kubernetes-service-account` on the assume. `aws:SourceArn` stops a different cluster. Without the tags, any service account in `payments` that someone can associate will get the role. Treat `eks:CreatePodIdentityAssociation` and `eks:DeletePodIdentityAssociation` like `iam:PassRole`: cluster-admin and CI only, not every namespace developer. Session tags can be turned off on an association; if you disable them, these request-tag conditions stop matching and the assume fails. Leave tags on.
 
-IRSA’s trust looks nothing like this. It is `AssumeRoleWithWebIdentity` against `oidc.eks.<region>.amazonaws.com/id/<id>` with `sub` = `system:serviceaccount:payments:payments-api`. Reusing that document for Pod Identity fails closed. Leaving it in place beside the new trust is how one role stays assumable two ways.
+IRSA’s trust looks nothing like this. It is `AssumeRoleWithWebIdentity` against `oidc.eks.<region>.amazonaws.com/id/<id>` with `sub` = `system:serviceaccount:payments:payments-api` and `:aud` = `sts.amazonaws.com`. What that `aud` condition does and does not pin is [IRSA trust policy aud](/blog/irsa-trust-policy-aud/). Reusing the IRSA document for Pod Identity fails closed. Leaving it in place beside the new trust is how one role stays assumable two ways.
 
 ## What IRSA still is
 

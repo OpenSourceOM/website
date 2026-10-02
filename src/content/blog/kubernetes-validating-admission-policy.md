@@ -2,7 +2,7 @@
 title: "Kubernetes ValidatingAdmissionPolicy: CEL vs Webhooks"
 description: "In-process CEL for deny-only checks; keep Kyverno or Gatekeeper for mutation. FailurePolicy Fail vs Ignore, parameter resources, and 1.30+ GA."
 pubDate: 2026-08-27
-updatedDate: 2026-09-22
+updatedDate: 2026-10-02
 author: OpenSourceOM Team
 tags:
   - Kubernetes
@@ -108,16 +108,16 @@ Docs: [ValidatingAdmissionPolicy](https://kubernetes.io/docs/reference/access-au
 | Need | VAP (CEL) | Kyverno / Gatekeeper |
 | --- | --- | --- |
 | Deny privileged / hostPath / latest | Yes, in-process | Yes, extra hop |
-| Mutate (add RuntimeDefault, drop caps) | **No** (use MutatingAdmissionPolicy in 1.32+ or a webhook) | Yes |
+| Mutate (add RuntimeDefault, drop caps) | `MutatingAdmissionPolicy` is GA in 1.36; older clusters still need a webhook | Yes |
 | Generate NetworkPolicy from a label | No | Kyverno generate |
 | Query other resources (“does the SA exist?”) | Limited (params, not cluster walk) | Gatekeeper referential |
 | Cosign verifyImages | No | Kyverno / custom |
 | Policy language your team already writes | CEL | YAML/Rego |
 | Availability | API server (always) | Your Deployment |
 
-Keep Gatekeeper/Kyverno when you already have fifty Rego constraints and no budget to rewrite, or when you **mutate**. Do not add a webhook for `privileged == false`. That check belongs in VAP so a webhook outage cannot fail open unless you configured it that way.
+Keep Gatekeeper/Kyverno when you already have fifty Rego constraints and no budget to rewrite, or when you **mutate** on a cluster older than 1.36. Do not add a webhook for `privileged == false`. That check belongs in VAP so a webhook outage cannot fail open unless you configured it that way.
 
-MutatingAdmissionPolicy (CEL mutations) is the native follow-on. Until it is everywhere you run, a small Kyverno install for *mutations only* plus VAP for *denies* is a coherent split. One engine that does both is also fine; two engines that both deny the same pod is how you debug for a week.
+Which engine owns generate, image verify, background reports, and apply-time rejection of Deployments is [Kyverno vs ValidatingAdmissionPolicy](/blog/kyverno-vs-validating-admission-policy/). `MutatingAdmissionPolicy` is GA in 1.36. On older clusters, a small Kyverno install for mutations plus VAP for denies is the split. Two engines that both deny the same pod is how you debug for a week.
 
 Latency: webhooks add network RTT on every Pod create. VAP runs in the apiserver process. That is the operational argument, not a religion.
 

@@ -2,7 +2,7 @@
 title: "Azure Landing Zone Deny Assignments That Block Owners"
 description: "CAF-style deny assignments vs Policy Deny, platform vs app landing zones, break-glass, and debugging “I am Owner but cannot delete.”"
 pubDate: 2026-08-27
-updatedDate: 2026-08-27
+updatedDate: 2026-10-02
 author: OpenSourceOM Team
 tags:
   - Azure
@@ -91,6 +91,7 @@ Patterns that work:
 - **Deployment stack** at the platform subscription with `denySettings.mode = denyDelete` (or `denyWriteAndDelete`) on the stack’s resources. Azure creates a deny assignment owned by the stack.
 - **Managed application** for a marketplace/platform offering; the publisher identity is excluded, everyone else is denied on the managed RG.
 - **ALZ / CAF accelerator** artifacts that drop deny assignments so subscription Owners cannot remove diagnostic settings or move the subscription out of the MG (depending on version—read **your** deployed JSON, not a 2022 blog post).
+- **Blueprint locks** (`AllResourcesDoNotDelete`, `AllResourcesReadOnly`). Those denies are removed when Blueprints retires on 31 January 2027. Replacing them with a deployment stack is [blueprint locks](/blog/azure-blueprint-locks-deny-assignments/).
 
 Patterns that hurt:
 
@@ -148,4 +149,4 @@ When the deny is working as designed, the answer to the ticket is: move the work
 - [ ] Policy Deny still used for public IPs / locations on app MGs ([Azure CSPM](/blog/azure-cspm-implementation-guide/))
 - [ ] Locks vs deny assignments distinguished in the debug tree
 
-**Related:** [Azure CSPM implementation](/blog/azure-cspm-implementation-guide/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/)
+**Related:** [Blueprint locks](/blog/azure-blueprint-locks-deny-assignments/) · [Azure CSPM implementation](/blog/azure-cspm-implementation-guide/) · [CIEM explained](/blog/ciem-explained-for-cloud-teams/)
