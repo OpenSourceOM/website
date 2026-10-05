@@ -34,6 +34,16 @@ ignore:
           only reached through ajv 6 inside @vercel/routing-utils, which
           validates routing config at build time.
         expires: 2026-12-21T00:00:00.000Z
+  SNYK-JS-ZOD-20510278:
+    - '*':
+        reason: >-
+          No patched zod release exists (affected through 4.6.5). The issue is
+          unbounded issue objects when an unconstrained array schema parses a
+          huge failing array. This site does not parse request bodies with zod.
+          The copies are Astro and @astrojs/sitemap at build time, and
+          @vercel/cli-config, which only reads local CLI config and has no
+          array fields.
+        expires: 2027-01-05T00:00:00.000Z
   'snyk:lic:npm:@vercel/analytics:MPL-2.0':
     - '*':
         reason: MPL-2.0 is compatible with Apache-2.0 for unmodified npm dependencies.
