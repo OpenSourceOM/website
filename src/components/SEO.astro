@@ -38,8 +38,8 @@ const metaDescription =
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
 const ogImageType = imageMimeType(ogImage);
-const ogImageWidth = ogImage === '/og-image.png' ? 1200 : undefined;
-const ogImageHeight = ogImage === '/og-image.png' ? 630 : undefined;
+const ogImageWidth = ogImage === '/og-image.png' ? '1200' : undefined;
+const ogImageHeight = ogImage === '/og-image.png' ? '630' : undefined;
 const resolvedOgImageAlt = ogImageAlt ?? fullTitle;
 
 function imageMimeType(path: string): string | undefined {
