@@ -21,6 +21,8 @@ const blogDeck = description.endsWith('...')
   : description;
 
 const canonical = new URL(`/blog/${post.id}/`, Astro.site).href;
+const imageVersion = (updatedDate ?? pubDate)?.toISOString().slice(0, 10);
+const ogImage = `/og/${post.id}.png${imageVersion ? `?v=${imageVersion}` : ''}`;
 
 const articleJsonLd: Record<string, unknown> = {
   '@context': 'https://schema.org',
@@ -66,6 +68,8 @@ const viewBlogSourceUrl = `https://github.com/${websiteRepo}/blob/main/${blogSou
   title={title}
   description={description}
   ogType="article"
+  ogImage={ogImage}
+  ogImageAlt={title}
   canonical={canonical}
   jsonLd={structuredData}
   noindex={noindex}

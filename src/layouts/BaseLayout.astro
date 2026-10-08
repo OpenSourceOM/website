@@ -12,6 +12,8 @@ interface Props {
   title: string;
   description: string;
   ogType?: 'website' | 'article';
+  ogImage?: string;
+  ogImageAlt?: string;
   canonical?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   noindex?: boolean;
@@ -23,6 +25,8 @@ const {
   title,
   description,
   ogType,
+  ogImage,
+  ogImageAlt,
   canonical,
   jsonLd,
   noindex = false,
@@ -39,6 +43,8 @@ const {
       title={title}
       description={description}
       ogType={ogType}
+      ogImage={ogImage}
+      ogImageAlt={ogImageAlt}
       canonical={canonical}
       jsonLd={jsonLd}
       noindex={noindex}

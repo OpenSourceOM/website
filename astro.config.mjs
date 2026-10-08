@@ -22,7 +22,7 @@ export default defineConfig({
       filter: (page) => {
         try {
           const pathname = new URL(page).pathname;
-          if (pathname === '/rss.xml') return false;
+          if (pathname === '/rss.xml' || pathname.startsWith('/og/')) return false;
           return !noindexBlogPages.has(pathname);
         } catch {
           return true;
@@ -45,6 +45,11 @@ export default defineConfig({
   markdown: {
     shikiConfig: {
       theme: 'github-dark',
+    },
+  },
+  vite: {
+    ssr: {
+      external: ['satori', '@resvg/resvg-js'],
     },
   },
 });
