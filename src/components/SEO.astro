@@ -37,9 +37,11 @@ const metaDescription =
     : description;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
+const ogImagePath = ogImage.split('?')[0];
 const ogImageType = imageMimeType(ogImage);
-const ogImageWidth = ogImage === '/og-image.png' ? '1200' : undefined;
-const ogImageHeight = ogImage === '/og-image.png' ? '630' : undefined;
+const isStandardCard = ogImagePath === '/og-image.png' || ogImagePath.startsWith('/og/');
+const ogImageWidth = isStandardCard ? '1200' : undefined;
+const ogImageHeight = isStandardCard ? '630' : undefined;
 const resolvedOgImageAlt = ogImageAlt ?? fullTitle;
 
 function imageMimeType(path: string): string | undefined {
