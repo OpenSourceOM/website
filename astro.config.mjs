@@ -22,7 +22,7 @@ export default defineConfig({
       filter: (page) => {
         try {
           const pathname = new URL(page).pathname;
-          if (pathname === '/rss.xml' || pathname.startsWith('/og/')) return false;
+          if (pathname === '/rss.xml' || pathname === '/410.html' || pathname.startsWith('/og/')) return false;
           return !noindexBlogPages.has(pathname);
         } catch {
           return true;

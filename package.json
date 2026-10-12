@@ -9,10 +9,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/apply-removed-blog-routes.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test:dates": "node --test scripts/content-dates.test.mjs",
+    "test:removed-blog": "node --test scripts/removed-blog.test.mjs",
     "check:blog-dates": "node scripts/check-blog-dates.mjs",
     "verify:sitemap": "node scripts/verify-sitemap-lastmod.mjs"
   },
