@@ -36,6 +36,9 @@ jobs:
       - name: Test lastmod helpers
         run: npm run test:dates
 
+      - name: Test removed blog routes
+        run: npm run test:removed-blog
+
       - name: Require updatedDate on indexed blog edits
         if: github.event_name == 'pull_request'
         env:
