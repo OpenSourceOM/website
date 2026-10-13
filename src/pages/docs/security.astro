@@ -26,7 +26,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>, and
     <code>POST /v1/auth/logout</code> do not check the secret.
     <code>GET /v1/admins</code>, <code>POST /v1/admins/invites</code>, and
-    <code>DELETE /v1/admins/{id}</code> require a console session. The API secret cannot mint
+    <code>DELETE /v1/admins/{'{id}'}</code> require a console session. The API secret cannot mint
     admins. The console HTML at <code>/</code>, <code>/login</code>, and <code>/setup/</code>
     loads without a session so the sign-in page can render. See <a href="/docs/console/">Console</a>.
   </p>
