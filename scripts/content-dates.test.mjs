@@ -37,7 +37,9 @@ test('indexed blogs have lastmod and /blog/ uses the newest', () => {
   const lastmodByPath = buildLastmodByPath();
   const newest = entries.reduce((acc, entry) => maxIsoDate(acc, entry.lastmod), '1970-01-01');
   assert.equal(lastmodByPath.get('/blog/'), newest);
-  assert.equal(lastmodByPath.get('/'), '2026-08-24');
+  assert.equal(lastmodByPath.get('/'), '2026-10-13');
+  assert.equal(lastmodByPath.get('/self-hosted-cnapp/'), '2026-10-13');
+  assert.equal(lastmodByPath.get('/prowler-alternative/'), '2026-10-13');
 
   const sample = entries.find((entry) => entry.slug === 'agentless-vs-agent-cloud-security');
   assert.ok(sample);

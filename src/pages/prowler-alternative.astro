@@ -1,0 +1,268 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const faq = [
+  {
+    question: 'Is OpenSourceOM a Prowler alternative?',
+    answer:
+      'For a ranked queue, yes. Prowler reports which controls failed, and that catalog is larger. OpenSourceOM scores each CSPM finding in the same run: internet reachability, a path to a datastore, and admin access, across AWS, Azure, GCP, and Kubernetes in one Postgres graph. If the deliverable is the compliance workbook, keep Prowler.',
+  },
+  {
+    question: 'Does Prowler have attack paths?',
+    answer:
+      'Prowler App does, for AWS. After an AWS scan it loads inventory with Cartography into Neo4j or Neptune, attaches finding nodes, and runs openCypher queries for exposure, misconfigurations, and privilege escalation. Other providers are planned. OpenSourceOM ships six named walks in the same Postgres database as the findings, including internet-to-datastore, on AWS, Azure, GCP, and Kubernetes.',
+  },
+  {
+    question: 'Can OpenSourceOM import a Prowler report?',
+    answer:
+      'No. Scans use the OpenSourceOM collectors. A Prowler report is not an input. The two tools can run side by side: Prowler for the control catalog, OpenSourceOM for the path score.',
+  },
+  {
+    question: 'Which tool has more compliance checks?',
+    answer:
+      'Prowler. Its catalog covers thousands of controls across AWS, Azure, GCP, Kubernetes, and other providers, mapped to CIS and other frameworks. OpenSourceOM’s CSPM catalog is smaller. The difference is that each OpenSourceOM finding is scored from the graph in the same run.',
+  },
+];
+
+const pageTitle = 'Prowler alternative: Prowler vs OpenSourceOM';
+const description =
+  'OpenSourceOM is a Prowler alternative when the queue should be ranked by attack path. Prowler vs OpenSourceOM: checks, graphs, and when to keep both.';
+const canonical = new URL('/prowler-alternative/', Astro.site).href;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: pageTitle,
+    description,
+    url: canonical,
+    isPartOf: { '@type': 'WebSite', name: 'OpenSourceOM', url: Astro.site?.href },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout title={pageTitle} description={description} jsonLd={jsonLd}>
+  <section class="section page">
+    <div class="container">
+      <p class="eyebrow">Prowler alternative</p>
+      <h1 class="section-title">Prowler vs OpenSourceOM</h1>
+      <div class="prose">
+        <p>
+          People searching for a <strong>Prowler alternative</strong> usually have the findings list
+          and want the next question answered: which failure can an outsider walk to a datastore?
+          <a href="https://github.com/prowler-cloud/prowler">Prowler</a> is the check catalog.
+          OpenSourceOM is the self-hosted graph that scores a finding because it sits on a path.
+          This page is an independent comparison. Prowler is a separate project.
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Aspect</th>
+              <th scope="col">Prowler</th>
+              <th scope="col">OpenSourceOM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Question</th>
+              <td>Which controls failed on this resource?</td>
+              <td>Which finding sits on a path from the internet to data?</td>
+            </tr>
+            <tr>
+              <th scope="row">Output</th>
+              <td>A findings list, mapped to CIS and other frameworks.</td>
+              <td>A queue scored in the same run as the scan.</td>
+            </tr>
+            <tr>
+              <th scope="row">Catalog</th>
+              <td>Thousands of checks across AWS, Azure, GCP, Kubernetes, and other providers.</td>
+              <td>A smaller CSPM catalog. Each finding is scored from the graph.</td>
+            </tr>
+            <tr>
+              <th scope="row">Attack paths</th>
+              <td>
+                Prowler App, after an AWS scan: Cartography into Neo4j or Neptune, then openCypher.
+                Other providers are planned.
+              </td>
+              <td>
+                Six named walks in the same Postgres graph.
+                <code>internet-to-datastore</code> sorts the queue on AWS, Azure, GCP, and Kubernetes.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Score</th>
+              <td>Pass or fail on the check. The finding is stored beside the scan.</td>
+              <td>
+                Base score, then +10 for internet reachability, +25 for a path to a datastore, and +5
+                for admin access, capped at 100.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Where it runs</th>
+              <td>The CLI and Prowler App can be self-hosted. Prowler Cloud is their SaaS.</td>
+              <td>Self-hosted only. Postgres, the API, the CLI, and the console. Apache-2.0.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h2 id="what-prowler-is-for">What Prowler is for</h2>
+        <p>
+          <a href="https://github.com/prowler-cloud/prowler">Prowler</a> answers the compliance
+          question. Each result is a control, a resource, and a pass or fail, mapped to CIS and the
+          other frameworks. That workbook is why teams run it, and the catalog is larger than
+          OpenSourceOM’s. Both projects are Apache-2.0. The license is not the difference.
+        </p>
+        <p>
+          Prowler App can go further after an AWS scan. It loads inventory with Cartography into
+          Neo4j or Neptune, attaches finding nodes, and lets you
+          <a href="https://docs.prowler.com/user-guide/tutorials/prowler-app-attack-paths">query attack paths</a>
+          in openCypher: exposure, misconfigurations, and privilege-escalation chains.
+          <a href="https://docs.prowler.com/user-guide/tutorials/prowler-app-attack-paths">Attack Paths is AWS today</a>.
+          Support for other providers is planned. The finding is still a check result. The graph is
+          a second database you query, and the check itself is not rescored by the path.
+        </p>
+
+        <h2 id="what-opensourceom-changes">What OpenSourceOM changes</h2>
+        <p>
+          OpenSourceOM is the alternative when the score should come from the path in the same run.
+          A rule starts from a base score.
+          <a href="/docs/prioritization/">Internet reachability adds 10, a path to a datastore adds 25, and admin access adds 5</a>,
+          capped at 100. A public bucket on a path to data outranks the same rule on an isolated
+          bucket. AWS, Azure, GCP, and Kubernetes land in one Postgres graph.
+        </p>
+        <p>
+          The walks are named.
+          <a href="/docs/attack-paths/"><code>om paths list</code> prints six names</a>.
+          The one that sorts a weekly queue is <code>internet-to-datastore</code>: from the internet,
+          through a workload, ending on a datastore. There is no query language. A question you still
+          have to write in Cypher belongs in Prowler App or
+          <a href="/self-hosted-cnapp/">Cartography</a>.
+        </p>
+        <p>
+          Scans use the OpenSourceOM collectors. A Prowler report is not an input. You operate
+          Postgres, the API, the CLI, and the console. Runtime agents, SAML, and multi-tenant RBAC
+          sit <a href="/docs/open-source/">outside the open-source core</a>.
+        </p>
+
+        <h2 id="which-to-run">Which to run</h2>
+        <ul>
+          <li>A compliance workbook with hundreds of controls: Prowler.</li>
+          <li>openCypher over an AWS inventory after the scan: Prowler App attack paths.</li>
+          <li>
+            Which cloud finding sits on a path from the internet to data, on a host you operate:
+            <a href="/docs/getting-started/">OpenSourceOM</a>.
+          </li>
+        </ul>
+        <p>
+          They can run beside each other. Prowler keeps the framework mapping. OpenSourceOM keeps
+          the ranked queue.
+        </p>
+        <p>
+          Cartography and BloodHound answer different questions again. That three-tool map is the
+          <a href="/self-hosted-cnapp/">self-hosted CNAPP</a> page.
+        </p>
+        <p>
+          <a class="btn btn-primary" href="/docs/getting-started/">Get started</a>
+        </p>
+      </div>
+
+      <div class="prose faq">
+        <h2>Questions</h2>
+        {
+          faq.map((item) => (
+            <div>
+              <h3>{item.question}</h3>
+              <p>{item.answer}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-top: 3.5rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .page .section-title {
+    max-width: 16em;
+  }
+
+  .table-wrap {
+    margin: 0 0 0.5rem;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  table {
+    width: 100%;
+    min-width: 46rem;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  th,
+  td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    color: var(--text);
+    background: var(--bg-elevated);
+    font-weight: 600;
+  }
+
+  tbody th {
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  td {
+    color: var(--text-muted);
+  }
+
+  tr:last-child th,
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .faq {
+    margin-top: 1rem;
+  }
+
+  .prose :global(.btn) {
+    margin-top: 0.5rem;
+  }
+</style>

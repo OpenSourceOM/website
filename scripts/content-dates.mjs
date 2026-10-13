@@ -19,10 +19,12 @@ const DATE_RE = /^(\d{4}-\d{2}-\d{2})/;
 
 /** @type {Record<string, string>} */
 export const STATIC_LASTMOD = {
-  '/': '2026-08-24',
+  '/': '2026-10-13',
+  '/self-hosted-cnapp/': '2026-10-13',
+  '/prowler-alternative/': '2026-10-13',
   '/contact/': '2026-08-26',
   '/docs/': '2026-09-28',
-  '/docs/getting-started/': '2026-09-28',
+  '/docs/getting-started/': '2026-10-13',
   '/docs/configuration/': '2026-09-28',
   '/docs/the-graph/': '2026-09-28',
   '/docs/schema/': '2026-09-28',
@@ -46,7 +48,7 @@ export const STATIC_LASTMOD = {
   '/docs/docker/': '2026-09-28',
   '/docs/kubernetes/': '2026-09-28',
   '/docs/security/': '2026-09-28',
-  '/docs/open-source/': '2026-09-28',
+  '/docs/open-source/': '2026-10-13',
 };
 
 /**
