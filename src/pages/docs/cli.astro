@@ -11,7 +11,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h1>OpenSourceOM CLI</h1>
   <p>
     The <code>om</code> binary talks to Postgres directly. Scans, rules, queries, and exports do
-    not go through the HTTP API, so they do not send <code>OM_API_SECRET</code>. Build it from
+    not go through the HTTP API, so they do not send a personal API token. Build it from
     the core repo with <code>go build -o om ./cmd/om</code>, or use a release archive.
   </p>
   <p>

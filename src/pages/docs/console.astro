@@ -42,15 +42,17 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     See <a href="/docs/configuration/">Configuration</a>.
   </p>
   <p>
-    On an install with no admin, the API log prints a one-time setup link. Open that link and
-    finish sign-in. That account becomes the admin. Restarting the API before anyone uses the
-    link replaces it; use the latest line. An admin can create another setup link from the
-    <strong>Admins</strong> panel. The link expires after 72 hours. Every signed-in account is an
-    admin, and the last admin cannot be removed.
+    The first successful Google or GitHub sign-in becomes the admin. Keep the API port private
+    until that happens. An admin invites the next person by email from the
+    <strong>Admins</strong> panel. Sending an invite needs SMTP. The invited person opens the
+    link and signs in with the Google or GitHub account for that address. The invite expires
+    after 72 hours. Every signed-in account is an admin, and the last admin cannot be removed.
   </p>
   <p>
-    The browser keeps an httpOnly session cookie for 7 days. Collectors and <code>curl</code>
-    still send <code>OM_API_SECRET</code>. That secret cannot create or remove admins.
+    The browser keeps an httpOnly session cookie for 7 days. Creating an admin also creates a
+    personal API token. The console shows it once. Scripts send that token as
+    <code>Authorization: Bearer</code> or <code>X-API-Key</code>. The token cannot invite or
+    remove admins. Rotate it from the same panel when you need a new one.
   </p>
 
   <h2>Run CSPM rules from the browser</h2>

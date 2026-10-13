@@ -67,7 +67,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     The API posts the same digest:
   </p>
-  <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_TOKEN" \\
   -H 'Content-Type: application/json' \\
   -d '{"webhook":"https://hooks.slack.com/services/..."}' \\
   http://localhost:8080/v1/export/slack`}</code></pre>

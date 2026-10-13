@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM security model"
-  description="How the API secret and console sessions protect /v1, why the API stays on a private network, and how to report bugs."
+  description="How personal API tokens and console sessions protect /v1, why the API stays on a private network, and how to report bugs."
 >
   <h1>OpenSourceOM security model</h1>
   <p>
@@ -14,44 +14,47 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     IAM relationships, and findings. Protect Postgres and the API the way you protect that data.
   </p>
 
-  <h2>API secret</h2>
+  <h2>Personal API tokens</h2>
   <p>
-    <code>OM_API_SECRET</code> defaults to <code>change-me-in-production</code> when the variable
-    is unset or empty. Graph and ingest routes require
-    <code>Authorization: Bearer &lt;secret&gt;</code>, <code>X-API-Key: &lt;secret&gt;</code>, or
+    Each admin has a personal API token. The console shows the raw value once, after the account
+    is created or after a rotation. Graph and ingest routes require
+    <code>Authorization: Bearer &lt;token&gt;</code>, <code>X-API-Key: &lt;token&gt;</code>, or
     a console session cookie. That includes graph reads, findings, the rules list, blast radius,
-    ingest, rules run, and Slack export. A missing or wrong credential is 401.
+    ingest, rules run, and Slack export. A missing or wrong credential is 401. There is no shared
+    secret and no open mode.
   </p>
   <p>
     <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>, and
-    <code>POST /v1/auth/logout</code> do not check the secret.
-    <code>GET /v1/admins</code>, <code>POST /v1/admins/invites</code>, and
-    <code>DELETE /v1/admins/{'{id}'}</code> require a console session. The API secret cannot mint
-    admins. The console HTML at <code>/</code>, <code>/login</code>, and <code>/setup/</code>
-    loads without a session so the sign-in page can render. See <a href="/docs/console/">Console</a>.
+    <code>POST /v1/auth/logout</code> do not check a token.
+    <code>GET /v1/admins</code>, <code>POST /v1/admins/invites</code>,
+    <code>POST /v1/admins/token</code>, and
+    <code>DELETE /v1/admins/{'{id}'}</code> require a console session. A personal token cannot
+    mint or remove admins. The console HTML at <code>/</code>, <code>/login</code>, and
+    <code>/invite/</code> loads without a session so the sign-in page can render. See
+    <a href="/docs/console/">Console</a>.
   </p>
   <p>
-    Change the secret before anyone else can reach the port. Helm refuses to install until
-    <code>api.secret</code> is set. The CLI never sends this header. Anyone who can open a local
-    shell as a user with database credentials can scan and export without it.
+    Keep the API port private until the first admin exists. Whoever can open it first can become
+    that admin. The CLI never sends this header. Anyone who can open a local shell as a user
+    with database credentials can scan and export without a token.
   </p>
   <p>
-    The secret is the machine credential. People use Google or GitHub. Do not publish the
-    Service to the internet. Put it on a private network or behind a gateway you operate.
+    People use Google or GitHub. Scripts use a personal token. Do not publish the Service to
+    the internet. Put it on a private network or behind a gateway you operate.
   </p>
 
   <h2>Console admins</h2>
   <p>
-    Google and GitHub are the only human logins. Every account is an admin. The first account
-    is whoever finishes the setup link printed in the API logs, so do not leave that link where
-    other people can open it. Later admins are whoever finishes a link an existing admin creates.
+    Google and GitHub are the only human logins. Every account is an admin. The first successful
+    sign-in becomes the admin. Later admins open an email invite and sign in with the Google or
+    GitHub account for the invited address. A verified email from the provider must match.
     Sessions are httpOnly cookies. The cookie is marked <code>Secure</code> when
     <code>OM_PUBLIC_URL</code> uses <code>https</code>.
   </p>
   <p>
-    OAuth client secrets are deployment secrets, next to <code>OM_API_SECRET</code>. The API
-    must be able to reach Google or GitHub over HTTPS. An air-gapped console cannot sign anyone
-    in with this build.
+    OAuth client secrets and the SMTP password are deployment secrets. The API must be able to
+    reach Google or GitHub over HTTPS, and your mail server when you invite another admin. An
+    air-gapped console cannot sign anyone in with this build.
   </p>
 
   <h2>Collectors</h2>

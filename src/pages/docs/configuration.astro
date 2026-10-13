@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Configure OpenSourceOM"
-  description="Environment variables for the OpenSourceOM CLI, API secret, Postgres, NVD, and AWS, Azure, GCP, and Kubernetes collectors."
+  description="Environment variables for the OpenSourceOM CLI, console login, SMTP, Postgres, NVD, and AWS, Azure, GCP, and Kubernetes collectors."
 >
   <h1>Configure OpenSourceOM</h1>
   <p>
@@ -45,7 +45,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td><code>OM_PUBLIC_URL</code></td>
           <td><code>http://localhost:8080</code></td>
-          <td>Browser origin for OAuth callbacks and setup links. No trailing path.</td>
+          <td>Browser origin for OAuth callbacks and invite links. No trailing path.</td>
         </tr>
         <tr>
           <td><code>OM_API_PORT</code></td>
@@ -53,9 +53,14 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td><code>om serve</code></td>
         </tr>
         <tr>
-          <td><code>OM_API_SECRET</code></td>
-          <td><code>change-me-in-production</code></td>
-          <td>Machine credential for <code>/v1</code> routes. The console uses a session instead. See <a href="/docs/security/">Security</a>.</td>
+          <td><code>OM_SMTP_HOST</code> / <code>OM_SMTP_PORT</code> / <code>OM_SMTP_FROM</code></td>
+          <td>empty / <code>587</code> / empty</td>
+          <td>Required to email an admin invite. The message contains the link, not a token.</td>
+        </tr>
+        <tr>
+          <td><code>OM_SMTP_USERNAME</code> / <code>OM_SMTP_PASSWORD</code></td>
+          <td>empty</td>
+          <td>Optional SMTP authentication. Set both when the server requires a login.</td>
         </tr>
         <tr>
           <td><code>OM_GOOGLE_CLIENT_ID</code> / <code>OM_GOOGLE_CLIENT_SECRET</code></td>
