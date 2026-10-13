@@ -2,7 +2,7 @@
 title: "Open Source CSPM and CNAPP Tools in 2026: What Exists Today"
 description: "Survey of open source CSPM, self-hosted CNAPP alternatives, and graph-native cloud security tools in 2026 — plus how to evaluate self-hosted options for your team."
 pubDate: 2026-08-24
-updatedDate: 2026-08-24
+updatedDate: 2026-10-13
 author: OpenSourceOM Team
 tags:
   - open source CSPM
@@ -43,7 +43,7 @@ No single mature OSS project clones every proprietary CNAPP feature yet. Instead
 | Project / category | Strength | Gap vs. CNAPP |
 |--------------------|----------|----------------|
 | Policy engines (OPA, Cloud Custodian) | Flexible policy-as-code | No unified graph or path analysis |
-| Multi-cloud scanners (Prowler, ScoutSuite) | Broad AWS/Azure/GCP checks | Flat findings lists |
+| Multi-cloud scanners (Prowler, ScoutSuite) | Broad AWS/Azure/GCP checks | Findings lists. Prowler App can add an AWS attack-path graph via Cartography |
 | IaC scanners (Checkov, tfsec) | Shift-left | Pre-deploy only |
 
 These are excellent for **misconfiguration detection** — the CSPM layer — but they rarely answer *"Which of these 500 findings sits on a path to prod data?"*
@@ -69,7 +69,7 @@ The differentiator for **self-hosted CNAPP**-like experiences is the **security 
 | Finding enrichment | CVEs and misconfigs on graph nodes |
 | Path queries | Prioritize by attack path, not severity |
 
-**[OpenSourceOM](https://opensourceom.org)** is building this layer openly: collectors, graph engine, CSPM rules with path context, Apache-2.0 licensed, self-hosted. Status: early development — see [roadmap on GitHub](https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md).
+**[OpenSourceOM](/prowler-alternative/)** is that layer, self-hosted and Apache-2.0: collectors, a Postgres graph, and CSPM rules scored by path. [Prowler vs OpenSourceOM](/prowler-alternative/) is the Prowler alternative comparison. Cartography and BloodHound are on [self-hosted CNAPP](/self-hosted-cnapp/). Phase 3 has shipped — see the [roadmap on GitHub](https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md).
 
 ## Proprietary CNAPP vs. open source stack
 
@@ -112,19 +112,17 @@ Promises vs. shipped features — especially for attack path and UI.
 
 ## Reference architecture: composable OSS cloud security
 
+Prowler and OpenSourceOM stay separate tools. OpenSourceOM does not ingest a Prowler report.
+
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│ CSPM scanner    │────▶│ Graph / normalizer│────▶│ Path queries +  │
-│ (Prowler, etc.) │     │ (OpenSourceOM)   │     │ prioritization  │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-         │                        ▲
-         │               ┌────────┴────────┐
-         │               │ IAM + inventory │
-         └───────────────│ collectors      │
-                         └─────────────────┘
+┌─────────────────┐     ┌──────────────────┐
+│ CSPM scanner    │     │ Security graph   │
+│ (Prowler)       │     │ (OpenSourceOM)   │
+└─────────────────┘     └──────────────────┘
+ compliance workbook     ranked attack paths
 ```
 
-Start with one CSPM scanner + graph platform; add CIEM and CWPP feeds over time.
+Run Prowler for the framework mapping and OpenSourceOM for the queue. Add CIEM and CWPP feeds over time.
 
 ## When open source is the wrong fit
 
@@ -150,4 +148,4 @@ Even then, **open source CSPM** scanners can supplement vendor tools for second 
 
 ---
 
-**Related:** [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/)
+**Related:** [Prowler vs OpenSourceOM](/prowler-alternative/) · [Self-hosted CNAPP, Cartography, and BloodHound](/self-hosted-cnapp/) · [CSPM vs CNAPP](/blog/cspm-vs-cnapp-whats-the-difference/) · [Attack path analysis](/blog/attack-path-analysis-cloud-security/)

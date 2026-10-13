@@ -1,0 +1,343 @@
+---
+// Copyright 2026 OpenSourceOM
+// SPDX-License-Identifier: Apache-2.0
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const faq = [
+  {
+    question: 'How is OpenSourceOM different from Cartography?',
+    answer:
+      'Cartography stores a Neo4j graph and lets you write Cypher. OpenSourceOM stores a Postgres graph and ships six named walks, then ranks findings that sit on them. A question you have not named yet belongs in Cartography.',
+  },
+  {
+    question: 'What is a self-hosted CNAPP?',
+    answer:
+      'A self-hosted CNAPP runs collection and correlation in your infrastructure. OpenSourceOM covers the security graph, CSPM, and attack-path parts of that, under Apache-2.0. You operate Postgres, the API, the CLI, and the console. Runtime agents, SAML, and multi-tenant RBAC are outside the open-source core.',
+  },
+  {
+    question: 'What are open-source attack paths?',
+    answer:
+      'An attack path is a walk from an entry point to something an attacker wants. Cartography stores a Neo4j graph and lets you write Cypher. OpenSourceOM stores a Postgres graph and ships six named walks, then ranks findings that sit on them. BloodHound walks identity edges in Active Directory and Entra ID.',
+  },
+  {
+    question: 'How is OpenSourceOM different from BloodHound?',
+    answer:
+      'BloodHound answers which principal can reach a high-value admin, through membership, sessions, and ACLs. That graph has an on-prem Active Directory shape, extended to Entra ID with AzureHound. OpenSourceOM answers which cloud finding an outsider can walk from the internet to a datastore. It does not collect on-prem Active Directory.',
+  },
+];
+
+const canonical = new URL('/self-hosted-cnapp/', Astro.site).href;
+const pageName = 'Self-hosted CNAPP and open-source attack paths';
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: pageName,
+    description:
+      'Cartography stores a graph. BloodHound walks identity paths. Prowler lists findings. OpenSourceOM is a self-hosted CNAPP that ranks open-source attack paths.',
+    url: canonical,
+    isPartOf: { '@type': 'WebSite', name: 'OpenSourceOM', url: Astro.site?.href },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={pageName}
+  description="Cartography stores a graph. BloodHound walks identity paths. Prowler lists findings. OpenSourceOM is a self-hosted CNAPP that ranks open-source attack paths."
+  jsonLd={jsonLd}
+>
+  <section class="section page">
+    <div class="container">
+      <p class="eyebrow">Compare</p>
+      <h1 class="section-title">{pageName}</h1>
+      <div class="prose">
+        <p>
+          People looking for a <strong>self-hosted CNAPP</strong> or <strong>open-source attack paths</strong>
+          already run one of three tools.
+          <a href="/prowler-alternative/">Prowler</a> is the check catalog.
+          <a href="https://github.com/cartography-cncf/cartography">Cartography</a> is a graph without a prioritized queue.
+          <a href="https://bloodhound.specterops.io/">BloodHound</a> is identity paths, in an on-prem Active Directory shape.
+          OpenSourceOM is the cloud graph that scores a finding because it sits on a path.
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Tool</th>
+              <th scope="col">What you get</th>
+              <th scope="col">Where it stops</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Prowler</th>
+              <td data-label="What you get">
+                Thousands of compliance checks. A findings list, and in Prowler App an AWS attack-path
+                graph built with Cartography.
+              </td>
+              <td data-label="Where it stops">The graph is a second database, and today it is AWS.</td>
+            </tr>
+            <tr>
+              <th scope="row">Cartography</th>
+              <td data-label="What you get">
+                A Neo4j graph of cloud and identity relationships, plus Cypher rules that return matches.
+              </td>
+              <td data-label="Where it stops">You pick the query. Matches are not a scored queue.</td>
+            </tr>
+            <tr>
+              <th scope="row">BloodHound</th>
+              <td data-label="What you get">
+                Identity attack paths: which principal can reach a high-value one, through membership,
+                sessions, and ACLs. On-prem AD, and Entra ID via AzureHound.
+              </td>
+              <td data-label="Where it stops">
+                The nodes are principals. A public workload and a datastore are a different graph.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">OpenSourceOM</th>
+              <td data-label="What you get">
+                A self-hosted Postgres graph. Six named attack paths. CSPM findings scored by internet
+                reachability, a path to a datastore, and admin access. AWS, Azure, GCP, and Kubernetes.
+              </td>
+              <td data-label="Where it stops">A smaller check catalog. No Cypher. No on-prem Active Directory.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="prose">
+        <h2 id="prowler">Prowler</h2>
+        <p>
+          <a href="https://github.com/prowler-cloud/prowler">Prowler</a> is the check catalog. Each result
+          is a control, a resource, and a pass or fail, mapped to CIS and the other frameworks. Prowler
+          App can also build an AWS attack-path graph with Cartography. The catalog is larger than
+          OpenSourceOM’s. The head-to-head, including when to keep both, is
+          <a href="/prowler-alternative/">Prowler vs OpenSourceOM</a>.
+        </p>
+
+        <h2 id="open-source-attack-paths">Open-source attack paths</h2>
+        <p>
+          <a href="https://github.com/cartography-cncf/cartography">Cartography</a> syncs cloud, identity,
+          and SaaS APIs into Neo4j. Cartography Rules runs Cypher and prints the rows. You can ask
+          exposure and identity-to-data questions the schema supports, once you write or select the
+          query. Nothing in that pipeline turns the rows into “fix this one first.”
+        </p>
+        <p>
+          OpenSourceOM ships the walks.
+          <a href="/docs/attack-paths/"><code>om paths list</code> prints six names</a>.
+          The one that sorts a weekly queue is <code>internet-to-datastore</code>: from the internet,
+          through a workload, ending on a datastore. The same names are on the API and in the console.
+          There is no query language. A question you have not named yet belongs in Cartography.
+        </p>
+
+        <h2 id="bloodhound">BloodHound</h2>
+        <p>
+          <a href="https://bloodhound.specterops.io/">BloodHound</a> walks identity paths in an on-prem
+          Active Directory shape: users, groups, computers, sessions, and ACLs. The question is which
+          principal can reach a high-value one. AzureHound collects Entra ID into that same shape.
+          Domain Admin and Global Admin paths belong here.
+        </p>
+        <p>
+          OpenSourceOM does not collect on-prem AD. Its walks start at the internet and end on a
+          datastore, through network and workload nodes.
+          <a href="/docs/blast-radius/">Identity blast radius</a>
+          is which cloud assets an identity can reach.
+        </p>
+
+        <h2 id="self-hosted">Self-hosted CNAPP</h2>
+        <p>
+          Self-hosted means the collectors, Postgres, API, CLI, and console run in your environment.
+          The license is Apache-2.0. The slice in the open-source core is the security graph, CSPM
+          rules scored by path, the six named attack paths, and CVE enrichment from packages and
+          images already in inventory. Runtime agents, SAML, multi-tenant RBAC, and insider-threat
+          analysis sit
+          <a href="/docs/open-source/">outside that core</a>.
+          A longer map of the open-source landscape is the
+          <a href="/blog/open-source-cspm-cnapp-tools-2026/">2026 CSPM and CNAPP survey</a>.
+        </p>
+
+        <h2>Which one to run</h2>
+        <ul>
+          <li>
+            A compliance workbook with hundreds of controls:
+            <a href="/prowler-alternative/">Prowler</a>.
+          </li>
+          <li>A Cypher question you still have to write: Cartography.</li>
+          <li>A path inside Active Directory or Entra ID: BloodHound.</li>
+          <li>
+            Which cloud finding sits on a path from the internet to data, on a host you operate:
+            <a href="/docs/getting-started/">OpenSourceOM</a>.
+          </li>
+        </ul>
+        <p>
+          Prowler and Cartography can run beside this. They answer a question the ranked queue does not.
+        </p>
+        <p>
+          <a class="btn btn-primary" href="/docs/getting-started/">Get started</a>
+        </p>
+      </div>
+
+      <div class="prose faq">
+        <h2>Questions</h2>
+        {
+          faq.map((item) => (
+            <div>
+              <h3>{item.question}</h3>
+              <p>{item.answer}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-top: 3.5rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .page .section-title {
+    max-width: 18em;
+  }
+
+  .table-wrap {
+    margin: 0 0 0.5rem;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  th,
+  td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    color: var(--text);
+    background: var(--bg-elevated);
+    font-weight: 600;
+  }
+
+  tbody th {
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  td {
+    color: var(--text-muted);
+  }
+
+  tr:last-child th,
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .faq {
+    margin-top: 1rem;
+  }
+
+  .prose :global(.btn) {
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 767px) {
+    .table-wrap {
+      overflow: visible;
+      border: none;
+      background: transparent;
+    }
+
+    table,
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+      width: auto;
+    }
+
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    tbody tr {
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody th,
+    td {
+      border-bottom: none;
+      padding: 0.35rem 1rem;
+    }
+
+    tbody th {
+      padding-top: 0.9rem;
+      font-size: 1rem;
+    }
+
+    td:last-child {
+      padding-bottom: 0.9rem;
+    }
+
+    td::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 0.15rem;
+      color: var(--text);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+  }
+</style>
