@@ -45,7 +45,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td><code>OM_PUBLIC_URL</code></td>
           <td><code>http://localhost:8080</code></td>
-          <td>Public URL hint. Requests use the listen address.</td>
+          <td>Browser origin for OAuth callbacks and setup links. No trailing path.</td>
         </tr>
         <tr>
           <td><code>OM_API_PORT</code></td>
@@ -55,7 +55,17 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td><code>OM_API_SECRET</code></td>
           <td><code>change-me-in-production</code></td>
-          <td>Shared secret for every <code>/v1</code> route except <code>GET /v1/health</code>. See <a href="/docs/security/">Security</a>.</td>
+          <td>Machine credential for <code>/v1</code> routes. The console uses a session instead. See <a href="/docs/security/">Security</a>.</td>
+        </tr>
+        <tr>
+          <td><code>OM_GOOGLE_CLIENT_ID</code> / <code>OM_GOOGLE_CLIENT_SECRET</code></td>
+          <td>empty</td>
+          <td>Google sign-in. Both are required. Callback <code>{OM_PUBLIC_URL}/auth/google/callback</code>.</td>
+        </tr>
+        <tr>
+          <td><code>OM_GITHUB_CLIENT_ID</code> / <code>OM_GITHUB_CLIENT_SECRET</code></td>
+          <td>empty</td>
+          <td>GitHub sign-in. Both are required. Callback <code>{OM_PUBLIC_URL}/auth/github/callback</code>.</td>
         </tr>
       </tbody>
     </table>

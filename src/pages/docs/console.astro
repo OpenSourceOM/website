@@ -32,19 +32,32 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     list and is not drawn.
   </p>
 
-  <h2>Run CSPM rules from the browser</h2>
+  <h2>Sign in</h2>
   <p>
-    The <strong>Run CSPM rules</strong> button calls <code>POST /v1/rules/run</code>. That route
-    requires the API secret. Enter it in the <strong>API key</strong> field and choose
-    <strong>Save API key</strong>. The page stores it in <code>localStorage.om_api_key</code> and
-    sends <code>X-API-Key</code> on <code>/v1</code> calls. The key is not written into the graph.
-    Clearing the field and saving removes it. The HTML page loads without a key. Stats, findings,
-    and the graph need the secret. <code>GET /v1/health</code> does not.
+    The console signs people in with Google or GitHub. There is no password and no API-key field.
+    Configure <code>OM_GOOGLE_CLIENT_ID</code> and <code>OM_GOOGLE_CLIENT_SECRET</code>, or the
+    <code>OM_GITHUB_*</code> pair, and register
+    <code>{OM_PUBLIC_URL}/auth/google/callback</code> or
+    <code>{OM_PUBLIC_URL}/auth/github/callback</code> on that app.
+    See <a href="/docs/configuration/">Configuration</a>.
   </p>
   <p>
-    Use the value of <code>OM_API_SECRET</code> from the environment the API process actually
-    has. Running <code>om rules run</code> on the CLI does the same work without the browser key,
-    because the CLI uses Postgres directly.
+    On an install with no admin, the API log prints a one-time setup link. Open that link and
+    finish sign-in. That account becomes the admin. Restarting the API before anyone uses the
+    link replaces it; use the latest line. An admin can create another setup link from the
+    <strong>Admins</strong> panel. The link expires after 72 hours. Every signed-in account is an
+    admin, and the last admin cannot be removed.
+  </p>
+  <p>
+    The browser keeps an httpOnly session cookie for 7 days. Collectors and <code>curl</code>
+    still send <code>OM_API_SECRET</code>. That secret cannot create or remove admins.
+  </p>
+
+  <h2>Run CSPM rules from the browser</h2>
+  <p>
+    The <strong>Run CSPM rules</strong> button calls <code>POST /v1/rules/run</code> with the
+    session cookie. Running <code>om rules run</code> on the CLI does the same work without a
+    browser session, because the CLI uses Postgres directly.
   </p>
 
   <h2>Graph script</h2>

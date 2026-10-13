@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM security model"
-  description="How OM_API_SECRET protects every /v1 route except health, why the API stays on a private network, and how to report bugs."
+  description="How the API secret and console sessions protect /v1, why the API stays on a private network, and how to report bugs."
 >
   <h1>OpenSourceOM security model</h1>
   <p>
@@ -17,15 +17,18 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>API secret</h2>
   <p>
     <code>OM_API_SECRET</code> defaults to <code>change-me-in-production</code> when the variable
-    is unset or empty. Every <code>/v1</code> route except <code>GET /v1/health</code> requires
-    <code>Authorization: Bearer &lt;secret&gt;</code> or <code>X-API-Key: &lt;secret&gt;</code>.
-    That includes graph reads, findings, the rules list, blast radius, ingest, rules run, and
-    Slack export. A missing or wrong secret is 401.
+    is unset or empty. Graph and ingest routes require
+    <code>Authorization: Bearer &lt;secret&gt;</code>, <code>X-API-Key: &lt;secret&gt;</code>, or
+    a console session cookie. That includes graph reads, findings, the rules list, blast radius,
+    ingest, rules run, and Slack export. A missing or wrong credential is 401.
   </p>
   <p>
-    <code>GET /v1/health</code> does not check the secret, so probes can call it. The console
-    HTML at <code>/</code> and <code>/ui/</code> is also unauthenticated. The page sends the key
-    from local storage on API calls. See <a href="/docs/console/">Console</a>.
+    <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>, and
+    <code>POST /v1/auth/logout</code> do not check the secret.
+    <code>GET /v1/admins</code>, <code>POST /v1/admins/invites</code>, and
+    <code>DELETE /v1/admins/{id}</code> require a console session. The API secret cannot mint
+    admins. The console HTML at <code>/</code>, <code>/login</code>, and <code>/setup/</code>
+    loads without a session so the sign-in page can render. See <a href="/docs/console/">Console</a>.
   </p>
   <p>
     Change the secret before anyone else can reach the port. Helm refuses to install until
@@ -33,8 +36,22 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     shell as a user with database credentials can scan and export without it.
   </p>
   <p>
-    The secret is one shared key, not a user login. Do not publish the Service to the internet.
-    Put it on a private network or behind a gateway you operate.
+    The secret is the machine credential. People use Google or GitHub. Do not publish the
+    Service to the internet. Put it on a private network or behind a gateway you operate.
+  </p>
+
+  <h2>Console admins</h2>
+  <p>
+    Google and GitHub are the only human logins. Every account is an admin. The first account
+    is whoever finishes the setup link printed in the API logs, so do not leave that link where
+    other people can open it. Later admins are whoever finishes a link an existing admin creates.
+    Sessions are httpOnly cookies. The cookie is marked <code>Secure</code> when
+    <code>OM_PUBLIC_URL</code> uses <code>https</code>.
+  </p>
+  <p>
+    OAuth client secrets are deployment secrets, next to <code>OM_API_SECRET</code>. The API
+    must be able to reach Google or GitHub over HTTPS. An air-gapped console cannot sign anyone
+    in with this build.
   </p>
 
   <h2>Collectors</h2>
@@ -54,8 +71,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>Console script</h2>
   <p>
     The graph view loads vis-network from <code>/ui/vis-network.min.js</code> on the API. It is
-    not loaded from a CDN. The API key saved in the console stays in browser local storage and
-    is not written into the graph.
+    not loaded from a CDN. The session cookie is httpOnly, so page script cannot read it.
   </p>
 
   <h2>Reporting a vulnerability</h2>

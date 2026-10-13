@@ -83,6 +83,21 @@ helm install om deploy/helm/opensourceom \\
           <td><code>OM_API_SECRET</code>.</td>
         </tr>
         <tr>
+          <td><code>api.publicURL</code></td>
+          <td>empty</td>
+          <td><code>OM_PUBLIC_URL</code>. Set this to the browser origin before console login works.</td>
+        </tr>
+        <tr>
+          <td><code>api.google.clientId</code> / <code>api.google.clientSecret</code></td>
+          <td>empty</td>
+          <td>Google sign-in. Setting the id requires the secret. The secret stays in the chart Secret.</td>
+        </tr>
+        <tr>
+          <td><code>api.github.clientId</code> / <code>api.github.clientSecret</code></td>
+          <td>empty</td>
+          <td>GitHub sign-in. Same pattern as Google.</td>
+        </tr>
+        <tr>
           <td><code>postgres.enabled</code></td>
           <td><code>true</code></td>
           <td>When false, set <code>postgres.host</code> to your own server.</td>
@@ -144,6 +159,7 @@ helm install om deploy/helm/opensourceom \\
   </p>
   <p>
     Keep the Service off the public internet, or put your own gateway in front of it. See
-    <a href="/docs/security/">Security</a> for how <code>OM_API_SECRET</code> applies.
+    <a href="/docs/security/">Security</a> for the API secret and console login. Set
+    <code>api.publicURL</code> to that gateway’s origin when you enable Google or GitHub.
   </p>
 </DocsLayout>

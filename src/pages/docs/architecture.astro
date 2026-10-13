@@ -104,7 +104,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     The CLI opens Postgres and writes batches, findings, and export calls itself. The API opens
     the same database. <code>POST /v1/ingest</code> is the HTTP equivalent of an upsert.
     <code>om scan</code> does not call the API. That split is why scans work when you only start
-    the Postgres container, and why the console API key is irrelevant to the CLI.
+    the Postgres container, and why a console session is irrelevant to the CLI.
   </p>
 
   <h2>Deployment shapes</h2>
