@@ -36,6 +36,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>internal/rules</code>, and the collectors. PostgreSQL is the graph store. Phase 3 adds
     the plugin SDK, the embedded rule pack, a Helm chart, and cloud audit context from
     CloudTrail, Activity Log, and Admin Activity logs, on top of the Phase 2 feature set.
+    Phase 4 and Phase 5 are planned: package identifiers from persistent workload storage,
+    then secret and malware findings on that same storage. They are not in this layout yet.
   </p>
   <pre><code>{`Cloud / Kubernetes APIs
         │
@@ -121,7 +123,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>What this version leaves out</h2>
   <p>
     Multi-tenant RBAC, SAML, and platform audit logs of who clicked what in the console are
-    outside the open source core. See <a href="/docs/open-source/">Open source scope</a>.
+    outside the open source core, as is classification of object bodies and database rows.
+    See <a href="/docs/open-source/">Open source scope</a>.
+    Phase 4 will write <code>packages</code> from root volumes, boot images, container layers,
+    function bundles, and shared filesystems. Phase 5 will add secret and malware findings
+    on that storage, recording the kind and the path. Neither phase is implemented.
+    <code>om scan aws</code>, <code>om scan azure</code>, and <code>om scan gcp</code> stay
+    read-only API scans.
     Recursive path SQL is capped. Azure and GCP <code>REACHABLE</code> edges still ignore
     firewalls; the collector pages describe that and the IAM rules behind <code>CAN_ACCESS</code>.
     The design notes in the core repo

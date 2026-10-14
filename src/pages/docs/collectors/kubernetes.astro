@@ -27,7 +27,8 @@ export K8S_NAMESPACE=payments
     services, and service accounts. Deployments and ReplicaSets are not nodes. Pods are the
     workloads. Each pod stores <code>images</code>: the sorted, unique image refs from its init
     containers and app containers. Ephemeral containers are omitted. An empty image list is not
-    written.
+    written. The refs are not pulled, so packages inside the layers are absent until Phase 4
+    on the <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>.
   </p>
 
   <h2>Mapping</h2>
