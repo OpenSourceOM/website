@@ -34,25 +34,30 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
   <h2>Sign in</h2>
   <p>
-    The console signs people in with Google or GitHub. There is no password and no API-key field.
-    Configure <code>OM_GOOGLE_CLIENT_ID</code> and <code>OM_GOOGLE_CLIENT_SECRET</code>, or the
-    <code>OM_GITHUB_*</code> pair, and register
-    <code>{'{OM_PUBLIC_URL}'}/auth/google/callback</code> or
-    <code>{'{OM_PUBLIC_URL}'}/auth/github/callback</code> on that app.
-    See <a href="/docs/configuration/">Configuration</a>.
+    The console signs people in with an email and password. There is no API-key field.
+    While no admin exists, the page is a setup form. Keep the API port private until you
+    finish it, or run <code>om admin create --email you@example.com</code> on the machine
+    first. Set <code>OM_ADMIN_EMAIL</code> when that first address should be fixed ahead of
+    time. See <a href="/docs/configuration/">Configuration</a>.
   </p>
   <p>
-    The first successful Google or GitHub sign-in becomes the admin. Keep the API port private
-    until that happens. An admin invites the next person by email from the
-    <strong>Admins</strong> panel. Sending an invite needs SMTP. The invited person opens the
-    link and signs in with the Google or GitHub account for that address. The invite expires
-    after 72 hours. Every signed-in account is an admin, and the last admin cannot be removed.
+    An admin adds the next person from the <strong>Admins</strong> panel. The temporary
+    password is shown once. If SMTP is configured, it is emailed too. That person chooses
+    their own password at the next sign-in. Every signed-in account is an admin, and the last
+    admin cannot be removed.
+  </p>
+  <p>
+    Google and GitHub buttons appear only when that provider is configured. Register
+    <code>{'{OM_PUBLIC_URL}'}/auth/google/callback</code> or
+    <code>{'{OM_PUBLIC_URL}'}/auth/github/callback</code>. A verified email from the provider
+    must already be an admin. The <strong>Security</strong> panel turns on optional
+    authenticator-app two-factor authentication.
   </p>
   <p>
     The browser keeps an httpOnly session cookie for 7 days. Creating an admin also creates a
     personal API token. The console shows it once. Scripts send that token as
-    <code>Authorization: Bearer</code> or <code>X-API-Key</code>. The token cannot invite or
-    remove admins. Rotate it from the same panel when you need a new one.
+    <code>Authorization: Bearer</code> or <code>X-API-Key</code>. The token cannot add or
+    remove admins. Rotate it from the Admins panel when you need a new one.
   </p>
 
   <h2>Run CSPM rules from the browser</h2>

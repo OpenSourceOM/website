@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM security model"
-  description="How personal API tokens and console sessions protect /v1, why the API stays on a private network, and how to report bugs."
+  description="How passwords, optional two-factor authentication, and personal API tokens protect /v1, why the API stays on a private network, and how to report bugs."
 >
   <h1>OpenSourceOM security model</h1>
   <p>
@@ -24,37 +24,40 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     secret and no open mode.
   </p>
   <p>
-    <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>, and
-    <code>POST /v1/auth/logout</code> do not check a token.
-    <code>GET /v1/admins</code>, <code>POST /v1/admins/invites</code>,
+    <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>,
+    <code>POST /v1/auth/logout</code>, <code>POST /v1/auth/setup</code>,
+    <code>POST /v1/auth/login</code>, and <code>POST /v1/auth/totp</code> do not require a session.
+    <code>GET /v1/admins</code>, <code>POST /v1/admins</code>,
     <code>POST /v1/admins/token</code>, and
     <code>DELETE /v1/admins/{'{id}'}</code> require a console session. A personal token cannot
-    mint or remove admins. The console HTML at <code>/</code>, <code>/login</code>, and
-    <code>/invite/</code> loads without a session so the sign-in page can render. See
-    <a href="/docs/console/">Console</a>.
+    add or remove admins. The console HTML at <code>/</code> and <code>/login</code> loads
+    without a session so the sign-in page can render. See <a href="/docs/console/">Console</a>.
   </p>
   <p>
     Keep the API port private until the first admin exists. Whoever can open it first can become
-    that admin. The CLI never sends this header. Anyone who can open a local shell as a user
-    with database credentials can scan and export without a token.
+    that admin. Create the account with <code>om admin create</code> before you publish the
+    port when you can. The CLI never sends this header. Anyone who can open a local shell as a
+    user with database credentials can scan and export without a token.
   </p>
   <p>
-    People use Google or GitHub. Scripts use a personal token. Do not publish the Service to
-    the internet. Put it on a private network or behind a gateway you operate.
+    People use an email and password. Scripts use a personal token. Do not publish the Service
+    to the internet. Put it on a private network or behind a gateway you operate.
   </p>
 
   <h2>Console admins</h2>
   <p>
-    Google and GitHub are the only human logins. Every account is an admin. The first successful
-    sign-in becomes the admin. Later admins open an email invite and sign in with the Google or
-    GitHub account for the invited address. A verified email from the provider must match.
+    People sign in with an email and password. Every account is an admin. The first account is
+    created from the setup form, or with <code>om admin create</code> before the port is
+    reachable. <code>OM_ADMIN_EMAIL</code> pins that first address when you set it. Later admins
+    receive a temporary password and choose their own at the next sign-in. Passwords are stored
+    as Argon2id hashes. Optional authenticator-app two-factor authentication is per admin.
     Sessions are httpOnly cookies. The cookie is marked <code>Secure</code> when
     <code>OM_PUBLIC_URL</code> uses <code>https</code>.
   </p>
   <p>
-    OAuth client secrets and the SMTP password are deployment secrets. The API must be able to
-    reach Google or GitHub over HTTPS, and your mail server when you invite another admin. An
-    air-gapped console cannot sign anyone in with this build.
+    Google and GitHub are optional. A verified provider email must match an existing admin.
+    OAuth client secrets and the SMTP password are deployment secrets. Password login works
+    without them, including on an air-gapped console.
   </p>
 
   <h2>Collectors</h2>

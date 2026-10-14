@@ -79,12 +79,17 @@ helm install om deploy/helm/opensourceom \\
         <tr>
           <td><code>api.smtp.host</code> / <code>api.smtp.port</code> / <code>api.smtp.from</code></td>
           <td>empty / <code>587</code> / empty</td>
-          <td>SMTP for admin invites. Setting the host requires <code>from</code>. A password stays in the chart Secret.</td>
+          <td>Optional SMTP for temporary admin passwords. Setting the host requires <code>from</code>. A password stays in the chart Secret.</td>
         </tr>
         <tr>
           <td><code>api.publicURL</code></td>
           <td>empty</td>
-          <td><code>OM_PUBLIC_URL</code>. Set this to the browser origin before console login works.</td>
+          <td><code>OM_PUBLIC_URL</code>. Set this to the browser origin before optional Google or GitHub login works.</td>
+        </tr>
+        <tr>
+          <td><code>api.adminEmail</code></td>
+          <td>empty</td>
+          <td><code>OM_ADMIN_EMAIL</code>. When set, only this address can become the first admin.</td>
         </tr>
         <tr>
           <td><code>api.google.clientId</code> / <code>api.google.clientSecret</code></td>
