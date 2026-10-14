@@ -7,7 +7,7 @@
 ```bash
 git clone https://github.com/OpenSourceOM/core.git
 cd core && cp .env.example .env && docker compose up -d
-go build -o om ./cmd/om && ./om migrate && ./om scan demo && ./om rules run
+go build -o om ./cmd/om && ./om scan demo && ./om rules run
 open http://localhost:8080
 ```
 

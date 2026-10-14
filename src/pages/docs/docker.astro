@@ -30,9 +30,19 @@ docker compose ps`}</code></pre>
 
   <h2>Migrations</h2>
   <p>
-    The API container does not migrate on startup. From a checkout, with the CLI on the host:
+    <code>om serve</code> applies pending SQL files in <code>migrations/</code> before it
+    listens. Compose starts the API with that command, so <code>docker compose up -d</code>
+    creates the schema. A later image applies only the files that are not already recorded in
+    <code>schema_migrations</code>. Startup logs <code>applied database migrations</code> or
+    <code>database schema is current</code>.
   </p>
-  <pre><code>{`go build -o om ./cmd/om
+  <p>
+    Set <code>OM_AUTO_MIGRATE=false</code> in <code>.env</code> when a separate step should own
+    the schema. <code>om migrate</code> is also how you migrate when Compose is running Postgres
+    alone:
+  </p>
+  <pre><code>{`docker compose up -d postgres
+go build -o om ./cmd/om
 ./om migrate`}</code></pre>
   <p>
     The CLI’s default database host is <code>localhost</code>, which is the published port.
@@ -61,14 +71,16 @@ docker compose ps`}</code></pre>
   <ul>
     <li><code>POSTGRES_HOST=postgres</code> in the shell is the usual miss. That hostname exists only on the Compose network. Unset it, or set <code>POSTGRES_HOST=localhost</code>, for a CLI on the host.</li>
     <li>Password, user, and database must match what Compose used to initialize the volume. Changing <code>POSTGRES_PASSWORD</code> in <code>.env</code> after the first start does not alter an existing volume.</li>
-    <li>The API waits until Postgres is healthy. <code>om migrate</code> on the host does not. If it runs before the port is open, retry it.</li>
-    <li><code>relation "nodes" does not exist</code> means migrate has not been applied to this database.</li>
+    <li>The API waits until Postgres is healthy, then applies migrations. <code>om migrate</code> on the host does not wait. If it runs before the port is open, retry it.</li>
+    <li><code>relation "nodes" does not exist</code> means the API has not finished starting, or <code>OM_AUTO_MIGRATE=false</code> and <code>om migrate</code> has not been applied to this database.</li>
   </ul>
   <p>
     <code>GET http://localhost:8080/v1/health</code> returns
-    <code>{`{"status":"ok","service":"opensourceom-api"}`}</code> when the API process is up. It
-    does not check Postgres. A scan that fails on the database while health is ok means the CLI
-    and the container are not using the same connection settings.
+    <code>{`{"status":"ok","service":"opensourceom-api"}`}</code> when the API process is up and
+    Postgres answers a ping. <code>om serve</code> applies migrations before it listens, so a
+    healthy API has the current schema when <code>OM_AUTO_MIGRATE</code> is left on. A scan that
+    fails on the database while health is ok means the CLI and the container are not using the
+    same connection settings.
   </p>
 
   <h2>Useful commands</h2>
@@ -76,7 +88,7 @@ docker compose ps`}</code></pre>
 docker compose down
 docker compose down -v`}</code></pre>
   <p>
-    <code>down -v</code> deletes the Postgres volume. The next start is an empty database and
-    needs <code>om migrate</code> again.
+    <code>down -v</code> deletes the Postgres volume. The next API start is an empty database
+    and applies migrations again.
   </p>
 </DocsLayout>

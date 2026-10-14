@@ -15,8 +15,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>0.4.0</code>. When bundled Postgres is enabled, an init container named
     <code>wait-db</code> runs <code>pg_isready</code> against
     <code>{'{{release}}-opensourceom-postgres'}</code>. A second init container runs
-    <code>om migrate</code>. The main container runs <code>om serve</code>. Readiness and
-    liveness probe <code>GET /v1/health</code>. With an external database,
+    <code>om migrate</code>. The main container runs <code>om serve</code>, which applies any
+    migrations still pending. <code>api.autoMigrate</code> (default <code>true</code>) sets
+    <code>OM_AUTO_MIGRATE</code>. Readiness and liveness probe <code>GET /v1/health</code>.
+    With an external database,
     <code>wait-db</code> is omitted and <code>migrate</code> still runs, so that host must
     accept connections before the pod can become Ready.
   </p>
@@ -75,6 +77,11 @@ helm install om deploy/helm/opensourceom \\
           <td><code>api.env</code></td>
           <td><code>production</code></td>
           <td>Written to <code>OM_ENV</code>.</td>
+        </tr>
+        <tr>
+          <td><code>api.autoMigrate</code></td>
+          <td><code>true</code></td>
+          <td>Written to <code>OM_AUTO_MIGRATE</code>. <code>om serve</code> applies pending migrations. The init container still runs <code>om migrate</code> first.</td>
         </tr>
         <tr>
           <td><code>api.smtp.host</code> / <code>api.smtp.port</code> / <code>api.smtp.from</code></td>

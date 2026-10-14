@@ -6,12 +6,12 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Install a self-hosted security graph"
-  description="Install OpenSourceOM with Docker Compose, apply migrations, load the demo graph, and scan AWS, Azure, GCP, or Kubernetes."
+  description="Install OpenSourceOM with Docker Compose, load the demo graph, and scan AWS, Azure, GCP, or Kubernetes."
   faq={[
     {
       question: 'How do I install OpenSourceOM?',
       answer:
-        'Clone the OpenSourceOM/core repository, start Postgres and the API with Docker Compose, build the om CLI, and run om migrate. Then om scan demo loads a sample graph at http://localhost:8080.',
+        'Clone the OpenSourceOM/core repository and start Postgres and the API with Docker Compose. The API applies database migrations when it starts. Build the om CLI, then om scan demo loads a sample graph at http://localhost:8080.',
     },
     {
       question: 'Can I try OpenSourceOM without cloud credentials?',
@@ -48,8 +48,8 @@ cp .env.example .env
 docker compose up -d`}</code></pre>
   <p>
     Compose publishes Postgres on <code>localhost:5432</code> and the API on
-    <a href="http://localhost:8080">http://localhost:8080</a>. The API container does not apply
-    schema migrations. The CLI does.
+    <a href="http://localhost:8080">http://localhost:8080</a>. The API applies pending
+    migrations before it listens.
   </p>
   <p>
     Compose reads <code>.env</code> for the API container. The CLI does not. It defaults to
@@ -58,12 +58,14 @@ docker compose up -d`}</code></pre>
     export that value into the shell you use for <code>om</code>.
   </p>
 
-  <h2>Build the CLI and migrate</h2>
-  <pre><code>{`go build -o om ./cmd/om
-./om migrate`}</code></pre>
+  <h2>Build the CLI</h2>
+  <pre><code>{`go build -o om ./cmd/om`}</code></pre>
   <p>
-    <code>om migrate</code> applies the SQL files in <code>migrations/</code>. Run it from the
-    repository root so the CLI can find that directory.
+    The API container runs <code>om serve</code>, which applies the SQL files in
+    <code>migrations/</code> before it listens. A later start applies only files that are not
+    already recorded. When Compose is running Postgres without the API, run
+    <code>om migrate</code> from the repository root. Set <code>OM_AUTO_MIGRATE=false</code> on
+    the API when that command should be the only schema change.
   </p>
 
   <h2>Load the sample graph</h2>

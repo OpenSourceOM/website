@@ -53,6 +53,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td><code>om serve</code></td>
         </tr>
         <tr>
+          <td><code>OM_AUTO_MIGRATE</code></td>
+          <td><code>true</code></td>
+          <td><code>om serve</code> applies pending migrations before it listens. Set <code>false</code> when <code>om migrate</code> should be the only schema change. <code>om migrate</code> itself ignores this variable.</td>
+        </tr>
+        <tr>
           <td><code>OM_ADMIN_EMAIL</code></td>
           <td>empty</td>
           <td>When set, only this address can become the first admin.</td>
