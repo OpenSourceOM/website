@@ -47,6 +47,14 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     admin cannot be removed.
   </p>
   <p>
+    When SMTP is configured, <strong>Forgot password?</strong> on the sign-in page emails a
+    link to that address. The link works once and expires in one hour. It sets a new password
+    and ends that admin's browser sessions. The page says the same thing whether or not the
+    address is an admin. Personal API tokens stay valid. Without SMTP, the link is not shown.
+    On the machine, <code>om admin reset-password --email you@example.com</code> sets a new
+    password instead. Set <code>OM_PUBLIC_URL</code> so the email contains a full address.
+  </p>
+  <p>
     Google and GitHub buttons appear only when that provider is configured. Register
     <code>{'{OM_PUBLIC_URL}'}/auth/google/callback</code> or
     <code>{'{OM_PUBLIC_URL}'}/auth/github/callback</code>. A verified email from the provider

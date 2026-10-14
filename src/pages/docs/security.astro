@@ -26,7 +26,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <p>
     <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>,
     <code>POST /v1/auth/logout</code>, <code>POST /v1/auth/setup</code>,
-    <code>POST /v1/auth/login</code>, and <code>POST /v1/auth/totp</code> do not require a session.
+    <code>POST /v1/auth/login</code>, <code>POST /v1/auth/totp</code>,
+    <code>POST /v1/auth/forgot</code>, and <code>POST /v1/auth/reset</code> do not require a session.
     <code>GET /v1/admins</code>, <code>POST /v1/admins</code>,
     <code>POST /v1/admins/token</code>, and
     <code>DELETE /v1/admins/{'{id}'}</code> require a console session. A personal token cannot
@@ -49,7 +50,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     People sign in with an email and password. Every account is an admin. The first account is
     created from the setup form, or with <code>om admin create</code> before the port is
     reachable. <code>OM_ADMIN_EMAIL</code> pins that first address when you set it. Later admins
-    receive a temporary password and choose their own at the next sign-in. Passwords are stored
+    receive a temporary password and choose their own at the next sign-in. When SMTP is
+    configured, an admin can request a one-hour reset link. The response does not reveal
+    whether the address exists. The link works once, sets a new password, and ends that
+    admin's sessions. Personal API tokens stay valid. Passwords are stored
     as Argon2id hashes. Optional authenticator-app two-factor authentication is per admin.
     Sessions are httpOnly cookies. The cookie is marked <code>Secure</code> when
     <code>OM_PUBLIC_URL</code> uses <code>https</code>.
