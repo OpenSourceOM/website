@@ -79,7 +79,7 @@ helm install om deploy/helm/opensourceom \\
         <tr>
           <td><code>api.smtp.host</code> / <code>api.smtp.port</code> / <code>api.smtp.from</code></td>
           <td>empty / <code>587</code> / empty</td>
-          <td>Optional SMTP for temporary admin passwords. Setting the host requires <code>from</code>. A password stays in the chart Secret.</td>
+          <td>Optional SMTP for temporary admin passwords and password-reset links. Setting the host requires <code>from</code>. A password stays in the chart Secret.</td>
         </tr>
         <tr>
           <td><code>api.publicURL</code></td>
