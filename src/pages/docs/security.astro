@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="OpenSourceOM security model"
-  description="How OM_API_SECRET protects every /v1 route except health, why the API stays on a private network, and how to report bugs."
+  description="How passwords, optional two-factor authentication, and personal API tokens protect /v1, why the API stays on a private network, and how to report bugs."
 >
   <h1>OpenSourceOM security model</h1>
   <p>
@@ -14,27 +14,50 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     IAM relationships, and findings. Protect Postgres and the API the way you protect that data.
   </p>
 
-  <h2>API secret</h2>
+  <h2>Personal API tokens</h2>
   <p>
-    <code>OM_API_SECRET</code> defaults to <code>change-me-in-production</code> when the variable
-    is unset or empty. Every <code>/v1</code> route except <code>GET /v1/health</code> requires
-    <code>Authorization: Bearer &lt;secret&gt;</code> or <code>X-API-Key: &lt;secret&gt;</code>.
-    That includes graph reads, findings, the rules list, blast radius, ingest, rules run, and
-    Slack export. A missing or wrong secret is 401.
+    Each admin has a personal API token. The console shows the raw value once, after the account
+    is created or after a rotation. Graph and ingest routes require
+    <code>Authorization: Bearer &lt;token&gt;</code>, <code>X-API-Key: &lt;token&gt;</code>, or
+    a console session cookie. That includes graph reads, findings, the rules list, blast radius,
+    ingest, rules run, and Slack export. A missing or wrong credential is 401. There is no shared
+    secret and no open mode.
   </p>
   <p>
-    <code>GET /v1/health</code> does not check the secret, so probes can call it. The console
-    HTML at <code>/</code> and <code>/ui/</code> is also unauthenticated. The page sends the key
-    from local storage on API calls. See <a href="/docs/console/">Console</a>.
+    <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>,
+    <code>POST /v1/auth/logout</code>, <code>POST /v1/auth/setup</code>,
+    <code>POST /v1/auth/login</code>, and <code>POST /v1/auth/totp</code> do not require a session.
+    <code>GET /v1/admins</code>, <code>POST /v1/admins</code>,
+    <code>POST /v1/admins/token</code>, and
+    <code>DELETE /v1/admins/{'{id}'}</code> require a console session. A personal token cannot
+    add or remove admins. The console HTML at <code>/</code> and <code>/login</code> loads
+    without a session so the sign-in page can render. See <a href="/docs/console/">Console</a>.
   </p>
   <p>
-    Change the secret before anyone else can reach the port. Helm refuses to install until
-    <code>api.secret</code> is set. The CLI never sends this header. Anyone who can open a local
-    shell as a user with database credentials can scan and export without it.
+    Keep the API port private until the first admin exists. Whoever can open it first can become
+    that admin. Create the account with <code>om admin create</code> before you publish the
+    port when you can. The CLI never sends this header. Anyone who can open a local shell as a
+    user with database credentials can scan and export without a token.
   </p>
   <p>
-    The secret is one shared key, not a user login. Do not publish the Service to the internet.
-    Put it on a private network or behind a gateway you operate.
+    People use an email and password. Scripts use a personal token. Do not publish the Service
+    to the internet. Put it on a private network or behind a gateway you operate.
+  </p>
+
+  <h2>Console admins</h2>
+  <p>
+    People sign in with an email and password. Every account is an admin. The first account is
+    created from the setup form, or with <code>om admin create</code> before the port is
+    reachable. <code>OM_ADMIN_EMAIL</code> pins that first address when you set it. Later admins
+    receive a temporary password and choose their own at the next sign-in. Passwords are stored
+    as Argon2id hashes. Optional authenticator-app two-factor authentication is per admin.
+    Sessions are httpOnly cookies. The cookie is marked <code>Secure</code> when
+    <code>OM_PUBLIC_URL</code> uses <code>https</code>.
+  </p>
+  <p>
+    Google and GitHub are optional. A verified provider email must match an existing admin.
+    OAuth client secrets and the SMTP password are deployment secrets. Password login works
+    without them, including on an air-gapped console.
   </p>
 
   <h2>Collectors</h2>
@@ -54,8 +77,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   <h2>Console script</h2>
   <p>
     The graph view loads vis-network from <code>/ui/vis-network.min.js</code> on the API. It is
-    not loaded from a CDN. The API key saved in the console stays in browser local storage and
-    is not written into the graph.
+    not loaded from a CDN. The session cookie is httpOnly, so page script cannot read it.
   </p>
 
   <h2>Reporting a vulnerability</h2>

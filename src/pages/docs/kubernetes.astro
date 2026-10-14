@@ -23,14 +23,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
   <h2>Install</h2>
   <p>
-    <code>api.secret</code> and <code>postgres.password</code> are required. The image repository
+    <code>postgres.password</code> is required. The image repository
     defaults to <code>ghcr.io/opensourceom/core</code>. An empty <code>image.tag</code> falls
     back to the chart <code>appVersion</code> (<code>0.3.0</code>). Set the tag when you are not
     running that release.
   </p>
   <pre><code>{`docker build -t ghcr.io/opensourceom/core:0.3.0 .
 helm install om deploy/helm/opensourceom \\
-  --set api.secret='change-me' \\
   --set postgres.password='change-me' \\
   --set image.tag=0.3.0`}</code></pre>
   <p>
@@ -78,9 +77,29 @@ helm install om deploy/helm/opensourceom \\
           <td>Written to <code>OM_ENV</code>.</td>
         </tr>
         <tr>
-          <td><code>api.secret</code></td>
-          <td>empty, required</td>
-          <td><code>OM_API_SECRET</code>.</td>
+          <td><code>api.smtp.host</code> / <code>api.smtp.port</code> / <code>api.smtp.from</code></td>
+          <td>empty / <code>587</code> / empty</td>
+          <td>Optional SMTP for temporary admin passwords. Setting the host requires <code>from</code>. A password stays in the chart Secret.</td>
+        </tr>
+        <tr>
+          <td><code>api.publicURL</code></td>
+          <td>empty</td>
+          <td><code>OM_PUBLIC_URL</code>. Set this to the browser origin before optional Google or GitHub login works.</td>
+        </tr>
+        <tr>
+          <td><code>api.adminEmail</code></td>
+          <td>empty</td>
+          <td><code>OM_ADMIN_EMAIL</code>. When set, only this address can become the first admin.</td>
+        </tr>
+        <tr>
+          <td><code>api.google.clientId</code> / <code>api.google.clientSecret</code></td>
+          <td>empty</td>
+          <td>Google sign-in. Setting the id requires the secret. The secret stays in the chart Secret.</td>
+        </tr>
+        <tr>
+          <td><code>api.github.clientId</code> / <code>api.github.clientSecret</code></td>
+          <td>empty</td>
+          <td>GitHub sign-in. Same pattern as Google.</td>
         </tr>
         <tr>
           <td><code>postgres.enabled</code></td>
@@ -144,6 +163,7 @@ helm install om deploy/helm/opensourceom \\
   </p>
   <p>
     Keep the Service off the public internet, or put your own gateway in front of it. See
-    <a href="/docs/security/">Security</a> for how <code>OM_API_SECRET</code> applies.
+    <a href="/docs/security/">Security</a> for personal API tokens and console login. Set
+    <code>api.publicURL</code> to that gateway’s origin when you enable Google or GitHub.
   </p>
 </DocsLayout>

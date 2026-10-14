@@ -6,7 +6,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
 <DocsLayout
   title="Configure OpenSourceOM"
-  description="Environment variables for the OpenSourceOM CLI, API secret, Postgres, NVD, and AWS, Azure, GCP, and Kubernetes collectors."
+  description="Environment variables for the OpenSourceOM CLI, console login, SMTP, Postgres, NVD, and AWS, Azure, GCP, and Kubernetes collectors."
 >
   <h1>Configure OpenSourceOM</h1>
   <p>
@@ -45,7 +45,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
         <tr>
           <td><code>OM_PUBLIC_URL</code></td>
           <td><code>http://localhost:8080</code></td>
-          <td>Public URL hint. Requests use the listen address.</td>
+          <td>Browser origin for the console and optional OAuth callbacks. No trailing path.</td>
         </tr>
         <tr>
           <td><code>OM_API_PORT</code></td>
@@ -53,9 +53,29 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td><code>om serve</code></td>
         </tr>
         <tr>
-          <td><code>OM_API_SECRET</code></td>
-          <td><code>change-me-in-production</code></td>
-          <td>Shared secret for every <code>/v1</code> route except <code>GET /v1/health</code>. See <a href="/docs/security/">Security</a>.</td>
+          <td><code>OM_ADMIN_EMAIL</code></td>
+          <td>empty</td>
+          <td>When set, only this address can become the first admin.</td>
+        </tr>
+        <tr>
+          <td><code>OM_SMTP_HOST</code> / <code>OM_SMTP_PORT</code> / <code>OM_SMTP_FROM</code></td>
+          <td>empty / <code>587</code> / empty</td>
+          <td>Optional. When set, adding an admin also emails the temporary password.</td>
+        </tr>
+        <tr>
+          <td><code>OM_SMTP_USERNAME</code> / <code>OM_SMTP_PASSWORD</code></td>
+          <td>empty</td>
+          <td>Optional SMTP authentication. Set both when the server requires a login.</td>
+        </tr>
+        <tr>
+          <td><code>OM_GOOGLE_CLIENT_ID</code> / <code>OM_GOOGLE_CLIENT_SECRET</code></td>
+          <td>empty</td>
+          <td>Google sign-in. Both are required. Callback <code>{'{OM_PUBLIC_URL}'}/auth/google/callback</code>.</td>
+        </tr>
+        <tr>
+          <td><code>OM_GITHUB_CLIENT_ID</code> / <code>OM_GITHUB_CLIENT_SECRET</code></td>
+          <td>empty</td>
+          <td>GitHub sign-in. Both are required. Callback <code>{'{OM_PUBLIC_URL}'}/auth/github/callback</code>.</td>
         </tr>
       </tbody>
     </table>

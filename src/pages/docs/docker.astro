@@ -21,7 +21,10 @@ docker compose ps`}</code></pre>
     Postgres listens on host port 5432 with user, password, and database <code>opensourceom</code>
     unless you override <code>POSTGRES_USER</code>, <code>POSTGRES_PASSWORD</code>, and
     <code>POSTGRES_DB</code>. The API listens on <code>OM_API_PORT</code> (default 8080) and
-    receives <code>OM_API_SECRET</code> from <code>.env</code>. A volume named
+    receives <code>OM_ADMIN_EMAIL</code> and the optional Google, GitHub, and SMTP settings from
+    <code>.env</code>. Open the console and create the admin, or run
+    <code>om admin create --email</code> on the host first. Keep port 8080 private until an
+    admin exists. A volume named
     <code>postgres-data</code> keeps the database across restarts.
   </p>
 

@@ -94,14 +94,15 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
   </p>
 
   <h2>HTTP</h2>
-  <pre><code>{`curl -s http://localhost:8080/v1/rules
-curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  <pre><code>{`curl -s -H "Authorization: Bearer $OM_API_TOKEN" \\
+  http://localhost:8080/v1/rules
+curl -s -X POST -H "Authorization: Bearer $OM_API_TOKEN" \\
   http://localhost:8080/v1/rules/run
-curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+curl -s -X POST -H "Authorization: Bearer $OM_API_TOKEN" \\
   'http://localhost:8080/v1/rules/run?id=cspm-internet-workload'`}</code></pre>
   <p>
-    The console button does the same POST. See <a href="/docs/console/">Console</a> for the
-    browser API key.
+    The console button does the same POST with the signed-in session. See
+    <a href="/docs/console/">Console</a>.
   </p>
 
   <h2>Adding a check</h2>

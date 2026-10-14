@@ -15,10 +15,13 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     no GraphQL endpoint.
   </p>
   <p>
-    Every <code>/v1</code> route except <code>GET /v1/health</code> checks
-    <code>OM_API_SECRET</code>. Send it as <code>Authorization: Bearer …</code> or
-    <code>X-API-Key</code>. The console HTML does not. Treat the API as an internal service.
-    Details are on <a href="/docs/security/">Security</a>.
+    Machine clients send that admin's personal API token as <code>Authorization: Bearer …</code> or
+    <code>X-API-Key</code>. A console session cookie is the other accepted credential. The examples
+    below use <code>$OM_API_TOKEN</code> for the value the console showed once.
+    <code>GET /v1/health</code>, <code>GET /v1/auth/session</code>, and
+    <code>POST /v1/auth/logout</code> are open. Admin management requires the session.
+    Treat the API as an internal service. Details are on <a href="/docs/security/">Security</a>
+    and <a href="/docs/console/">Console</a>.
   </p>
 
   <h2>Reads</h2>
@@ -33,7 +36,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
       <tbody>
         <tr>
           <td><code>GET /v1/health</code></td>
-          <td><code>{`{"status":"ok","service":"opensourceom-api"}`}</code>. Does not check the API secret. Helm probes this path.</td>
+          <td><code>{`{"status":"ok","service":"opensourceom-api"}`}</code>. Does not check a token. Helm probes this path.</td>
         </tr>
         <tr>
           <td><code>GET /v1/graph/stats</code></td>
@@ -105,9 +108,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     </table>
   </div>
   <pre><code>{`curl -s http://localhost:8080/v1/health
-curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
+curl -s -H "Authorization: Bearer $OM_API_TOKEN" \\
   http://localhost:8080/v1/graph/stats
-curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
+curl -s -H "Authorization: Bearer $OM_API_TOKEN" \\
   -H 'Content-Type: application/json' \\
   -d '{"nodes":[],"edges":[]}' \\
   http://localhost:8080/v1/ingest`}</code></pre>
@@ -151,9 +154,9 @@ curl -s -H "Authorization: Bearer $OM_API_SECRET" \\
     <code>GET /v1/identity/blast-radius</code> returns the identity, <code>reachable</code>
     (at most 200 nodes), <code>max_depth</code> (6), and <code>summary</code>. Pass
     <code>identity_id</code> or <code>name</code>. A name that matches no identity is 400.
-    This route requires the API secret, like the other <code>/v1</code> reads.
+    This route requires a personal API token or a console session, like the other <code>/v1</code> reads.
   </p>
-  <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_SECRET" \\
+  <pre><code>{`curl -s -X POST -H "Authorization: Bearer $OM_API_TOKEN" \\
   -H 'Content-Type: application/json' \\
   -d '{"webhook":"https://hooks.slack.com/services/..."}' \\
   http://localhost:8080/v1/export/slack`}</code></pre>
