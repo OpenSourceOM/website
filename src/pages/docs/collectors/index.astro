@@ -134,4 +134,21 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     queries have a start vertex. Plugins that want internet paths must include that node
     themselves. The id constant is <code>internet:global</code> in <code>sdk/collector</code>.
   </p>
+
+  <h2>What a scan does not read</h2>
+  <p>
+    Built-in collectors call cloud APIs. They do not snapshot a root volume, pull container
+    layers, or download a function bundle. <code>om scan aws</code> stores an AMI id on
+    <code>image</code>. <code>om scan k8s</code> stores image references. Neither writes the
+    packages inside. <code>om enrich cve</code> can match a CVE only when <code>packages</code>
+    is already on the workload, which today means the demo graph or a plugin.
+  </p>
+  <p>
+    Phase 4 on the
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>
+    is that inventory, from root volumes, boot images, container layers, function bundles, and
+    shared filesystems. It will be a separate opt-in scan, because a volume snapshot is a write
+    in the account. The API scans on this page stay read-only. Phase 5 then records a secret
+    or malware finding from storage that scan already opened, storing the kind and the path.
+  </p>
 </DocsLayout>

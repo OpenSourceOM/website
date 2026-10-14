@@ -144,6 +144,9 @@ az login
     built-in set above. A subscription Reader covers the ARM calls, including
     <code>Microsoft.Insights/eventtypes/values/read</code>. Listing containers also needs
     <code>Microsoft.Storage/storageAccounts/blobServices/containers/read</code>. The collector
-    does not call mutating APIs.
+    does not call mutating APIs, and it does not snapshot OS disks or read packages on the VM.
+    That inventory is Phase 4 on the
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>, as a
+    separate opt-in scan.
   </p>
 </DocsLayout>

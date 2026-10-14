@@ -151,7 +151,10 @@ gcloud auth application-default login
     The scan lists instances, firewalls, load-balancer pieces, buckets, bucket IAM, service
     accounts, the project IAM policy, Cloud SQL instances, and Admin Activity log entries.
     Listing those entries needs <code>logging.logEntries.list</code>. Logs Viewer
-    (<code>roles/logging.viewer</code>) includes it. The collector does not call mutating APIs
-    and does not request Data Access logs.
+    (<code>roles/logging.viewer</code>) includes it. The collector does not call mutating APIs,
+    does not request Data Access logs, and does not snapshot boot disks or read packages on the
+    instance. That inventory is Phase 4 on the
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>, as a
+    separate opt-in scan.
   </p>
 </DocsLayout>

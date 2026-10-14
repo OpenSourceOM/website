@@ -2,7 +2,7 @@
 title: "Open Source CSPM and CNAPP Tools in 2026: What Exists Today"
 description: "Survey of open source CSPM, self-hosted CNAPP alternatives, and graph-native cloud security tools in 2026 — plus how to evaluate self-hosted options for your team."
 pubDate: 2026-08-24
-updatedDate: 2026-10-13
+updatedDate: 2026-10-14
 author: OpenSourceOM Team
 tags:
   - open source CSPM
@@ -69,7 +69,7 @@ The differentiator for **self-hosted CNAPP**-like experiences is the **security 
 | Finding enrichment | CVEs and misconfigs on graph nodes |
 | Path queries | Prioritize by attack path, not severity |
 
-**[OpenSourceOM](/prowler-alternative/)** is that layer, self-hosted and Apache-2.0: collectors, a Postgres graph, and CSPM rules scored by path. [Prowler vs OpenSourceOM](/prowler-alternative/) is the Prowler alternative comparison. Cartography and BloodHound are on [self-hosted CNAPP](/self-hosted-cnapp/). Phase 3 has shipped — see the [roadmap on GitHub](https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md).
+**[OpenSourceOM](/prowler-alternative/)** is that layer, self-hosted and Apache-2.0: collectors, a Postgres graph, and CSPM rules scored by path. [Prowler vs OpenSourceOM](/prowler-alternative/) is the Prowler alternative comparison. Cartography and BloodHound are on [self-hosted CNAPP](/self-hosted-cnapp/). Phase 3 has shipped. Phase 4 (package inventory from persistent workload storage) and Phase 5 (secret and malware findings on that storage) are next — see the [roadmap on GitHub](https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md).
 
 ## Proprietary CNAPP vs. open source stack
 

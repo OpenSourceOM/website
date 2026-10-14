@@ -96,7 +96,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     API reports no further page.
   </p>
   <p>
-    The collector does not inventory Lambda, EKS, VPCs, or IAM groups. RDS and Aurora instances are
+    The collector does not inventory Lambda, EKS, VPCs, or IAM groups, and it does not snapshot
+    EBS volumes or read packages on disk. That inventory is Phase 4 on the
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>, as a
+    separate opt-in scan. RDS and Aurora instances are
     datastores, and their tags supply <code>sensitivity</code> the same way a bucket tag does.
     Buckets are listed
     account-wide. EC2 and security groups are the one region in <code>AWS_REGION</code>.

@@ -16,7 +16,7 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     {
       question: 'What is outside the open-source core?',
       answer:
-        'Insider-threat analysis, SAML and SSO, multi-tenant RBAC, and audit logs of who used the console are planned outside the open-source core. Attack paths, CSPM, collectors, and the self-hosted API stay in core.',
+        'Insider-threat analysis, SAML and SSO, multi-tenant RBAC, audit logs of who used the console, and classification of object bodies and database rows are planned outside the open-source core. Attack paths, CSPM, collectors, workload package inventory, and the self-hosted API stay in core.',
     },
   ]}
   related={[
@@ -83,6 +83,10 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td>Cloud audit ingest as graph context</td>
           <td>Immutable platform audit logs (who used OpenSourceOM)</td>
         </tr>
+        <tr>
+          <td>Workload package inventory (Phase 4) and secret or malware findings on that storage (Phase 5)</td>
+          <td>Classification of object bodies and database rows</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -93,6 +97,8 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     exposed path. Path queries return those events with the path. Data Access logs are not
     collected. <strong>Platform audit logs</strong> — operator actions in the
     console/API, SSO identity, retention, and auditor export — belong in the commercial offering.
+    Phase 4 and Phase 5 stay in core: packages, secrets, and malware on storage an outsider can
+    reach. Reading object bodies and database rows to classify customer data does not.
   </p>
 
   <h2>Why this split</h2>
@@ -113,7 +119,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     CSPM rules, blast radius, Kubernetes ingest, exports, the collector plugin SDK,
     and the Helm chart are in the tree, along with inventory-backed CVEs, crown-jewel
     datastores, attack-path findings, and cloud audit context from CloudTrail, Activity Log,
-    and Admin Activity logs. How to run them is covered from
+    and Admin Activity logs. Phase 4 and Phase 5 are open and not in the tree yet: package
+    inventory from persistent workload storage, then secret and malware findings on that
+    storage. How to run what has shipped is covered from
     <a href="/docs/getting-started/">Getting started</a> through
     <a href="/docs/collectors/plugins/">Plugins</a>. Commercial offerings are
     <strong>not available yet</strong> — there is no pricing, sales contact, or enterprise SKU
