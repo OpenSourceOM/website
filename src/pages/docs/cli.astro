@@ -33,11 +33,11 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
       <tbody>
         <tr>
           <td><code>om migrate</code></td>
-          <td>Apply versioned SQL migrations.</td>
+          <td>Apply versioned SQL migrations. <code>om serve</code> does this on startup unless <code>OM_AUTO_MIGRATE=false</code>.</td>
         </tr>
         <tr>
           <td><code>om serve</code></td>
-          <td>Listen on <code>OM_API_PORT</code> and serve the API plus the console.</td>
+          <td>Apply pending migrations, then listen on <code>OM_API_PORT</code> and serve the API plus the console.</td>
         </tr>
         <tr>
           <td><code>om scan demo</code></td>
