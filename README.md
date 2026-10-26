@@ -15,7 +15,7 @@ Built with [Astro](https://astro.build) for fast static pages and simple deploym
 
 ## Local development
 
-**Prerequisites:** Node.js 22.12+ and Git (install Xcode Command Line Tools on macOS: `xcode-select --install`).
+**Prerequisites:** Node.js 22.23.4+ and Git (install Xcode Command Line Tools on macOS: `xcode-select --install`).
 
 ```bash
 npm install

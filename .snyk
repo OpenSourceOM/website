@@ -34,6 +34,14 @@ ignore:
           only reached through ajv 6 inside @vercel/routing-utils, which
           validates routing config at build time.
         expires: 2026-12-21T00:00:00.000Z
+  SNYK-JS-PICOMATCH-21248802:
+    - '*':
+        reason: >-
+          No patched picomatch release exists (affected through 4.0.7). The
+          ReDoS needs an attacker-supplied extglob such as +(*). Copies are
+          Astro, Vite, and unstorage at build time; this site does not accept
+          glob patterns from requests.
+        expires: 2027-01-26T00:00:00.000Z
   SNYK-JS-ZOD-20510278:
     - '*':
         reason: >-
