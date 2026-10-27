@@ -7,6 +7,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # @astrojs/check does not accept TypeScript 7 yet. The monthly
+      # TypeScript 7 workflow comments on issue 5 when that changes.
+      - dependency-name: "typescript"
+        versions: ["7.x"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
