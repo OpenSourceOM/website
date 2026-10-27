@@ -60,6 +60,14 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
           <td>Pods, services, and service accounts from kubeconfig.</td>
         </tr>
         <tr>
+          <td><code>om scan workload aws</code>, <code>azure</code>, <code>gcp</code></td>
+          <td>Inventory packages on Linux root volumes. Run as root on a worker in that account and region. The API scans stay read-only.</td>
+        </tr>
+        <tr>
+          <td><code>om scan workload image aws</code>, <code>azure</code>, <code>gcp</code></td>
+          <td>Read each boot image once and add those package identifiers to instances launched from it. Run as root on a worker in that account and region.</td>
+        </tr>
+        <tr>
           <td><code>om scan plugin -- &lt;exe&gt; [args...]</code></td>
           <td>Run an external collector. <code>--timeout</code> defaults to 10 minutes.</td>
         </tr>

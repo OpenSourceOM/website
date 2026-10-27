@@ -137,18 +137,21 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
 
   <h2>What a scan does not read</h2>
   <p>
-    Built-in collectors call cloud APIs. They do not snapshot a root volume, pull container
+    Built-in API collectors call cloud APIs. They do not snapshot a root volume, pull container
     layers, or download a function bundle. <code>om scan aws</code> stores an AMI id on
     <code>image</code>. <code>om scan k8s</code> stores image references. Neither writes the
-    packages inside. <code>om enrich cve</code> can match a CVE only when <code>packages</code>
-    is already on the workload, which today means the demo graph or a plugin.
+    packages inside. <code>om scan workload aws</code>, <code>om scan workload azure</code>, and
+    <code>om scan workload gcp</code> read Linux root volumes. <code>om scan workload image aws</code>,
+    <code>om scan workload image azure</code>, and <code>om scan workload image gcp</code> read each
+    boot image once and add those package identifiers to instances launched from it. Each runs as
+    root on a worker in that account and region, because a volume or disk copy is a write in the
+    account. <code>om enrich cve</code> matches <code>packages</code> those commands store. A plugin
+    can still set <code>packages</code> directly.
   </p>
   <p>
-    Phase 4 on the
-    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>
-    is that inventory, from root volumes, boot images, container layers, function bundles, and
-    shared filesystems. It will be a separate opt-in scan, because a volume snapshot is a write
-    in the account. The API scans on this page stay read-only. Phase 5 then records a secret
+    Container layers, function bundles, and shared filesystems are still open on the
+    <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>.
+    The API scans on this page stay read-only. Phase 5 then records a secret
     or malware finding from storage that scan already opened, storing the kind and the path.
   </p>
 </DocsLayout>

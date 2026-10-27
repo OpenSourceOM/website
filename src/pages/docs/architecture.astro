@@ -125,9 +125,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     Multi-tenant RBAC, SAML, and platform audit logs of who clicked what in the console are
     outside the open source core, as is classification of object bodies and database rows.
     See <a href="/docs/open-source/">Open source scope</a>.
-    Phase 4 will write <code>packages</code> from root volumes, boot images, container layers,
-    function bundles, and shared filesystems. Phase 5 will add secret and malware findings
-    on that storage, recording the kind and the path. Neither phase is implemented.
+    <code>om scan workload</code> writes <code>packages</code> from Linux root volumes and boot
+    images. Container layers, function bundles, and shared filesystems are still open. Phase 5
+    will add secret and malware findings on that storage, recording the kind and the path.
     <code>om scan aws</code>, <code>om scan azure</code>, and <code>om scan gcp</code> stay
     read-only API scans.
     Recursive path SQL is capped. Azure and GCP <code>REACHABLE</code> edges still ignore

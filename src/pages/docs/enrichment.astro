@@ -44,8 +44,9 @@ import DocsLayout from '@/layouts/DocsLayout.astro';
     <code>om scan aws</code> writes <code>image</code> as the AMI id when the instance has one.
     A plugin can set <code>packages</code> directly. See
     <a href="/docs/collectors/plugins/">Plugins</a>.
-    Phase 4 will fill <code>packages</code> from persistent workload storage (root volumes, boot
-    images, image layers, function bundles, and shared filesystems). Enrichment stays a matcher.
+    <code>om scan workload</code> and <code>om scan workload image</code> fill <code>packages</code>
+    from Linux root volumes and boot images. Container layers, function bundles, and shared
+    filesystems are still open. Enrichment stays a matcher.
     See the <a href="https://github.com/OpenSourceOM/core/blob/main/docs/ROADMAP.md">roadmap</a>.
   </p>
 
