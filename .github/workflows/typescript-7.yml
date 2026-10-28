@@ -21,70 +21,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          range_json=$(npm view @astrojs/check@latest peerDependencies.typescript --json)
-          version_json=$(npm view @astrojs/check@latest version --json)
-          ready=$(RANGE_JSON="$range_json" node --input-type=module <<'EOF'
-          const raw = process.env.RANGE_JSON;
-          if (!raw || raw === "null" || raw === "undefined") {
-            process.stdout.write("missing");
-            process.exit(0);
-          }
-          const range = JSON.parse(raw);
-          process.stdout.write(allowsTypeScript7(range) ? "true" : "false");
-
-          function allowsTypeScript7(peerRange) {
-            return String(peerRange)
-              .split("||")
-              .map((clause) => clause.trim())
-              .filter(Boolean)
-              .some((clause) => clauseAllowsMajor(clause, 7));
-          }
-
-          function clauseAllowsMajor(clause, major) {
-            if (clause === "*" || clause === "x" || clause === "X") return true;
-            const caret = clause.match(/^\^(\d+)\./);
-            if (caret) return Number(caret[1]) === major;
-            const tilde = clause.match(/^~(\d+)\./);
-            if (tilde) return Number(tilde[1]) === major;
-            const exact = clause.match(/^(\d+)\.\d+\.\d+$/);
-            if (exact) return Number(exact[1]) === major;
-            let min = null;
-            let maxExclusive = Infinity;
-            for (const match of clause.matchAll(/(>=|>|<=|<)\s*(\d+)(?:\.\d+){0,2}/g)) {
-              const bound = Number(match[2]);
-              if (match[1] === ">=") min = Math.max(min ?? -Infinity, bound);
-              if (match[1] === ">") min = Math.max(min ?? -Infinity, bound + 1);
-              if (match[1] === "<") maxExclusive = Math.min(maxExclusive, bound);
-              if (match[1] === "<=") maxExclusive = Math.min(maxExclusive, bound + 1);
-            }
-            return min !== null && min <= major && major < maxExclusive;
-          }
-          EOF
-          )
-          version=$(node --input-type=module -e 'process.stdout.write(JSON.parse(process.argv[1]))' "$version_json")
-          range=$(node --input-type=module -e 'const raw = process.argv[1]; process.stdout.write(!raw || raw === "null" ? "(no typescript peer)" : JSON.parse(raw))' "$range_json")
-          echo "@astrojs/check@${version} typescript peer: ${range} (ready=${ready})"
-          if [ "$ready" = "false" ]; then
-            exit 0
-          fi
+          range=$(npm view @astrojs/check@latest peerDependencies.typescript)
+          echo "typescript peer: ${range}"
+          # Published ranges look like "^5.0.0 || ^6.0.0".
+          printf '%s\n' "$range" | grep -Eq '(^|[^0-9])7\.' || exit 0
           marker="<!-- typescript-7-ready -->"
           if gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/5/comments" --jq '.[].body' | grep -F -q "$marker"; then
-            echo "Issue 5 already records that TypeScript 7 is accepted."
             exit 0
           fi
-          state=$(gh issue view 5 --repo "$GITHUB_REPOSITORY" --json state --jq .state)
-          if [ "$state" = "CLOSED" ]; then
-            gh issue reopen 5 --repo "$GITHUB_REPOSITORY"
-          fi
-          if [ "$ready" = "missing" ]; then
-            detail="\`@astrojs/check@${version}\` no longer declares a \`typescript\` peer dependency."
-          else
-            detail="\`@astrojs/check@${version}\` now accepts TypeScript 7 (\`${range}\`)."
-          fi
+          gh issue reopen 5 --repo "$GITHUB_REPOSITORY" || true
           gh issue comment 5 --repo "$GITHUB_REPOSITORY" --body "$(cat <<EOF
           ${marker}
-          ${detail}
+          \`@astrojs/check\` now accepts TypeScript 7 (\`${range}\`).
 
-          Remove the \`typescript\` \`7.x\` ignore in \`.github/dependabot.yml\`, then bump \`typescript\`. The ignore left on pull request #1 can still suppress a Dependabot pull request, so bump the dependency directly or reopen that pull request.
+          Remove the \`typescript\` \`7.x\` ignore in \`.github/dependabot.yml\`, then bump \`typescript\`. The ignore on pull request #1 can still suppress Dependabot, so bump the dependency directly or reopen that pull request.
           EOF
           )"
