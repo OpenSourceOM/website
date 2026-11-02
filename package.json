@@ -22,7 +22,7 @@
     "@astrojs/vercel": "^11.0.16",
     "@resvg/resvg-js": "^2.6.2",
     "@vercel/analytics": "^2.0.1",
-    "astro": "^7.4.2",
+    "astro": "^7.4.4",
     "satori": "^0.63.2"
   },
   "devDependencies": {
